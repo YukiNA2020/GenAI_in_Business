@@ -12,7 +12,7 @@
 
 当前项目已经从“按产品版本拆开发过程”调整为“按团队成员分工并行开发”。因此：
 
-1. 实际开发以 `Final_Team_Work_Division.md` 和五份成员任务文档为准。
+1. 实际开发以 `Final_Team_Work_Division.md`、根目录成员任务文档和各成员文件夹中的任务文档为准。
 2. `Project_intro.md` 仍然是产品方向和产品价值的核心指导文件。
 3. `past_doc/` 里的五份 `Product_v*_detail_plan.md` 暂时不用来直接安排实际任务开发，仅作为项目立项时的一种参考方案。
 
@@ -45,7 +45,7 @@
 | 成员 B / 成员 2 | `Member_2_Create_Upload_Integration_Detail_Plan.md` | 创建收藏、编辑收藏、图片上传、最终整合 |
 | 成员 C / 成员 3 | `Member_3_Collection_Wall_Search_Detail_Plan.md` | 收藏墙、详情页、搜索筛选、浏览体验 |
 | 成员 D / 成员 4 | `Member_4_UI_Visual_Design_Detail_Plan.md` | UI 视觉规范、组件样式、图标和演示素材 |
-| 成员 E / 成员 5 | `Member_5_AI_Profile_Test_Detail_Plan.md` | AI 功能、用户主页、测试和 Bug 跟踪 |
+| 成员 E / 成员 5 | `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` | AI 功能、用户主页、测试和 Bug 跟踪 |
 | 成员 6 | `Final_Team_Work_Division.md` 中成员 6 部分 | PPT、报告、视频、Demo 展示材料 |
 
 7. `Test.md`  
@@ -63,7 +63,7 @@
 ```text
 你正在参与 Collection Journey App 团队项目。请先阅读 README.md、Project_intro.md、Status.md、Prompt_library.md、Final_Team_Work_Division.md，以及我负责的成员任务文档。
 
-当前项目实际开发以 Final_Team_Work_Division.md 和 Member_1 到 Member_5 五份成员任务文档为准。past_doc 文件夹中的 Product_v1 到 Product_v5 文档暂时不用来直接安排实际任务开发，仅作为项目立项时的一种参考方案。
+当前项目实际开发以 Final_Team_Work_Division.md、根目录成员任务文档和各成员文件夹中的任务文档为准。成员 E 的任务文档位于 member_E/Member_5_AI_Profile_Test_Detail_Plan.md。past_doc 文件夹中的 Product_v1 到 Product_v5 文档暂时不用来直接安排实际任务开发，仅作为项目立项时的一种参考方案。
 
 请严格按照我的成员身份和职责边界开发，不要随意修改其他成员负责的模块。如果必须改动跨成员接口、字段、目录结构或共享组件，请先在文档中说明原因，并提醒团队确认。
 
@@ -127,7 +127,7 @@
 | 成员 B / 成员 2 | `我是成员B / 成员2` | `Member_2_Create_Upload_Integration_Detail_Plan.md` |
 | 成员 C / 成员 3 | `我是成员C / 成员3` | `Member_3_Collection_Wall_Search_Detail_Plan.md` |
 | 成员 D / 成员 4 | `我是成员D / 成员4` | `Member_4_UI_Visual_Design_Detail_Plan.md` |
-| 成员 E / 成员 5 | `我是成员E / 成员5` | `Member_5_AI_Profile_Test_Detail_Plan.md` |
+| 成员 E / 成员 5 | `我是成员E / 成员5` | `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` |
 
 ### 4.2 测试 AI 输入模板
 
@@ -255,7 +255,26 @@ git push origin feature/your-member-task
 
 ## 7. 状态同步规则
 
-每次完成开发、测试、修复或文档更新后，至少检查以下文件是否需要更新：
+项目现在采用“两层状态同步”：
+
+1. 成员文件夹内的局部同步：记录本成员日常细节。
+2. 根目录主文档同步：记录团队需要共同知道的阶段状态和关键决策。
+
+### 7.1 成员文件夹局部同步
+
+如果某位成员已经建立了自己的成员文件夹，可以先在成员文件夹中维护局部记录。例如成员 E 使用：
+
+| 局部文件 | 对应根目录文件 | 用途 |
+|---|---|---|
+| `member_E/E_Status_Log.md` | `Status.md` | 成员 E 局部进度、文件变化、待办事项 |
+| `member_E/E_Prompt_Log.md` | `Prompt_library.md` | 成员 E 局部用户要求、AI 行动、关键决策 |
+| `member_E/E_Test_Log.md` | `Test.md` | 成员 E 局部测试过程、Bug 和测试结论 |
+
+局部记录文件必须带成员标识或后缀，不能直接命名为 `Status.md`、`Prompt_library.md`、`Test.md`，避免和根目录主文档混淆。
+
+### 7.2 根目录主文档同步
+
+每个阶段结束、完成可交付任务、测试通过/失败、或产生跨成员影响时，必须检查以下根目录文件是否需要更新：
 
 1. `Status.md`：记录当前进展、文件变化、待办事项和重要问题。
 2. `Prompt_library.md`：记录用户要求、AI 行动和重要决策。
@@ -274,6 +293,16 @@ git push origin feature/your-member-task
 ```
 
 这样其他成员可以快速确认哪个人写了哪里，避免后期合并时不知道修改来源。
+
+### 7.3 必须立即同步根目录的情况
+
+以下情况不要只留在成员文件夹内，必须同步根目录主文档：
+
+1. 改动影响其他成员的接口、字段、页面路径、共享组件或测试范围。
+2. 阶段状态发生变化，例如从“开发中”变为“待测试”“测试通过”或“测试失败”。
+3. 发现会阻塞 Demo 或合并的 Bug。
+4. 新增、移动、删除重要文件或目录。
+5. 与最终展示、报告或成员 6 交付材料有关的结论。
 
 ---
 

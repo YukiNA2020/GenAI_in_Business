@@ -12,9 +12,9 @@
 >      - 成员 B / 成员 2：`Member_2_Create_Upload_Integration_Detail_Plan.md`
 >      - 成员 C / 成员 3：`Member_3_Collection_Wall_Search_Detail_Plan.md`
 >      - 成员 D / 成员 4：`Member_4_UI_Visual_Design_Detail_Plan.md`
->      - 成员 E / 成员 5：`Member_5_AI_Profile_Test_Detail_Plan.md`
+>      - 成员 E / 成员 5：`member_E/Member_5_AI_Profile_Test_Detail_Plan.md`
 >    - 步骤6：如涉及测试，阅读并更新 `Test.md`。
-> 3. `past_doc/` 文件夹中的 `Product_v1_detail_plan.md` 到 `Product_v5_detail_plan.md` 暂时不用来进行实际任务开发，仅为项目立项时的一种参考方案。当前开发执行以最终分工文档和五份成员任务文档为准。
+> 3. `past_doc/` 文件夹中的 `Product_v1_detail_plan.md` 到 `Product_v5_detail_plan.md` 暂时不用来进行实际任务开发，仅为项目立项时的一种参考方案。当前开发执行以最终分工文档、根目录成员任务文档和各成员文件夹中的任务文档为准。
 > 4. 每次完成开发、测试、修复或文档更新后，必须在 `Status.md` 和 `Prompt_library.md` 中标明操作者是成员 A/B/C/D/E 或成员 6，方便团队确认哪个人写了哪里。
 
 ---
