@@ -2,7 +2,7 @@
 
 > 本文件是当前团队实际开发分工的核心依据。请先阅读 `README.md`、`Project_intro.md`、`Status.md` 和 `Prompt_library.md`，再阅读本文件。
 >
-> 当前开发以本文件和五份 `Member_*.md` 成员任务文档为准；`past_doc/` 中的 `Product_v*_detail_plan.md` 暂时不用来进行实际任务开发，仅作为项目立项参考方案。
+> 当前开发以本文件、根目录四份 `Member_*.md` 成员任务文档，以及 `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` 为准；`past_doc/` 中的 `Product_v*_detail_plan.md` 暂时不用来进行实际任务开发，仅作为项目立项参考方案。
 >
 > 如果你协助某位成员开发或更新文档，请在 `Status.md`、`Prompt_library.md` 和必要的 `Test.md` 记录中标明成员身份：成员 A/成员 1、成员 B/成员 2、成员 C/成员 3、成员 D/成员 4、成员 E/成员 5，或成员 6。
 

@@ -241,6 +241,38 @@
   - 健康检查：`GET /api/health` → `{"success":true,"message":"Collection Journey API is running"}`。
   - multer 1.x 有安全漏洞警告（不影响 MVP 使用，后续可升级到 2.x）。
 
+## 2026-05-15 对话记录 2
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：用户询问是否有必要在 `member_E/` 文件夹中增加类似 Prompt_library、Status、Test 的子 Markdown 文件，以便先在成员 E 文件夹中记录状态，再在阶段结束时同步到根目录主文档；要求文件名不要和根目录主文件重名，并完善同步规则。
+- **AI 行动**：
+  - 新增 `member_E/E_Status_Log.md`，作为成员 E 局部状态记录。
+  - 新增 `member_E/E_Prompt_Log.md`，作为成员 E 局部 Prompt、对话和关键决策记录。
+  - 新增 `member_E/E_Test_Log.md`，作为成员 E 局部测试记录。
+  - 更新 `member_E/README.md`，加入成员 E 局部记录文件说明、局部到全局同步规则、必须立即同步根目录的情况。
+  - 更新根目录 `README.md`，将状态同步规则扩展为“两层状态同步”：成员文件夹局部同步和根目录主文档同步。
+  - 更新 `Status.md`，记录新增的三个成员 E 局部日志文件和同步规则变化。
+- **重要内容**：
+  - 成员 E 局部记录文件统一使用 `E_..._Log.md` 命名，避免与根目录 `Status.md`、`Prompt_library.md`、`Test.md` 混淆。
+  - 日常小修改先写入成员文件夹局部记录；阶段结束、测试结论变化、跨成员接口或 Demo 风险变化时，必须同步根目录主文档。
+
+## 2026-05-15 对话记录
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：用户说明自己的角色是成员 E，希望建立 `member_E/` 文件夹，将 E 对应的技术路线文件移入其中，并一次性完成阶段一中能够完成的任务，同时同步根目录下的状态类 Markdown 文档。
+- **AI 行动**：
+  - 阅读了 `member_E` 移动前的 `Member_5_AI_Profile_Test_Detail_Plan.md`，确认阶段一包含标题生成 Prompt、分类建议 Prompt、标签推荐 Prompt、故事生成 Prompt 和 AI API Contract 五个任务。
+  - 创建了 `member_E/` 工作区，并将 `Member_5_AI_Profile_Test_Detail_Plan.md` 移入 `member_E/`。
+  - 新增 `member_E/docs/prompts/` 下四个 Prompt 文档：`prompt_title.md`、`prompt_category.md`、`prompt_tags.md`、`prompt_story.md`。
+  - 新增 `member_E/docs/AI_API_Contract.md`，固定四个 AI 接口的请求字段、成功响应、错误响应和前端 loading 处理建议。
+  - 新增 `member_E/backend/src/ai/ai.prompts.js` 和 `member_E/backend/src/ai/ai.schemas.js`，作为阶段二接入后端时可复用的轻量 Prompt builder 和 Schema/校验文件。
+  - 新增 `member_E/docs/Phase_1_Completion_Report.md` 和 `member_E/README.md`，说明成员 E 工作区、阶段一完成情况和后续测试交接。
+  - 更新 `README.md`、`Project_intro.md`、`Final_Team_Work_Division.md`、`Status.md` 和 `Test.md` 中与成员 E 文档路径、阶段一状态和待测试状态有关的内容。
+- **重要内容**：
+  - 成员 E 阶段一开发已完成，但尚未由独立测试 AI 正式测试。
+  - 阶段一交付物先放在 `member_E/` 中，避免影响成员 A 的根目录后端搭建；后续如需迁移到根目录 `backend/src/ai/`，需要与成员 A 确认。
+  - AI 失败不能阻止用户手动保存收藏，这是成员 B 接入 AI 建议面板时需要遵守的关键规则。
+
 ## 2026-05-09 对话记录 2
 
 - **负责人**：团队开发与测试 AI 分工流程整理，由 AI 协助更新
