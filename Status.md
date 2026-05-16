@@ -18,8 +18,8 @@
 
 # Collection Journey App - 项目状态
 
-> 上次更新：2026-05-15  
-> 最近更新负责人：成员 A / 成员 1，由该成员的 AI 工具协助更新（阶段五·任务一+二：冻结 API Contract + 配合成员 2 联调创建流程）
+> 上次更新：2026-05-16  
+> 最近更新负责人：成员 A / 成员 1，由该成员的 AI 工具协助更新（阶段五·任务四+五：配合成员 5 联调 AI 和测试 + 后端交付说明）
 
 ---
 
@@ -124,6 +124,8 @@ GENAI_Group/
 | `backend/src/services/users.service.js` | 用户业务逻辑（stats 数据聚合 + camelCase 转换） | ✅ 完成（成员 1） |
 | `backend/src/controllers/users.controller.js` | 用户控制器（getStats） | ✅ 完成（成员 1） |
 | `backend/src/routes/users.routes.js` | 用户路由（GET /:id/stats） | ✅ 完成（成员 1） |
+| `backend/tests/phase5_task4_test.js` | 阶段五·任务四 AI 集成验证测试脚本（66 项） | ✅ 完成（成员 1） |
+| `Backend_Setup.md` | 后端交付说明（启动/数据库/API/排错） | ✅ 完成（成员 1） |
 
 ---
 
@@ -176,9 +178,9 @@ GENAI_Group/
 ### V1.4 阶段五进展
 - [x] 阶段五·任务一：冻结 API Contract — 创建 `API_Contract.md`（成员 1，2026-05-15）
 - [x] 阶段五·任务二：配合成员 2 联调创建流程 — 增强校验中间件 + 32 项流程测试通过（成员 1，2026-05-15）
-- [ ] 阶段五·任务三：配合成员 3 联调浏览流程（成员 1）
-- [ ] 阶段五·任务四：配合成员 5 联调 AI 和测试（成员 1）
-- [ ] 阶段五·任务五：整理后端交付说明 `Backend_Setup.md`（成员 1）
+- [x] 阶段五·任务三：配合成员 3 联调浏览流程（成员 1，2026-05-16）
+- [x] 阶段五·任务四：配合成员 5 联调 AI 和测试（成员 1，2026-05-16）
+- [x] 阶段五·任务五：整理后端交付说明 `Backend_Setup.md`（成员 1，2026-05-16）
 
 ### V1.4 收藏详情与基础管理
 - [ ] 待开发
@@ -269,3 +271,7 @@ GENAI_Group/
 2026-05-15（成员 A / 成员 1，阶段四·任务三+四）：实现用户主页统计接口和 AI 使用日志表。**任务三**：创建 users 接口完整分层架构——`users.repository.js`（findById 查用户存在性 + getStats 聚合查询：收藏总数/去重分类数/最近5条/公开收藏数）、`users.service.js`（FIELD_MAP camelCase 转换 + tags JSON 解析 + 用户不存在返回 null→404）、`users.controller.js`（getStats with 非法 ID→400 + 不存在→404）、`users.routes.js`（GET /:id/stats）。在 app.js 中挂载 `/api/users`。**任务四**：在 schema.sql 中新增 `ai_usage_logs` 表（id, user_id, feature, created_at）供成员 5 后续记录 AI 功能调用。同步更新 seed.js：重置 sqlite_sequence 使每次重新 seed 后用户 ID 固定从 1 开始；捕捉实际 userId 后写入 collections 的 user_id 字段（不再硬编码）；交替设置 visibility 为 public/private（每 3 条中有 1 条公开）。14 项测试全部通过，覆盖：统计字段完整性/camelCase 转换/tags 数组/不存在 404/非法 ID 400/迁移兼容性。
 
 2026-05-15（成员 A / 成员 1，阶段五·任务一+二）：冻结 API Contract 和配合成员 2 联调创建流程。**任务一**：创建 `API_Contract.md` 正式冻结文档，覆盖全部 10 个 API 端点、14 个收藏字段（含 Phase 4 扩展）、图片接口规格、categories/users 字段、AI 可写入字段清单、5 个查询参数（page/pageSize/keyword/category/tag/sort）、7 种错误码、命名约定（API camelCase / DB snake_case）、以及各端点的联调负责人映射。**任务二**：增强 `validate.middleware.js`——在 VALIDATION_ERROR 响应中新增 `fields` 对象（字段名→错误消息映射），方便成员 2 表单直接高亮对应输入框（向后兼容，不破坏现有解析）。修复 createSchema 中 title 字段的 `required_error` 提示，确保字段缺失时返回 "title is required" 而非通用的 "Required"。32 项成员 2 流程测试全部通过，覆盖：创建（全字段+最小字段）、表单校验（缺字段/空值/类型错误/fields 对象）、图片上传（无文件/invalid ID 下的 NO_FILE 优先）、编辑（部分更新/null 清空/updatedAt 刷新/不存在 404）、删除图片（无图片/不存在）、搜索+分类+统计一致性回归。
+
+2026-05-16（成员 A / 成员 1，阶段五·任务三）：配合成员 3 联调浏览流程。从成员 3 五大场景出发进行审查和验证：(1) 列表分页——默认 page=1/pageSize=20，支持 page+pageSize 任意组合，越界页面返回空数组 + 正确 total；(2) 关键词搜索——覆盖 title/story/location/tags 四个字段 LIKE 匹配；(3) 分类筛选——精确匹配 category slug，可与 keyword 组合；(4) 标签筛选——V1 LIKE 子串匹配，支持 keyword+category+tag 三组合；(5) 详情页数据完整性——14 字段全部返回，tags 确保为数组格式。**发现并修复 bug**：`collections.service.js` 和 `users.service.js` 的 `toCamelCase()` 函数中，当数据库 tags 字段为 null 时（创建时不传 tags 导致），`typeof null === 'object'` 跳过了 JSON.parse 逻辑，导致 API 返回 `tags: null` 而非 `tags: []`。成员 3 前端渲染标签组件时会因 null 报错。修复方案：在 JSON.parse 分支后追加 `if (!Array.isArray(result.tags)) { result.tags = []; }` 兜底。53 项成员 3 流程测试全部通过。
+
+2026-05-16（成员 A / 成员 1，阶段五·任务四+五）：配合成员 5 联调 AI 和测试 + 后端交付说明。**任务四**：从成员 5 四大验证点出发进行全面联调验证：(1) AI 输出能否保存进收藏——测试了 AI 全字段创建（title/category/tags/story/location/dateAcquired/customFields/categoryTemplate）、AI 部分更新、AI 字段 null 清空、tags=[] 空数组、不传 tags 默认空数组、长故事/20 标签/Emoji/特殊字符/复杂 JSON customFields 等边缘场景，全部通过；(2) AI 失败时是否影响主流程——确认收藏 CRUD API 无任何 AI 依赖，纯手动创建/仅标题创建均可正常完成，AI 服务故障完全不影响用户手动保存；(3) 测试用例稳定运行——`ai_usage_logs` 表可正常读写（4 个字段 id/user_id/feature/created_at），categories API 提供完整的英文 slug↔中文名称映射表（8 个分类全部验证），user stats 接口返回字段完整（含 14 个 collection camelCase 字段）；(4) Bug 复现和修复——前期 tags null 修复在 AI 集成场景下验证通过。66 项 AI 集成测试全部通过。**关键发现**：成员 5 的 AI 模块（`ai.schemas.js`）使用的 `COLLECTION_CATEGORIES` 为中文名称（矿石/水晶/黑胶唱片/明信片/票根/旅行纪念品/其他），但 collections 表的 `category` 字段存储的是英文 slug（mineral/crystal/vinyl/postcard/ticket/souvenir/stamp/other）。AI 输出写入前需做名称→slug 转换。`GET /api/categories` 已提供 id↔name 完整映射，成员 5 可直接调用。**任务五**：创建 `Backend_Setup.md`——覆盖环境要求（Node.js 18+）、快速启动三步骤（npm install → npm run seed → npm run dev）、完整项目目录结构及分层调用关系、11 个 API 端点速查表（含查询参数默认值和响应格式）、4 张数据库表字段说明、命名约定（DB snake_case/API camelCase/分类英文 slug）、各成员常用 curl 场景（成员 2 创建上传、成员 3 搜索筛选、成员 5 AI 写入和统计）、7 个常见问题排查（端口占用/数据库重置/500 错误/图片上传失败/CORS/错误码速查）、技术说明（sql.js 持久化/Schema 迁移兼容性/AI 可写入字段清单）。**阶段五全部 5 个任务已完成。成员 1 的后端开发（阶段一～阶段五共 21 个任务）已全部交付。**

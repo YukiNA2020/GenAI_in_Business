@@ -24,6 +24,9 @@ function toCamelCase(dbRow) {
       result.tags = [];
     }
   }
+  if (!Array.isArray(result.tags)) {
+    result.tags = [];
+  }
   return result;
 }
 

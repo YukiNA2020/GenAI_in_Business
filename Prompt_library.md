@@ -20,6 +20,45 @@
 
 # Prompt 记录库
 
+## 2026-05-16 对话记录 15
+
+- **负责人**：成员 A / 成员 1，由该成员的 AI 工具协助更新
+- **用户要求**：以成员A / 成员1的身份，完成阶段五·任务四（配合成员 5 联调 AI 和测试）和任务五（整理后端交付说明），然后将结果交给用户进行测试。
+- **AI 行动**：
+  - **任务四**：从成员 5 的四大验证点进行全链路 AI 集成验证：
+    1. AI 输出能否保存进收藏——测试了 14 个 AI 可写入字段的创建/更新/清空、tags 空数组/不传 tags 兜底、长故事(50×重复)/20个标签/Emoji/特殊字符/复杂嵌套 JSON customFields 等全部边缘场景。
+    2. AI 失败时是否影响主流程——确认后端无任何 AI 服务依赖，收藏 CRUD 完全独立运行。
+    3. 测试用例稳定运行——验证 `ai_usage_logs` 表读写正常、categories API 提供完整 slug↔name 映射、user stats 接口返回全部 camelCase 字段。
+    4. Bug 复现和修复——前期 tags null 修复在 AI 集成场景下再次验证通过。
+    - 66 项 AI 集成测试全部通过。
+  - **任务五**：创建 `Backend_Setup.md`——覆盖环境要求、快速启动三步骤、完整项目目录结构及分层调用关系图、11 个 API 端点速查表（含查询参数默认值）、4 张数据库表完整字段说明、命名约定（DB snake_case/API camelCase/分类英文 slug）、成员 2/3/5 常用 curl 命令场景、7 个常见问题排查方案、sql.js 技术说明和 Schema 迁移兼容性说明。
+  - 更新 `Status.md` 和 `Prompt_library.md`。
+- **重要内容**：
+  - **关键集成发现——分类名称 vs slug 映射**：成员 5 的 AI 模块（`ai.schemas.js`）中 `COLLECTION_CATEGORIES` 使用的是中文名称（矿石/水晶/黑胶唱片/明信片/票根/旅行纪念品/其他），但 collections 表的 `category` 字段存储的是英文 slug（mineral/crystal/vinyl/postcard/ticket/souvenir/stamp/other）。成员 5 的 AI 输出在写入 collections 之前需要做名称→slug 转换。`GET /api/categories` 接口已提供完整的 id(slug)↔name(中文名) 映射表（8 个分类全部验证通过），成员 5 可直接调用该接口获取映射。
+  - **AI 字段全部就绪**：API_Contract.md 中列出的 7 个 AI 可写入字段（title/category/tags/story/location/dateAcquired/customFields）在后端已全部支持，创建和更新接口均接受这些字段，且所有字段均为 optional——AI 生成其中任意几个字段即可写入，不影响其他字段。
+  - **后端交付文档就绪**：`Backend_Setup.md` 已覆盖从环境准备、快速启动、API 速查、数据库结构到常见排错的全流程。成员 2、3、5 可据此独立启动后端并开始联调；成员 6 可据此撰写报告中的后端部分。
+  - **阶段五全部完成**：阶段五的 5 个任务（API Contract 冻结、成员 2 联调、成员 3 联调、成员 5 联调、后端交付说明）全部完成。成员 1 的后端核心开发（阶段一～阶段五共 21 个任务）已全部交付。
+  - **供成员 6 参考**：成员 1 的汇报重点——数据库设计（4 表/snake_case）、核心 API（11 端点/CRUD/搜索/筛选/分页/图片上传）、Mock 数据（1 用户+8 分类+15 收藏）、统一错误处理（7 种错误码/fields 逐字段提示）、AI 集成支持（7 个可写入字段/ai_usage_logs 表/categories 映射）。
+
+## 2026-05-16 对话记录 14
+
+- **负责人**：成员 A / 成员 1，由该成员的 AI 工具协助更新
+- **用户要求**：以成员A / 成员1的身份，完成阶段五·任务三（配合成员 3 联调浏览流程），然后将结果交给用户进行测试。
+- **AI 行动**：
+  - 从成员 3 五大场景出发全面审查了列表/详情接口：
+    1. 列表分页：验证默认参数、自定义 pageSize、越界页面空返回、page=0 边界
+    2. 关键词搜索：验证 title/story/location/tags 四个字段搜索，含中文和英文
+    3. 分类筛选：验证精确匹配、不存在的分类空返回、与 keyword 组合
+    4. 标签筛选：验证 LIKE 子串匹配、空结果、与 category+keyword 三组合
+    5. 详情页数据完整性：验证 14 字段全部存在、tags 数组、不存在 404、非法 ID 400
+  - **发现并修复了一个 bug**：`collections.service.js` 和 `users.service.js` 的 `toCamelCase()` 中，数据库 tags 为 null 时（`typeof null === 'object'`），JSON.parse 分支被跳过，API 返回 `tags: null` 而非 `tags: []`。成员 3 前端渲染标签列表时会因 `null` 报错。修复：在 JSON.parse 分支后追加 `if (!Array.isArray(result.tags)) { result.tags = []; }` 兜底，确保 tags 始终返回数组。
+  - 53 项测试全部通过。
+  - 更新 `Status.md` 和 `Prompt_library.md`。
+- **重要内容**：
+  - **tags null 兜底修复**：`typeof null === 'object'` 是 JavaScript 经典陷阱。本次修复在所有 `toCamelCase()` 函数中增加了 `!Array.isArray` 兜底，无论数据库存的是什么（null/undefined/非字符串非数组），API 始终返回 `[]`。这保证了成员 3 前端 `.map()` / `ListView` 等组件不会因 null 崩溃。
+  - **成员 3 的接口就绪状态**：列表接口（分页+搜索+筛选+排序）和详情接口已完全满足收藏墙卡片流、详情页、搜索框、分类/标签筛选栏的需求。卡片渲染所需字段（id/title/imageUrl/category/tags）在列表响应中全部存在。空结果时返回 `{ items: [], total: 0 }` 统一结构，方便前端判断空状态。
+  - **阶段五进度**：任务一+二+三已完成。剩余任务四（配合成员 5 联调 AI 和测试）和任务五（整理后端交付说明）。
+
 ## 2026-05-15 对话记录 13
 
 - **负责人**：成员 A / 成员 1，由该成员的 AI 工具协助更新
