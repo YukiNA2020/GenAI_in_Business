@@ -21,8 +21,8 @@
 |---|---|
 | 当前负责人 | 成员 E / 成员 5 |
 | 当前工作区 | `member_E/` |
-| 当前阶段 | 阶段一：V1.1 AI Prompt 模板和接口方案 |
-| 当前阶段开发状态 | 已完成 |
+| 当前阶段 | 阶段二：V1.2 AI 接口开发（任务 1–4 已完成，任务 5 待联调） |
+| 当前阶段开发状态 | 阶段二·任务 1–4 已完成 |
 | 当前阶段测试状态 | 待独立测试 AI 验证 |
 | 最近更新时间 | 2026-05-21 |
 
@@ -37,7 +37,14 @@
 | 阶段一 | 任务 3：设计标签推荐 Prompt | 已完成 | 见 `docs/prompts/prompt_tags.md` |
 | 阶段一 | 任务 4：设计故事生成 Prompt | 已完成 | 见 `docs/prompts/prompt_story.md` |
 | 阶段一 | 任务 5：确定 AI API Contract | 已完成 | 见 `docs/AI_API_Contract.md` |
+| 阶段一 | 阶段一整体验收 | 开发侧已通过 | 四类 Prompt + Contract + 成员 B 接入说明 |
 | 阶段一 | 独立测试 AI 验证 | 待测试 | 测试结果应先写入 `E_Test_Log.md`，阶段结束后同步根目录 `Test.md` |
+| 阶段二 | 任务 1：实现 AI Provider 封装 | 已完成 | `ai.provider.js` + `verify_phase2_task1_provider.js`（11/11） |
+| 阶段二 | 任务 2：标题建议接口 | 已完成 | POST /api/ai/suggest-title |
+| 阶段二 | 任务 3：分类/标签接口 | 已完成 | suggest-category、suggest-tags |
+| 阶段二 | 任务 4：故事生成接口 | 已完成 | POST /api/ai/generate-story |
+| 阶段二 | 任务 5：AI 面板预交付 | 已完成（成员 E 代写） | `member_B/` + `collection_form/` + Add 页挂钩 |
+| 阶段二 | 任务 2–4 自检 | 14/14 通过 | `verify_phase2_tasks2_4_api.js` |
 
 ---
 
@@ -59,6 +66,10 @@
 | `docs/Phase_1_Completion_Report.md` | 阶段一完成说明 | 已完成 |
 | `backend/src/ai/ai.prompts.js` | Prompt builder | 已完成 |
 | `backend/src/ai/ai.schemas.js` | Schema 和校验函数 | 已完成 |
+| `backend/src/ai/ai.provider.js` | AI Provider 封装 | 已完成（11/11 自检） |
+| `docs/AI_Provider_Setup.md` | Provider 配置说明 | 已完成 |
+| `scripts/verify_phase2_task1_provider.js` | 阶段二·任务一自检 | 已完成 |
+| `.env.example` | AI 环境变量示例 | 已完成 |
 
 ---
 

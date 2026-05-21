@@ -8,11 +8,15 @@ import '../providers/collection_list_provider.dart';
 import '../providers/member3_ui_settings_provider.dart';
 import '../services/collection_query_service.dart';
 import '../widgets/collectory_handoff_header.dart';
+import '../../collection_form/models/ai_form_payload.dart';
+import '../../collection_form/utils/ai_category_mapping.dart';
+import '../../collection_form/widgets/ai_suggestion_panel.dart';
 import '../widgets/design/collectory_favorite_tags.dart';
 import '../widgets/design/collectory_pill_toggle.dart';
 import '../widgets/design/exhibit_illustrations.dart';
 
 /// Figma Collectory - Add New Exhibit — 单屏无滚动
+/// AI 建议面板挂钩：成员 E / 成员 5（阶段二·任务五），供成员 B 后续迁入正式 Create 页
 class AddExhibitDesignPage extends ConsumerStatefulWidget {
   const AddExhibitDesignPage({super.key});
 
@@ -288,6 +292,32 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                   hint: 'Why is this object meaningful?',
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            AiSuggestionPanel(
+              buildPayload: () {
+                final slug =
+                    CollectoryFavoriteTags.categorySlugForTag(_activeTag);
+                return AiFormPayload(
+                  description: _storyController.text,
+                  title: _titleController.text.trim().isEmpty
+                      ? null
+                      : _titleController.text.trim(),
+                  category: slug == null
+                      ? null
+                      : apiSlugToChineseCategory[slug],
+                );
+              },
+              onTitleSelected: (title) {
+                _titleController.text = title;
+              },
+              onCategoryTagSelected: (tag) {
+                setState(() => _activeTag = tag);
+              },
+              onTagsSuggested: (_) {},
+              onStoryApplied: (story) {
+                _storyController.text = story;
+              },
             ),
             const Spacer(flex: 2),
             Text('TAGS', style: CollectoryHandoffHeader.metaLabel()),

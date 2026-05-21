@@ -29,7 +29,27 @@
 
 ---
 
-## 2026-05-21 成员 E 局部记录
+## 2026-05-21 成员 E 局部记录（阶段二·任务 2–4）
+
+- 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- 用户要求：完成阶段二任务 2–4 四个 AI HTTP 接口。
+- AI 行动：`ai.service.js`、`ai.routes.js`；根目录 `backend/src/routes/ai.routes.js` + `app.js` 挂载；自检 14/14。
+- 重要决策：校验错误统一 `AI_VALIDATION_ERROR`；业务代码留在 `member_E/backend/src/ai/`。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
+## 2026-05-21 成员 E 局部记录（阶段二·任务一）
+
+- 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- 用户要求：验收阶段一后完成阶段二·任务一 AI Provider 封装。
+- AI 行动：新增 `ai.provider.js`、`AI_Provider_Setup.md`、`.env.example`、`verify_phase2_task1_provider.js`；同步根目录状态文档。
+- 重要决策：Provider 留在 `member_E/backend/src/ai/`，不修改根目录 `backend/`；使用 Node 18+ 原生 `fetch`，不新增 npm 依赖。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
+## 2026-05-21 成员 E 局部记录（阶段一·任务一）
 
 - 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
 - 用户要求：仅完成阶段一·任务一（标题生成 Prompt），并更新根目录 `Status.md`、`Prompt_library.md`。

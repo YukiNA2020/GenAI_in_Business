@@ -17,8 +17,8 @@
 
 # Collection Journey App - 测试记录
 
-> 上次更新：2026-05-19
-> 最近更新负责人：成员 C / 成员 3，由该成员的测试 AI 协助更新（**阶段五 V3.1 修复复测**：公开浏览和展示扩展）
+> 上次更新：2026-05-21
+> 最近更新负责人：成员 E / 成员 5，由该成员的测试 AI 协助更新（**阶段一全阶段** + **阶段二·任务一** AI Provider 独立测试）
 
 ---
 
@@ -64,10 +64,78 @@
 | 成员 3 - design-export PNG | ✅ 通过 | **8/8 文件** | 2026-05-17 三轮 | `design-export/png export/Collectory Museum Home UI/` 下 7 屏 Mobile + Layer Motion |
 | 成员 3 - Flutter 编译与单测 | ✅ 通过 | analyze **0 error**（25 info）；test 1/1；build web OK | 2026-05-17 三轮 | `build/web` 含 **13** 个 PNG 资源（含设计稿与图标） |
 | 成员 3 - Flutter UI 手测 | ⏭️ 未自动执行 | — | 2026-05-17 三轮 | 建议 `flutter run -d chrome` 按 `Browse_Flow_Test_Notes.md` 走 15 步 |
+| **成员 E - 阶段一（AI Prompt + API Contract）** | ✅ 通过 | **36/36**（脚本 15 + 扩展 21） | **2026-05-21 专项** | 四类 Prompt 文档 + Contract + `ai.prompts.js` / `ai.schemas.js`；**无** HTTP 路由（属阶段二任务 2–4，本阶段不要求） |
+| **成员 E - 阶段二·任务一（AI Provider 封装）** | ✅ 通过 | **11/11** | **2026-05-21 专项** | `ai.provider.js` mock/openai/超时/错误码；未测真实 OpenAI 计费调用 |
 
 ---
 
 ## 测试用例
+
+### 成员 E - 阶段一：V1.1 AI Prompt 模板和接口方案（2026-05-21 专项）
+
+> **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新  
+> **依据**：`member_E/Member_5_AI_Profile_Test_Detail_Plan.md` 第四节（阶段一）及阶段一验收标准（§201-205）  
+> **不测范围**：阶段二 HTTP 路由、根目录 `backend/` 挂载、成员 1/2/3/4/6 主责模块、真实 OpenAI 在线调用
+
+| 用例编号 | 功能 | 测试状态 | 执行时间 | 结果 | 备注 |
+|----------|------|----------|----------|------|------|
+| **任务 1：标题生成 Prompt** |
+| TC-ME-P1-01 | `prompt_title.md` 存在且含输入/模板/JSON 格式 | ✅ 通过 | 2026-05-21 | 静态审查 | - |
+| TC-ME-P1-02 | `buildTitlePrompt()` 注入字段并约束 3 标题 / 20 字 | ✅ 通过 | 2026-05-21 | `verify_phase1_task1_title.js` | - |
+| TC-ME-P1-03 | `validateTitleResponse()` 校验 3 条非空标题 | ✅ 通过 | 2026-05-21 | 脚本 15/15 | - |
+| TC-ME-P1-04 | `hasRequiredDescription()` 供阶段二复用 | ✅ 通过 | 2026-05-21 | 空/缺 description 拒绝 | - |
+| **任务 2：分类建议 Prompt** |
+| TC-ME-P1-05 | `prompt_category.md` 存在 | ✅ 通过 | 2026-05-21 | 含 7 类固定列表 | - |
+| TC-ME-P1-06 | `buildCategoryPrompt()` + `COLLECTION_CATEGORIES` 一致 | ✅ 通过 | 2026-05-21 | 扩展自检 | - |
+| TC-ME-P1-07 | `validateCategoryResponse()` 拒绝列表外类别 | ✅ 通过 | 2026-05-21 | 如「邮票」→ false | 成员 1 DB 另有 stamp slug，阶段二写入需映射 |
+| **任务 3：标签推荐 Prompt** |
+| TC-ME-P1-08 | `prompt_tags.md` 存在 | ✅ 通过 | 2026-05-21 | 要求 3–8 标签 | - |
+| TC-ME-P1-09 | `buildTagsPrompt()` 含数量与去重规则 | ✅ 通过 | 2026-05-21 | 扩展自检 | - |
+| TC-ME-P1-10 | `validateTagsResponse()` 3–8 条且不重复 | ✅ 通过 | 2026-05-21 | 重复标签拒绝 | - |
+| **任务 4：故事生成 Prompt** |
+| TC-ME-P1-11 | `prompt_story.md` 存在 | ✅ 通过 | 2026-05-21 | 文档要求 100–150 字 | - |
+| TC-ME-P1-12 | `buildStoryPrompt()` 含字数与禁止编造规则 | ✅ 通过 | 2026-05-21 | 扩展自检 | - |
+| TC-ME-P1-13 | `validateStoryResponse()` 非空故事 | ✅ 通过 | 2026-05-21 | ⚠️ 代码未强制 100–150 字，仅 Prompt 文档约束 | 不阻塞阶段一 |
+| **任务 5：AI API Contract** |
+| TC-ME-P1-14 | `AI_API_Contract.md` 四个端点路径齐全 | ✅ 通过 | 2026-05-21 | suggest-title/category/tags + generate-story | - |
+| TC-ME-P1-15 | 通用请求字段 + `description` 必填 | ✅ 通过 | 2026-05-21 | §2 表格 | - |
+| TC-ME-P1-16 | 成功响应 `{ success, data }` 示例 | ✅ 通过 | 2026-05-21 | 与成员 1 统一格式对齐 | - |
+| TC-ME-P1-17 | 错误码 AI_VALIDATION / PROVIDER / INVALID | ✅ 通过 | 2026-05-21 | §4 + `ai.schemas.js` | - |
+| TC-ME-P1-18 | loading 与「AI 失败不阻塞保存」说明 | ✅ 通过 | 2026-05-21 | §5–§6 | - |
+| **额外交付与边界** |
+| TC-ME-P1-19 | `ai.prompts.js` / `ai.schemas.js` 语法可解析 | ✅ 通过 | 2026-05-21 | `node --check` 通过 | 位于 `member_E/backend/src/ai/` |
+| TC-ME-P1-20 | 根目录 `backend/` **未**被成员 E 修改 | ✅ 通过 | 2026-05-21 | `grep /api/ai` 无匹配 | 符合职责边界 |
+| TC-ME-P1-21 | `POST /api/ai/*` HTTP 路由 | ⏭️ 不在范围 | 2026-05-21 | 无 `ai.routes.js` | 阶段二任务 2–4，本阶段不判失败 |
+| **阶段一验收标准（§201-205）** |
+| TC-ME-P1-22 | 四类基础 Prompt 有文档 | ✅ 通过 | 2026-05-21 | 4/4 md 文件 | - |
+| TC-ME-P1-23 | AI 输入输出格式固定 | ✅ 通过 | 2026-05-21 | Contract + 校验函数 | - |
+| TC-ME-P1-24 | 成员 2 可据此做 AI 建议面板 | ✅ 通过 | 2026-05-21 | Contract §6 联调表 | 待阶段二路由上线后端到端联调 |
+
+**阶段一专项统计**：✅ 通过 23 · ⚠️ 偏差 1（故事字数仅文档约束） · ⏭️ 跳过 1（HTTP 路由） · 自动化 **36/36**
+
+### 成员 E - 阶段二·任务一：AI Provider 封装（2026-05-21 专项）
+
+> **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新  
+> **依据**：`member_E/Member_5_AI_Profile_Test_Detail_Plan.md` 第五节·任务 1（§215-229）  
+> **不测范围**：阶段二任务 2–5（Express 路由）、成员 2 表单联调、真实 OpenAI 计费 API（无 Key 时以 mock 为准）
+
+| 用例编号 | 功能 | 测试状态 | 执行时间 | 结果 | 备注 |
+|----------|------|----------|----------|------|------|
+| TC-ME-P2T1-01 | `ai.provider.js` 导出 `generateJson` | ✅ 通过 | 2026-05-21 | 静态审查 | - |
+| TC-ME-P2T1-02 | 读取 `OPENAI_API_KEY` / `AI_API_KEY` | ✅ 通过 | 2026-05-21 | `getConfig()` | `.env.example` 已提供 |
+| TC-ME-P2T1-03 | `AI_PROVIDER` auto / openai / mock 三模式 | ✅ 通过 | 2026-05-21 | 脚本验证 | - |
+| TC-ME-P2T1-04 | `AbortController` + `AI_TIMEOUT_MS` 超时 | ✅ 通过 | 2026-05-21 | 代码审查 | 默认 15000ms |
+| TC-ME-P2T1-05 | OpenAI Chat + `response_format: json_object` | ✅ 通过 | 2026-05-21 | `callOpenAIChat` | 未执行真实网络调用 |
+| TC-ME-P2T1-06 | mock 模式四类 JSON 可通过校验 | ✅ 通过 | 2026-05-21 | title/category/tags/story | `verify_phase2_task1_provider.js` 11/11 |
+| TC-ME-P2T1-07 | `parseModelJson` 解析 Markdown 围栏 JSON | ✅ 通过 | 2026-05-21 | 脚本验证 | - |
+| TC-ME-P2T1-08 | 校验失败 → `AI_INVALID_RESPONSE` | ✅ 通过 | 2026-05-21 | `AiProviderError` | - |
+| TC-ME-P2T1-09 | openai 无 Key → `AI_PROVIDER_UNAVAILABLE` | ✅ 通过 | 2026-05-21 | 脚本验证 | - |
+| TC-ME-P2T1-10 | `AI_Provider_Setup.md` 配置说明 | ✅ 通过 | 2026-05-21 | 含自检命令 | - |
+| TC-ME-P2T1-11 | 根目录 `backend/` 未挂载 Provider | ✅ 通过 | 2026-05-21 | 仅 `member_E/` 内交付 | 合并前需与成员 A 确认 |
+
+**阶段二·任务一专项统计**：✅ 通过 **11/11**（脚本）+ 静态审查 11 项
+
+---
 
 ### 成员 3 - 阶段一 V1.1：收藏墙基础页面和卡片组件（2026-05-19 专项）
 
@@ -796,6 +864,34 @@
 | 成员 1 阶段四·任务四 测试报告 | 2026-05-15 | AI 使用日志表 ai_usage_logs（id/user_id/feature/created_at） | ✅ 全部通过 (12/12) | 见下方详细说明 |
 | 成员 1 阶段五·任务一 测试报告 | 2026-05-15 | 冻结 API Contract（API_Contract.md：10 章节+14 字段+7 错误码+11 端点） | ✅ 全部通过 (24/24) | 见下方详细说明 |
 | 成员 1 阶段五·任务二 测试报告 | 2026-05-15 | 配合成员 2 联调创建流程（创建/上传/编辑/删除/表单错误 5 流程 32 项） | ✅ 全部通过 (39/39) | 见下方详细说明 |
+| **成员 E 阶段一 测试报告** | **2026-05-21** | V1.1 四类 Prompt 文档 + `AI_API_Contract.md` + `ai.prompts.js` / `ai.schemas.js` | **✅ 全部通过 (36/36 自动化)** | 见下方详细说明；HTTP 路由不在本阶段范围 |
+| **成员 E 阶段二·任务一 测试报告** | **2026-05-21** | AI Provider（`generateJson`、mock/openai、超时、错误映射、JSON 解析） | **✅ 全部通过 (11/11)** | 见下方详细说明；未执行真实 OpenAI 计费请求 |
+
+### 成员 E 阶段一 测试报告详情
+
+- **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新
+- **测试范围**：仅限成员 E 阶段一（任务 1–5：Prompt 模板 + AI API Contract + 辅助 JS），不扩大到阶段二 HTTP 接口或其他成员模块
+- **测试方法**：
+  1. 静态审查 `member_E/docs/prompts/*.md` 与 `member_E/docs/AI_API_Contract.md`
+  2. `node --check` 校验 `ai.prompts.js`、`ai.schemas.js`
+  3. `node member_E/scripts/verify_phase1_task1_title.js`（15/15）
+  4. Node 扩展自检：分类/标签/故事 builder 与校验函数（21/21）
+  5. 确认根目录 `backend/` 无 `/api/ai` 路由（符合阶段一边界）
+- **测试结论**：**阶段一验收通过。** 成员 2 可依据 `AI_API_Contract.md` 设计 AI 建议面板；真实 `POST /api/ai/*` 需待阶段二任务 2–4 完成后再做端到端联调。
+- **已知偏差（不阻塞）**：
+  1. `validateStoryResponse()` 仅校验非空，未在代码层强制 100–150 字（Prompt 文档已约束）。
+  2. AI 分类为中文 7 类，成员 1 收藏 `category` 存英文 slug，阶段二写入前需名称→slug 映射（`Status.md` 已记录）。
+
+### 成员 E 阶段二·任务一 测试报告详情
+
+- **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新
+- **测试范围**：仅限 `member_E/backend/src/ai/ai.provider.js` 及 `verify_phase2_task1_provider.js`，不含 Express 路由与成员 2 联调
+- **测试方法**：
+  1. 代码审查：`generateJson`、`getConfig`、`resolveProviderMode`、`callOpenAIChat`、`parseModelJson`
+  2. `node member_E/scripts/verify_phase2_task1_provider.js`（11/11，默认 mock，无 API Key）
+  3. 确认 `member_E/docs/AI_Provider_Setup.md`、`.env.example` 存在
+- **测试结论**：**阶段二·任务一通过。** Provider 封装满足文档要求（读 Key、调模型、超时、错误码、结构化 JSON）。任务 2–4 可在此基础上实现 `POST /api/ai/suggest-title` 等路由。
+- **未测项**：配置真实 `OPENAI_API_KEY` 后的在线调用与计费；建议成员 E 本机可选执行 `AI_Provider_Setup.md` §3 第二条命令做一次冒烟。
 
 ### 成员 1 阶段一·任务一 测试报告详情
 
@@ -2239,3 +2335,9 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 ## 成员 3 Flutter 补测报告（2026-05-17）— 已过时
 
 > **说明**：本节为 Flutter 安装后**首轮**补测记录（当时 analyze 失败、误报 PNG 缺失）。**请以「第三轮独立测试报告」为准**；BUG-M3-005/001/002 已修复，当前 `flutter analyze` 0 error、`build web` 成功、本机 8 PNG 齐全。
+
+---
+
+## 测试更新日志
+
+- **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段一全阶段**独立测试（自动化 36/36，用例表 TC-ME-P1-01～24）；完成**阶段二·任务一** AI Provider 测试（11/11，TC-ME-P2T1-01～11）。结论：两项均 **✅ 通过**。未测真实 OpenAI 在线调用；`POST /api/ai/*` 路由留待阶段二任务 2–4。
