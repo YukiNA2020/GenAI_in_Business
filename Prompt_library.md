@@ -20,6 +20,20 @@
 
 # Prompt 记录库
 
+## 2026-05-21 对话记录 23
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：以成员 E 身份严格完成 `Member_5_AI_Profile_Test_Detail_Plan.md` 阶段一·任务一（设计标题生成 Prompt），交付后由本人交给测试 AI 验证；不提交 GitHub、不标记测试通过；更新 `Status.md` 与 `Prompt_library.md`。
+- **AI 行动**：
+  - 确认并沿用 `member_E/docs/prompts/prompt_title.md`、`member_E/backend/src/ai/ai.prompts.js`（`buildTitlePrompt`）、`member_E/backend/src/ai/ai.schemas.js`（标题响应校验）作为任务一交付物。
+  - 在 `prompt_title.md` 新增 §6「代码复用与自检」，写明自检命令与阶段二接口对齐说明。
+  - 新增 `member_E/scripts/verify_phase1_task1_title.js`，本地自检 15/15 通过。
+  - 更新根目录 `Status.md`、本条 `Prompt_library.md`；未改 `Test.md`（无测试结论）。
+- **重要内容**：
+  - 任务一范围仅 Prompt 设计与轻量校验代码，**不包含**真实 AI Provider 或 Express 路由（阶段二）。
+  - 标题输出固定为 `{ "suggestions": [string×3] }`，每条 ≤20 中文字符；`description` 为必填输入字段。
+  - 未改动成员 A/B/C/D 模块及根目录 `backend/`。
+
 ## 2026-05-19 对话记录 22
 
 - **负责人**：成员 C / 成员 3，由该成员的 AI 工具协助更新

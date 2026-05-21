@@ -15,6 +15,8 @@ member_E/
 ├── E_Status_Log.md
 ├── E_Prompt_Log.md
 ├── E_Test_Log.md
+├── scripts/
+│   └── verify_phase1_task1_title.js
 ├── docs/
 │   ├── AI_API_Contract.md
 │   ├── Phase_1_Completion_Report.md
@@ -36,7 +38,7 @@ member_E/
 
 | 阶段一任务 | 交付物 |
 |---|---|
-| 任务 1：设计标题生成 Prompt | `docs/prompts/prompt_title.md`、`backend/src/ai/ai.prompts.js` |
+| 任务 1：设计标题生成 Prompt | `docs/prompts/prompt_title.md`、`backend/src/ai/ai.prompts.js`、`scripts/verify_phase1_task1_title.js` |
 | 任务 2：设计分类建议 Prompt | `docs/prompts/prompt_category.md`、`backend/src/ai/ai.prompts.js` |
 | 任务 3：设计标签推荐 Prompt | `docs/prompts/prompt_tags.md`、`backend/src/ai/ai.prompts.js` |
 | 任务 4：设计故事生成 Prompt | `docs/prompts/prompt_story.md`、`backend/src/ai/ai.prompts.js` |

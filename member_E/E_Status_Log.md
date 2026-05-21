@@ -24,7 +24,7 @@
 | 当前阶段 | 阶段一：V1.1 AI Prompt 模板和接口方案 |
 | 当前阶段开发状态 | 已完成 |
 | 当前阶段测试状态 | 待独立测试 AI 验证 |
-| 最近更新时间 | 2026-05-15 |
+| 最近更新时间 | 2026-05-21 |
 
 ---
 
@@ -32,7 +32,7 @@
 
 | 阶段 | 任务 | 状态 | 说明 |
 |---|---|---|---|
-| 阶段一 | 任务 1：设计标题生成 Prompt | 已完成 | 见 `docs/prompts/prompt_title.md` |
+| 阶段一 | 任务 1：设计标题生成 Prompt | 已完成（2026-05-21 补充自检） | `docs/prompts/prompt_title.md` + `scripts/verify_phase1_task1_title.js`（15/15） |
 | 阶段一 | 任务 2：设计分类建议 Prompt | 已完成 | 见 `docs/prompts/prompt_category.md` |
 | 阶段一 | 任务 3：设计标签推荐 Prompt | 已完成 | 见 `docs/prompts/prompt_tags.md` |
 | 阶段一 | 任务 4：设计故事生成 Prompt | 已完成 | 见 `docs/prompts/prompt_story.md` |
@@ -50,7 +50,8 @@
 | `E_Status_Log.md` | 成员 E 局部状态记录 | 已创建 |
 | `E_Prompt_Log.md` | 成员 E 局部 Prompt / 决策记录 | 已创建 |
 | `E_Test_Log.md` | 成员 E 局部测试记录 | 已创建 |
-| `docs/prompts/prompt_title.md` | 标题生成 Prompt | 已完成 |
+| `docs/prompts/prompt_title.md` | 标题生成 Prompt | 已完成（2026-05-21 增 §6） |
+| `scripts/verify_phase1_task1_title.js` | 任务一自检脚本 | 已完成（15/15） |
 | `docs/prompts/prompt_category.md` | 分类建议 Prompt | 已完成 |
 | `docs/prompts/prompt_tags.md` | 标签推荐 Prompt | 已完成 |
 | `docs/prompts/prompt_story.md` | 故事生成 Prompt | 已完成 |
