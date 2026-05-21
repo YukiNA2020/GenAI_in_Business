@@ -1,4 +1,11 @@
-const { COLLECTION_CATEGORIES } = require('./ai.schemas');
+const { COLLECTION_CATEGORIES, normalizeStoryStyle } = require('./ai.schemas');
+
+const STORY_STYLE_HINTS = {
+  concise: '简洁风：句子短、克制，约 100–120 字，少用比喻。',
+  scrapbook: '手账风：像写在手账边的旁注，可带「今天」「后来」等轻柔时间感。',
+  travel: '旅行日记风：突出路途、场景与遇见，地点与光线感更明显。',
+  vintage: '复古风：略带旧物与岁月感，语气舒缓，不夸张。',
+};
 
 function valueOrEmpty(value) {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '未提供';
@@ -76,7 +83,14 @@ function buildTagsPrompt(input = {}) {
 }
 
 function buildStoryPrompt(input = {}) {
+  const style = normalizeStoryStyle(input.style);
+  const styleHint = STORY_STYLE_HINTS[style] || STORY_STYLE_HINTS.concise;
+
   return `你是 Collection Journey App 的收藏故事助手。请根据用户提供的信息，生成一段 100 到 150 个中文字符左右的收藏故事草稿。
+
+写作风格（必须遵守）：
+- 风格代码：${style}
+- ${styleHint}
 
 写作规则：
 1. 语气温暖、自然，有个人记忆感。
@@ -91,10 +105,38 @@ function buildStoryPrompt(input = {}) {
 - 地点：${valueOrEmpty(input.location)}
 - 日期：${valueOrEmpty(input.dateAcquired)}
 - 描述：${valueOrEmpty(input.description)}
+- 图片描述：${valueOrEmpty(input.imageDescription)}
 
 请严格按照以下 JSON 格式输出：
 {
   "story": "生成的故事文本"
+}`;
+}
+
+function buildAnalyzeImagePrompt(input = {}) {
+  return `你是 Collection Journey App 的收藏品图片识别助手。请根据图片信息，判断这件收藏品可能属于哪一类，并给出标题、分类、标签和简短描述建议。
+
+固定类别只能是：
+${JSON.stringify(COLLECTION_CATEGORIES)}
+
+识别规则：
+1. suggestedCategory 必须严格来自固定类别列表。
+2. suggestedTags 输出 3 到 8 个中文标签，不重复。
+3. suggestedTitle 不超过 20 个中文字符，温暖、可编辑。
+4. description 用 1 到 2 句话说明「看起来像什么」，不要写成完整故事。
+5. 不要编造图片中看不到的具体事实。
+6. 只输出 JSON，不要输出 Markdown 或解释文字。
+
+图片信息：
+- 图片描述：${valueOrEmpty(input.imageDescription)}
+- 图片地址：${valueOrEmpty(input.imageUrl)}
+
+请严格按照以下 JSON 格式输出：
+{
+  "suggestedTitle": "复古展览票根",
+  "suggestedCategory": "票根",
+  "suggestedTags": ["展览", "票根", "复古"],
+  "description": "这看起来像一张展览或活动票根。"
 }`;
 }
 
@@ -103,4 +145,5 @@ module.exports = {
   buildCategoryPrompt,
   buildTagsPrompt,
   buildStoryPrompt,
+  buildAnalyzeImagePrompt,
 };

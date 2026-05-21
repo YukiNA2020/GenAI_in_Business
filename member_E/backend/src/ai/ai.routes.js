@@ -1,6 +1,6 @@
 const aiService = require('./ai.service');
 const { AiProviderError } = require('./ai.provider');
-const { AI_ERROR_CODES } = require('./ai.schemas');
+const { AI_ERROR_CODES, STORY_STYLES } = require('./ai.schemas');
 
 function statusForAiError(code) {
   if (code === AI_ERROR_CODES.validation) {
@@ -34,11 +34,33 @@ function createAiRouter({ Router, z, response }) {
       .string({ required_error: 'description is required' })
       .min(1, 'description is required'),
     imageDescription: z.string().optional(),
+    imageUrl: z.string().optional(),
     language: z.string().optional(),
+    style: z.enum(STORY_STYLES).optional(),
   };
 
   const aiBodySchema = z.object(baseBodySchema);
   const validate = validateAiBody(aiBodySchema, response);
+
+  const analyzeImageBodySchema = z
+    .object({
+      imageDescription: z.string().optional(),
+      imageUrl: z.string().optional(),
+      language: z.string().optional(),
+    })
+    .superRefine((body, ctx) => {
+      const hasDesc =
+        typeof body.imageDescription === 'string' && body.imageDescription.trim().length > 0;
+      const hasUrl = typeof body.imageUrl === 'string' && body.imageUrl.trim().length > 0;
+      if (!hasDesc && !hasUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'imageDescription or imageUrl is required',
+          path: ['imageDescription'],
+        });
+      }
+    });
+  const validateAnalyzeImage = validateAiBody(analyzeImageBodySchema, response);
 
   function wrapAi(handler) {
     return async (req, res, next) => {
@@ -81,6 +103,12 @@ function createAiRouter({ Router, z, response }) {
     '/generate-story',
     validate,
     wrapAi((body) => aiService.generateStory(body))
+  );
+
+  router.post(
+    '/analyze-image',
+    validateAnalyzeImage,
+    wrapAi((body) => aiService.analyzeImage(body))
   );
 
   return router;

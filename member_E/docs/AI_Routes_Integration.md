@@ -11,9 +11,10 @@
 | POST | `/api/ai/suggest-title` | 3 个标题建议 |
 | POST | `/api/ai/suggest-category` | 分类 + confidence |
 | POST | `/api/ai/suggest-tags` | 3–8 个标签 |
-| POST | `/api/ai/generate-story` | 故事草稿 |
+| POST | `/api/ai/generate-story` | 故事草稿（可选 `style`） |
+| POST | `/api/ai/analyze-image` | 图片识别建议（阶段四） |
 
-请求体字段见 `AI_API_Contract.md` §2；**`description` 必填**。
+请求体字段见 `AI_API_Contract.md` §2、§7；文字类接口 **`description` 必填**；图片识别需 **`imageDescription` 或 `imageUrl`**。
 
 ---
 
@@ -42,6 +43,18 @@ AI_PROVIDER=mock npm run dev
 curl -s -X POST http://localhost:3000/api/ai/suggest-title \
   -H "Content-Type: application/json" \
   -d '{"category":"明信片","location":"东京","description":"在小书店买的蓝色明信片"}'
+```
+
+---
+
+```bash
+curl -s -X POST http://localhost:3000/api/ai/analyze-image \
+  -H "Content-Type: application/json" \
+  -d '{"imageDescription":"一张泛黄的展览票根"}'
+
+curl -s -X POST http://localhost:3000/api/ai/generate-story \
+  -H "Content-Type: application/json" \
+  -d '{"description":"在小书店买的蓝色明信片","style":"travel"}'
 ```
 
 ---

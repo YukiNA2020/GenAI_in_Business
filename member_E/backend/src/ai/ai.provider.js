@@ -50,20 +50,78 @@ function inferMockKind(prompt, explicitKind) {
   if (prompt.includes('收藏故事助手')) {
     return 'story';
   }
+  if (prompt.includes('图片识别助手')) {
+    return 'analyzeImage';
+  }
   return 'title';
 }
 
-function getMockPayload(kind) {
+function getMockStoryByStyle(style) {
+  const stories = {
+    concise:
+      '这件收藏被留下来，是因为它连接着某段不想忘记的时间。不必说太多，只要看见它，就能想起当时的安静与满足。',
+    scrapbook:
+      '今天把它收进本子边——不算贵重，却刚好装下那天的温度。后来翻到这里，仍会觉得心里轻轻顿了一下。',
+    travel:
+      '路途上遇见它时，街道、光线和脚步都挤在同一张照片里。带回家后，它像一小段未完的旅程，提醒我曾经到过那里。',
+    vintage:
+      '岁月在上面留下浅浅的痕迹，像旧物自有自己的呼吸。保存它，是为了让某段缓慢而温柔的时间继续留在手边。',
+  };
+  return stories[style] || stories.concise;
+}
+
+function getMockAnalyzeImagePayload(prompt) {
+  const text = typeof prompt === 'string' ? prompt : '';
+  if (text.includes('票根') || text.includes('ticket')) {
+    return {
+      suggestedTitle: '复古展览票根',
+      suggestedCategory: '票根',
+      suggestedTags: ['展览', '票根', '复古'],
+      description: '这看起来像一张展览或活动票根。',
+    };
+  }
+  if (text.includes('黑胶') || text.includes('vinyl') || text.includes('唱片')) {
+    return {
+      suggestedTitle: '封面完好的黑胶',
+      suggestedCategory: '黑胶唱片',
+      suggestedTags: ['黑胶', '音乐', '收藏'],
+      description: '这看起来像一张黑胶唱片或相关封面。',
+    };
+  }
+  if (text.includes('矿石') || text.includes('mineral') || text.includes('水晶')) {
+    return {
+      suggestedTitle: '天然矿石标本',
+      suggestedCategory: '矿石',
+      suggestedTags: ['矿石', '自然', '标本'],
+      description: '这看起来像一块矿石或矿物标本。',
+    };
+  }
+  return {
+    suggestedTitle: '值得保存的小物',
+    suggestedCategory: '其他',
+    suggestedTags: ['收藏', '纪念', '日常'],
+    description: '这看起来像一件值得保存的日常收藏品。',
+  };
+}
+
+function getMockPayload(kind, prompt) {
   switch (kind) {
     case 'category':
       return { category: '明信片', confidence: 0.75 };
     case 'tags':
       return { tags: ['旅行', '明信片', '书店'] };
-    case 'story':
-      return {
-        story:
-          '这件收藏被小心保存下来，它记录着某次特别的遇见与心情。日后翻开时，仍能想起当时的光线、气味与那份想留住瞬间的念头。',
-      };
+    case 'story': {
+      let style = 'concise';
+      if (typeof prompt === 'string') {
+        const match = prompt.match(/风格代码：(\w+)/);
+        if (match) {
+          style = match[1];
+        }
+      }
+      return { story: getMockStoryByStyle(style) };
+    }
+    case 'analyzeImage':
+      return getMockAnalyzeImagePayload(prompt);
     case 'title':
     default:
       return {
@@ -189,7 +247,7 @@ async function generateJson(prompt, options = {}) {
 
   let rawText;
   if (mode === 'mock') {
-    rawText = JSON.stringify(getMockPayload(inferMockKind(prompt, mockKind)));
+    rawText = JSON.stringify(getMockPayload(inferMockKind(prompt, mockKind), prompt));
   } else if (mode === 'openai') {
     rawText = await callOpenAIChat(prompt, config);
   } else {

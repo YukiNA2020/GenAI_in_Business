@@ -20,6 +20,32 @@
 
 # Prompt 记录库
 
+## 2026-05-21 对话记录 30
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：已测试；进行阶段五任务 1–5 的开发。
+- **AI 行动**：
+  - 任务 1–3：更新 `Test.md`（测试计划、TC-ME-P5 用例、BUG-ME-001～005）。
+  - 任务 4：`verify_phase5_demo_e2e.js` 全链路 API 11/11，连续执行 2 轮；`Phase5_Demo_Checklist.md`。
+  - 任务 5：`Member6_Demo_Handoff.md`（PPT 要点、AI 样例、Demo 流程、规避说明）。
+  - 更新 Status / E_Status_Log / E_Test_Log / README。
+- **重要内容**：
+  - 阶段五以文档与自动化为主，不新增业务代码。
+  - Demo 结论：AI 失败不阻塞保存；中文 category 写入前需 slug 映射。
+
+## 2026-05-21 对话记录 29
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：进行阶段四任务 1–5 的开发。
+- **AI 行动**：
+  - 任务 1/3：新增 `prompt_image.md`、`prompt_story_styles.md`。
+  - 任务 2/4：`analyze-image` 接口、`generate-story` 扩展 `style`；更新 schemas/prompts/provider/service/routes。
+  - 任务 5：扩展 `AiSuggestionPanel` 与 Add 页 Upload→Recognize 填表联调。
+  - 自检 `verify_phase4_tasks1_5_api.js`（12/12 服务层）；更新 Status / E_Status_Log / AI_API_Contract。
+- **重要内容**：
+  - Demo 无 Vision 时用 `imageDescription` 模拟图片输入；后续可接真实 Vision。
+  - 多风格故事供成员 6 Demo 展示；默认 `concise`。
+
 ## 2026-05-21 对话记录 28
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新

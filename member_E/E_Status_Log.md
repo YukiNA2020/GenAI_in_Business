@@ -21,8 +21,8 @@
 |---|---|
 | 当前负责人 | 成员 E / 成员 5 |
 | 当前工作区 | `member_E/` |
-| 当前阶段 | 阶段三：V2.1 用户主页（任务 1–4 已完成，任务 5 待联调） |
-| 当前阶段开发状态 | 阶段三·任务 1–4 已完成 |
+| 当前阶段 | 阶段五：测试 / Bug / Demo（任务 1–5 已完成） |
+| 当前阶段开发状态 | 成员 E 计划内开发项已全部完成 |
 | 当前阶段测试状态 | 待独立测试 AI 验证 |
 | 最近更新时间 | 2026-05-21 |
 
@@ -49,6 +49,17 @@
 | 阶段三 | 任务 3：EditProfilePage | 已完成 | mock 本地保存 |
 | 阶段三 | 任务 4：登录注册占位 | 已完成 | mock `authSessionProvider` |
 | 阶段三 | 任务 5：与成员 3 联调 | 已完成 | 单页嵌入 + profile_exhibit_utils |
+| 阶段四 | 任务 1：图片识别 Prompt | 已完成 | prompt_image.md |
+| 阶段四 | 任务 2：analyze-image 接口 | 已完成 | POST /api/ai/analyze-image |
+| 阶段四 | 任务 3：多风格故事 Prompt | 已完成 | prompt_story_styles.md |
+| 阶段四 | 任务 4：generate-story + style | 已完成 | 4 种风格 |
+| 阶段四 | 任务 5：成员 2 图片识别联调 | 已完成 | Add 页 Recognize 填表 |
+| 阶段四 | 自检 | 12/12 服务层 | verify_phase4_tasks1_5_api.js |
+| 阶段五 | 任务 1：测试计划 | 已完成 | Test.md § 测试计划 |
+| 阶段五 | 任务 2：核心用例 | 已完成 | TC-ME-P5-01～15 |
+| 阶段五 | 任务 3：Bug 表 | 已完成 | BUG-ME-001～005 |
+| 阶段五 | 任务 4：Demo 测试 | 已完成 | e2e 11/11×2 |
+| 阶段五 | 任务 5：成员 6 材料 | 已完成 | Member6_Demo_Handoff.md |
 | 阶段二 | 任务 2–4 自检 | 14/14 通过 | `verify_phase2_tasks2_4_api.js` |
 
 ---

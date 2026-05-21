@@ -9,6 +9,7 @@ import '../providers/member3_ui_settings_provider.dart';
 import '../services/collection_query_service.dart';
 import '../widgets/collectory_handoff_header.dart';
 import '../../collection_form/models/ai_form_payload.dart';
+import '../../collection_form/models/ai_image_analysis.dart';
 import '../../collection_form/utils/ai_category_mapping.dart';
 import '../../collection_form/widgets/ai_suggestion_panel.dart';
 import '../widgets/design/collectory_favorite_tags.dart';
@@ -30,6 +31,9 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
   final _storyController = TextEditingController();
   String _activeTag = CollectoryFavoriteTags.labels.first;
   bool _saving = false;
+  String? _imageDescription;
+  String? _pendingAiTagsNote;
+  static const ExhibitIconKind _demoPhotoKind = ExhibitIconKind.vinyl;
 
   @override
   void dispose() {
@@ -189,7 +193,7 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
               ),
               child: Row(
                 children: [
-                  const ExhibitIcon(kind: ExhibitIconKind.vinyl, size: 56),
+                  ExhibitIcon(kind: _demoPhotoKind, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -214,10 +218,15 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                           alignment: Alignment.centerLeft,
                           child: FilledButton(
                             onPressed: () {
+                              setState(() {
+                                _imageDescription = _mockImageDescriptionForKind(
+                                  _demoPhotoKind,
+                                );
+                              });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'POST /api/collections/:id/image — Member B',
+                                    'Demo photo attached — tap Recognize in AI panel.',
                                   ),
                                 ),
                               );
@@ -295,30 +304,52 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
             ),
             const SizedBox(height: 8),
             AiSuggestionPanel(
+              hasImageForAnalysis: () =>
+                  (_imageDescription?.trim().isNotEmpty ?? false),
               buildPayload: () {
                 final slug =
                     CollectoryFavoriteTags.categorySlugForTag(_activeTag);
+                final note = _storyController.text.trim();
                 return AiFormPayload(
-                  description: _storyController.text,
+                  description: note.isEmpty
+                      ? (_imageDescription ?? '收藏品图片')
+                      : note,
                   title: _titleController.text.trim().isEmpty
                       ? null
                       : _titleController.text.trim(),
                   category: slug == null
                       ? null
                       : apiSlugToChineseCategory[slug],
+                  imageDescription: _imageDescription,
                 );
               },
+              onImageAnalysisApplied: _applyImageAnalysis,
               onTitleSelected: (title) {
                 _titleController.text = title;
               },
               onCategoryTagSelected: (tag) {
                 setState(() => _activeTag = tag);
               },
-              onTagsSuggested: (_) {},
+              onTagsSuggested: (tags) {
+                setState(() {
+                  _pendingAiTagsNote = tags.join(' · ');
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('AI tags: ${tags.join(', ')}')),
+                );
+              },
               onStoryApplied: (story) {
                 _storyController.text = story;
               },
             ),
+            if (_pendingAiTagsNote != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'AI tags: $_pendingAiTagsNote',
+                style: CollectoryHandoffHeader.bodySecondary()
+                    .copyWith(fontSize: 10),
+              ),
+            ],
             const Spacer(flex: 2),
             Text('TAGS', style: CollectoryHandoffHeader.metaLabel()),
             const SizedBox(height: 8),
@@ -358,6 +389,29 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
         ),
       ),
     );
+  }
+
+  void _applyImageAnalysis(AiImageAnalysis result) {
+    _titleController.text = result.suggestedTitle;
+    final tag = tagLabelForAiCategory(result.suggestedCategory);
+    setState(() {
+      if (tag != null) _activeTag = tag;
+      _storyController.text = result.description;
+      _pendingAiTagsNote = result.suggestedTags.join(' · ');
+      _imageDescription = result.description;
+    });
+  }
+
+  static String _mockImageDescriptionForKind(ExhibitIconKind kind) {
+    return switch (kind) {
+      ExhibitIconKind.ticket =>
+        '一张泛黄的展览票根照片，边缘略有磨损，印刷字体清晰',
+      ExhibitIconKind.vinyl =>
+        '黑胶唱片封面照片，色彩饱和，中央圆形标签可见',
+      ExhibitIconKind.mineral =>
+        '天然矿石标本特写，表面有晶体反光',
+      _ => '收藏品物件照片，光线柔和，适合识别类别',
+    };
   }
 }
 

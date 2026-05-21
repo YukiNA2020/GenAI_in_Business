@@ -8,11 +8,14 @@ const COLLECTION_CATEGORIES = [
   '其他',
 ];
 
+const STORY_STYLES = ['concise', 'scrapbook', 'travel', 'vintage'];
+
 const AI_ENDPOINTS = {
   suggestTitle: 'POST /api/ai/suggest-title',
   suggestCategory: 'POST /api/ai/suggest-category',
   suggestTags: 'POST /api/ai/suggest-tags',
   generateStory: 'POST /api/ai/generate-story',
+  analyzeImage: 'POST /api/ai/analyze-image',
 };
 
 const AI_ERROR_CODES = {
@@ -27,6 +30,24 @@ function isPlainObject(value) {
 
 function hasRequiredDescription(payload) {
   return isPlainObject(payload) && typeof payload.description === 'string' && payload.description.trim().length > 0;
+}
+
+function hasImageAnalysisInput(payload) {
+  if (!isPlainObject(payload)) {
+    return false;
+  }
+  const desc =
+    typeof payload.imageDescription === 'string' && payload.imageDescription.trim().length > 0;
+  const url = typeof payload.imageUrl === 'string' && payload.imageUrl.trim().length > 0;
+  return desc || url;
+}
+
+function normalizeStoryStyle(style) {
+  if (typeof style !== 'string') {
+    return 'concise';
+  }
+  const normalized = style.trim().toLowerCase();
+  return STORY_STYLES.includes(normalized) ? normalized : 'concise';
 }
 
 function validateTitleResponse(response) {
@@ -67,13 +88,37 @@ function validateStoryResponse(response) {
   return isPlainObject(response) && typeof response.story === 'string' && response.story.trim().length > 0;
 }
 
+function validateAnalyzeImageResponse(response) {
+  if (!isPlainObject(response)) {
+    return false;
+  }
+  const uniqueTags = new Set(response.suggestedTags);
+  return (
+    typeof response.suggestedTitle === 'string' &&
+    response.suggestedTitle.trim().length > 0 &&
+    response.suggestedTitle.length <= 20 &&
+    COLLECTION_CATEGORIES.includes(response.suggestedCategory) &&
+    Array.isArray(response.suggestedTags) &&
+    response.suggestedTags.length >= 3 &&
+    response.suggestedTags.length <= 8 &&
+    uniqueTags.size === response.suggestedTags.length &&
+    response.suggestedTags.every((item) => typeof item === 'string' && item.trim().length > 0) &&
+    typeof response.description === 'string' &&
+    response.description.trim().length > 0
+  );
+}
+
 module.exports = {
   COLLECTION_CATEGORIES,
+  STORY_STYLES,
   AI_ENDPOINTS,
   AI_ERROR_CODES,
   hasRequiredDescription,
+  hasImageAnalysisInput,
+  normalizeStoryStyle,
   validateTitleResponse,
   validateCategoryResponse,
   validateTagsResponse,
   validateStoryResponse,
+  validateAnalyzeImageResponse,
 };

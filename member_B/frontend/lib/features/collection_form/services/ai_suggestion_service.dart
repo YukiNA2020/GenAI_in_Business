@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../collection_browse/services/collection_query_service.dart';
 import '../models/ai_form_payload.dart';
+import '../models/ai_image_analysis.dart';
 
 final aiSuggestionServiceProvider = Provider<AiSuggestionService>(
   (ref) => AiSuggestionService(),
@@ -82,8 +83,42 @@ class AiSuggestionService {
     return list.map((e) => e.toString()).toList();
   }
 
-  Future<String> generateStory(AiFormPayload payload) async {
-    final data = await _post('/api/ai/generate-story', payload);
+  Future<AiImageAnalysis> analyzeImage({
+    String? imageDescription,
+    String? imageUrl,
+  }) async {
+    final body = <String, dynamic>{};
+    final desc = imageDescription?.trim();
+    final url = imageUrl?.trim();
+    if (desc != null && desc.isNotEmpty) body['imageDescription'] = desc;
+    if (url != null && url.isNotEmpty) body['imageUrl'] = url;
+
+    final data = await _postRaw('/api/ai/analyze-image', body);
+    final result = AiImageAnalysis.fromJson(data);
+    if (result.suggestedTitle.isEmpty || result.description.isEmpty) {
+      throw AiSuggestionException(
+        code: 'AI_INVALID_RESPONSE',
+        message: 'Invalid image analysis response',
+      );
+    }
+    return result;
+  }
+
+  Future<String> generateStory(
+    AiFormPayload payload, {
+    AiStoryStyle style = AiStoryStyle.concise,
+  }) async {
+    final withStyle = AiFormPayload(
+      description: payload.description,
+      title: payload.title,
+      category: payload.category,
+      location: payload.location,
+      dateAcquired: payload.dateAcquired,
+      imageDescription: payload.imageDescription,
+      imageUrl: payload.imageUrl,
+      style: style.apiValue,
+    );
+    final data = await _post('/api/ai/generate-story', withStyle);
     final story = data['story']?.toString();
     if (story == null || story.trim().isEmpty) {
       throw AiSuggestionException(
@@ -94,13 +129,17 @@ class AiSuggestionService {
     return story;
   }
 
-  Future<Map<String, dynamic>> _post(
+  Future<Map<String, dynamic>> _post(String path, AiFormPayload payload) {
+    return _postRaw(path, payload.toJson());
+  }
+
+  Future<Map<String, dynamic>> _postRaw(
     String path,
-    AiFormPayload payload,
+    Map<String, dynamic> requestBody,
   ) async {
     final response = await _dio.post<Map<String, dynamic>>(
       path,
-      data: payload.toJson(),
+      data: requestBody,
     );
     final body = response.data;
     if (body == null || body['success'] != true) {

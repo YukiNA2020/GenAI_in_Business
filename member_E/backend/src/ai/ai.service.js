@@ -3,15 +3,19 @@ const {
   buildCategoryPrompt,
   buildTagsPrompt,
   buildStoryPrompt,
+  buildAnalyzeImagePrompt,
 } = require('./ai.prompts');
 const { generateJson, AiProviderError } = require('./ai.provider');
 const {
   AI_ERROR_CODES,
   hasRequiredDescription,
+  hasImageAnalysisInput,
+  normalizeStoryStyle,
   validateTitleResponse,
   validateCategoryResponse,
   validateTagsResponse,
   validateStoryResponse,
+  validateAnalyzeImageResponse,
 } = require('./ai.schemas');
 
 function ensureDescription(input) {
@@ -50,10 +54,30 @@ async function suggestTags(input) {
 
 async function generateStory(input) {
   const payload = ensureDescription(input);
-  const prompt = buildStoryPrompt(payload);
+  const withStyle = { ...payload, style: normalizeStoryStyle(payload.style) };
+  const prompt = buildStoryPrompt(withStyle);
   return generateJson(prompt, {
     validate: validateStoryResponse,
     mockKind: 'story',
+  });
+}
+
+function ensureImageInput(input) {
+  if (!hasImageAnalysisInput(input)) {
+    throw new AiProviderError(
+      AI_ERROR_CODES.validation,
+      'imageDescription or imageUrl is required'
+    );
+  }
+  return input;
+}
+
+async function analyzeImage(input) {
+  const payload = ensureImageInput(input);
+  const prompt = buildAnalyzeImagePrompt(payload);
+  return generateJson(prompt, {
+    validate: validateAnalyzeImageResponse,
+    mockKind: 'analyzeImage',
   });
 }
 
@@ -62,4 +86,5 @@ module.exports = {
   suggestCategory,
   suggestTags,
   generateStory,
+  analyzeImage,
 };

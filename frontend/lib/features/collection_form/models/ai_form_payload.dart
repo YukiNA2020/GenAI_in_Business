@@ -9,6 +9,8 @@ class AiFormPayload {
     this.location,
     this.dateAcquired,
     this.imageDescription,
+    this.imageUrl,
+    this.style,
   });
 
   final String description;
@@ -17,6 +19,8 @@ class AiFormPayload {
   final String? location;
   final String? dateAcquired;
   final String? imageDescription;
+  final String? imageUrl;
+  final String? style;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
@@ -32,6 +36,21 @@ class AiFormPayload {
     put('location', location);
     put('dateAcquired', dateAcquired);
     put('imageDescription', imageDescription);
+    put('imageUrl', imageUrl);
+    put('style', style);
+    return map;
+  }
+
+  /// 仅图片识别接口：不要求 story note。
+  Map<String, dynamic> toAnalyzeImageJson() {
+    final map = <String, dynamic>{};
+    void put(String key, String? value) {
+      final v = value?.trim();
+      if (v != null && v.isNotEmpty) map[key] = v;
+    }
+
+    put('imageDescription', imageDescription);
+    put('imageUrl', imageUrl);
     return map;
   }
 }

@@ -1,5 +1,5 @@
 // 负责人：成员 E / 成员 5
-// 供成员 B 创建/编辑收藏表单接入 — 见 member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md
+// 阶段二–四：文字建议 + 图片识别 + 多风格故事
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/collectory_theme.dart';
 import '../../collection_browse/widgets/collectory_handoff_header.dart';
 import '../models/ai_form_payload.dart';
+import '../models/ai_image_analysis.dart';
 import '../services/ai_suggestion_service.dart';
 import '../utils/ai_category_mapping.dart';
 
@@ -20,9 +21,13 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
     required this.onCategoryTagSelected,
     required this.onTagsSuggested,
     required this.onStoryApplied,
+    this.hasImageForAnalysis,
+    this.onImageAnalysisApplied,
   });
 
   final AiFormPayload Function() buildPayload;
+  final bool Function()? hasImageForAnalysis;
+  final ValueChanged<AiImageAnalysis>? onImageAnalysisApplied;
   final ValueChanged<String> onTitleSelected;
   final ValueChanged<String> onCategoryTagSelected;
   final ValueChanged<List<String>> onTagsSuggested;
@@ -37,7 +42,9 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
   bool _loadingCategory = false;
   bool _loadingTags = false;
   bool _loadingStory = false;
+  bool _loadingImage = false;
   List<String> _titleSuggestions = const [];
+  AiStoryStyle _storyStyle = AiStoryStyle.concise;
 
   bool _ensureDescription(BuildContext context) {
     final desc = widget.buildPayload().description.trim();
@@ -52,6 +59,18 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
       return false;
     }
     return true;
+  }
+
+  bool _ensureImage(BuildContext context) {
+    if (widget.hasImageForAnalysis?.call() == true) {
+      return true;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Upload a photo first, then run image recognition.'),
+      ),
+    );
+    return false;
   }
 
   void _showAiError(BuildContext context, Object error) {
@@ -138,16 +157,45 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
     try {
       final story = await ref
           .read(aiSuggestionServiceProvider)
-          .generateStory(widget.buildPayload());
+          .generateStory(widget.buildPayload(), style: _storyStyle);
       if (!mounted) return;
       widget.onStoryApplied(story);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Story draft applied — you can edit it.')),
+        SnackBar(
+          content: Text(
+            '${_storyStyle.label} story applied — you can edit it.',
+          ),
+        ),
       );
     } catch (e) {
       if (mounted) _showAiError(context, e);
     } finally {
       if (mounted) setState(() => _loadingStory = false);
+    }
+  }
+
+  Future<void> _runAnalyzeImage() async {
+    if (!_ensureImage(context)) return;
+    final payload = widget.buildPayload();
+    setState(() => _loadingImage = true);
+    try {
+      final result = await ref.read(aiSuggestionServiceProvider).analyzeImage(
+            imageDescription: payload.imageDescription,
+            imageUrl: payload.imageUrl,
+          );
+      if (!mounted) return;
+      widget.onImageAnalysisApplied?.call(result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Image recognition applied — review title, category, tags, and note.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) _showAiError(context, e);
+    } finally {
+      if (mounted) setState(() => _loadingImage = false);
     }
   }
 
@@ -178,6 +226,11 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
             spacing: 6,
             runSpacing: 6,
             children: [
+              if (widget.onImageAnalysisApplied != null)
+                _AiActionChip(
+                  label: _loadingImage ? 'Recognize…' : 'Recognize',
+                  onPressed: _loadingImage ? null : _runAnalyzeImage,
+                ),
               _AiActionChip(
                 label: _loadingTitle ? 'Titles…' : 'Titles',
                 onPressed: _loadingTitle ? null : _runTitle,
@@ -195,6 +248,36 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
                 onPressed: _loadingStory ? null : _runStory,
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Story style',
+            style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: AiStoryStyle.values.map((style) {
+              final selected = _storyStyle == style;
+              return ChoiceChip(
+                label: Text(
+                  style.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                selected: selected,
+                onSelected: (selected) {
+                  if (!selected || _storyStyle == style) return;
+                  setState(() => _storyStyle = style);
+                  _runStory();
+                },
+                selectedColor: CollectoryColors.btnPrimaryBg.withValues(alpha: 0.35),
+                side: const BorderSide(color: CollectoryColors.borderLight),
+              );
+            }).toList(),
           ),
           if (_titleSuggestions.isNotEmpty) ...[
             const SizedBox(height: 8),

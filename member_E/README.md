@@ -59,6 +59,8 @@ member_E/
 | 任务 4 | `login_placeholder_page.dart`、`register_placeholder_page.dart` |
 | 说明 | `docs/Phase_3_Profile_Completion.md` |
 | 任务 5：与成员 3 联调 | `docs/Phase_3_Task5_Member3_Integration.md` + `profile_exhibit_utils.dart` |
+| 阶段四 V2.3 | `docs/Phase_4_Tasks1_5_Completion.md` + `verify_phase4_tasks1_5_api.js` |
+| 阶段五 测试/Demo | `docs/Phase_5_Tasks1_5_Completion.md` + `verify_phase5_demo_e2e.js` + `Member6_Demo_Handoff.md` |
 
 ---
 
