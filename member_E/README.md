@@ -2,7 +2,7 @@
 
 本文件夹是成员 E / 成员 5 的独立工作区，用于存放 AI 功能、用户主页、测试支持相关的任务文档和阶段交付物。
 
-当前已完成：阶段一「V1.1 AI Prompt 模板和接口方案」；阶段二·任务一「AI Provider 封装」；阶段二·任务 2–4「四个 AI HTTP 接口」。
+当前已完成：阶段一；阶段二（含任务五 AI 面板预交付）；阶段三·任务 1–4「用户主页与资料」。
 
 ---
 
@@ -49,6 +49,15 @@ member_E/
 | 任务 1：实现 AI Provider 封装 | `backend/src/ai/ai.provider.js`、`docs/AI_Provider_Setup.md`、`.env.example`、`scripts/verify_phase2_task1_provider.js` |
 | 任务 2–4：四个 AI HTTP 接口 | `ai.service.js`、`ai.routes.js`、`docs/AI_Routes_Integration.md`、`scripts/verify_phase2_tasks2_4_api.js`；根目录 `backend/src/routes/ai.routes.js` + `app.js` 挂载 |
 | 任务 5：AI 建议面板（成员 B 工作区） | `../member_B/` + `frontend/lib/features/collection_form/`（成员 E 编写）；见 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` |
+
+### 阶段三·任务 1–4 交付物
+
+| 任务 | 交付物 |
+|---|---|
+| 任务 1–2 | `frontend/lib/features/profile/pages/profile_page.dart` 等 |
+| 任务 3 | `edit_profile_page.dart` |
+| 任务 4 | `login_placeholder_page.dart`、`register_placeholder_page.dart` |
+| 说明 | `docs/Phase_3_Profile_Completion.md` |
 
 ---
 

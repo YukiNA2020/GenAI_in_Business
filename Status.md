@@ -19,7 +19,7 @@
 # Collection Journey App - 项目状态
 
 > 上次更新：2026-05-21  
-> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（阶段二·任务五：成员 B 工作区 AI 面板 + Add 页挂钩；`member_B/` + `collection_form/`）
+> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（阶段三·任务 1–4：ProfilePage、统计、EditProfile、登录注册占位；`frontend/lib/features/profile/`）
 
 ---
 
@@ -41,7 +41,9 @@ GENAI_Group/
 │   ├── README.md                 # 成员 B 工作区说明
 │   ├── docs/Phase2_Task5_AI_Panel_by_Member_E.md  # 成员 E 代写 AI 面板说明
 │   └── frontend/lib/features/collection_form/  # 成员 E 编写的 AI 面板源码副本
+├── frontend/lib/features/profile/  # 成员 E：用户主页、统计、编辑、登录占位（阶段三）
 ├── member_E/
+│   └── frontend/lib/features/profile/  # 成员 E 阶段三源码副本
 │   ├── README.md                 # 成员 E 工作区说明
 │   ├── Member_5_AI_Profile_Test_Detail_Plan.md # 成员 5 开发任务详细文档
 ├── backend/                      # 后端项目（成员 1 负责）
@@ -133,6 +135,9 @@ GENAI_Group/
 | `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` | 成员 E 为成员 B 编写的 AI 面板交接 | ✅ 完成（成员 E，2026-05-21） |
 | `frontend/lib/features/collection_form/` | 成员 B 表单模块 — AI 部分由成员 E 编写 | ✅ 完成（成员 E，2026-05-21），待成员 B 扩展 |
 | `frontend/lib/features/collection_browse/pages/add_exhibit_design_page.dart` | Add 页接入 `AiSuggestionPanel`（成员 E 挂钩） | ✅ 已更新（成员 E，2026-05-21） |
+| `frontend/lib/features/profile/` | 成员 E 阶段三：ProfilePage、统计、编辑、登录占位 | ✅ 完成（成员 E，2026-05-21），待独立测试 |
+| `frontend/lib/features/collection_browse/pages/profile_design_page.dart` | Profile Tab 挂载成员 E `ProfilePage` | ✅ 已更新（成员 E，2026-05-21） |
+| `member_E/docs/Phase_3_Profile_Completion.md` | 成员 E 阶段三完成说明 | ✅ 完成（成员 E，2026-05-21） |
 | `Prompt_library.md` | Prompt 记录库 | ✅ 完成 |
 | `Status.md` | 项目状态文档 | ✅ 完成 |
 | `Test.md` | 测试记录、Bug 跟踪和测试报告文档 | ✅ 完成 |
@@ -237,8 +242,15 @@ GENAI_Group/
 - [x] 任务 5：AI 建议面板预交付（成员 E 代写至 `member_B/` + `frontend/lib/features/collection_form/`；Add 页最小挂钩，待成员 B 正式表单与独立测试）
 - [x] 阶段二·任务 2–4 开发自检：`verify_phase2_tasks2_4_api.js` 14/14（待独立测试 AI）
 
+### 成员 E 阶段三：V2.1 用户主页与资料
+- [x] 任务 1：ProfilePage（成员 E，2026-05-21）
+- [x] 任务 2：收藏统计 `GET /api/users/:id/stats`（成员 E，2026-05-21）
+- [x] 任务 3：EditProfilePage 本地 mock 保存（成员 E，2026-05-21）
+- [x] 任务 4：登录 / 注册占位 + mock 会话（成员 E，2026-05-21）
+- [ ] 任务 5：与成员 3 联调主页收藏展示（部分：Recent 用 CollectionCard；完整 rooms 经入口打开 Member 3 页）
+
 ### V1.2 AI 辅助记录
-- [ ] 待开发（成员 E 阶段二任务 2–5 及路由挂载）
+- [x] 成员 E 阶段二 AI 接口与面板预交付
 
 ### V1.3 美观收藏卡片墙
 - [x] 成员 3 阶段一：收藏墙页面、卡片组件、图片占位、跳转详情（2026-05-17，待测试）
@@ -371,6 +383,8 @@ GENAI_Group/
 2026-05-19（成员 C / 成员 3，联调与体验修复）：**Collection wall**（`collection_list_provider.dart`、`collection_wall_slivers.dart`、`design_gallery_page.dart`）：`page=1` 首屏加载；`pageSize=6`；总数 >6 时仅展示当前页 6 张 + Previous/Next（`wallDisplayPage`），自动拉取下一页 API；`CupertinoSliverRefreshControl` 下拉刷新（保留 keyword/category/tag/sort，清 error）；`_busy` 防重复请求。**Share**（`share_room_settings_page.dart`、`share_room_preview_page.dart`）：设置页严格对齐 PNG（无内嵌 Visitor preview）；Preview 按钮进入独立访客预览页，三项开关写入 `shareRoomPreviewOptionsProvider`；Preview 往返不丢开关状态。**Profile**（`profile_collection_preview.dart`）：Last added 年份黑色、与 Exhibits 等灰字对齐；`profilePublicPreviewProvider` 持久化。**Gallery 其它**：ROOM 01 点击 `openCollectionRoom`；Tag 弹层四角 20px 圆角且抬高避开底栏。**Collection Room**（`collection_room_page.dart`）：改回单屏 `Column+Spacer`；展品数来自 `GET /api/users/:id/stats`；Highlights/Timeline 各取 API 最近 3 条（无数据用设计稿占位）。**CollectoryPillToggle**（`collectory_pill_toggle.dart` + `member3_ui_settings_provider.dart`）：拖拽/点击正确提交，跨 Tab 与 Share→Preview 不重置。**状态栏**（`collectory_status_bar.dart`）：实时 `H:mm` + 中间黑色岛。**测试**：阶段四/五专项结果见 `Test.md`；`test_member3_api_contract.js` 32/32（backend 在线时）。**运行**：`flutter run -d web-server --web-port=8086`（Web 常用 8084–8086，端口占用时换端口）；`cd backend && npm run dev`。
 
 2026-05-21（成员 E / 成员 5，阶段二·任务五）：在 **member_B 工作区** 预交付 AI 建议面板（标注成员 E 编写）：`member_B/frontend/lib/features/collection_form/`（`ai_suggestion_service.dart`、`ai_suggestion_panel.dart` 等）与可运行副本 `frontend/lib/features/collection_form/`；说明见 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md`。**跨成员最小挂钩**：在成员 C 的 `add_exhibit_design_page.dart` 嵌入 `AiSuggestionPanel`（STORY NOTE 作 `description`，标题/分类/故事可写入表单；标签暂 SnackBar）。成员 B 接手后应迁入正式 `CreateCollectionPage` / `TagInputField`。未标记测试通过。
+
+2026-05-21（成员 E / 成员 5，阶段三·任务 1–4）：用户主页与资料。**新增** `frontend/lib/features/profile/`（`ProfilePage`、`ProfileHeader`、`ProfileStats`、`RecentCollectionsSection`、`EditProfilePage`、登录/注册占位页、`profile_providers` mock 资料与会话）。**跨成员**：`profile_design_page.dart` 改为挂载 `ProfilePage`；成员 C 的 `ProfileCollectionPreview` 经「Open museum rooms (Member 3)」全屏入口保留。统计复用成员 1 的 `GET /api/users/:id/stats`；无 `PUT /api/users`。待独立测试；任务 5 与成员 3 深度联调留待后续。
 
 2026-05-21（成员 E / 成员 5，阶段二·任务 2–4）：实现四个 AI HTTP 接口。新增 `ai.service.js`、`ai.routes.js`（`createAiRouter`）；`backend/src/routes/ai.routes.js` 适配层；`backend/src/app.js` 增加 `app.use('/api/ai', ...)`（**跨成员最小挂载**，已与成员 A 约定：仅增加路由挂载，不改 collections/users 逻辑）。端点：`POST /api/ai/suggest-title|suggest-category|suggest-tags|generate-story`；参数校验返回 `AI_VALIDATION_ERROR`（400）；Provider 失败 502。自检 `verify_phase2_tasks2_4_api.js` 14/14。待独立测试与成员 B 联调（任务 5）。
 

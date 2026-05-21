@@ -21,8 +21,8 @@
 |---|---|
 | 当前负责人 | 成员 E / 成员 5 |
 | 当前工作区 | `member_E/` |
-| 当前阶段 | 阶段二：V1.2 AI 接口开发（任务 1–4 已完成，任务 5 待联调） |
-| 当前阶段开发状态 | 阶段二·任务 1–4 已完成 |
+| 当前阶段 | 阶段三：V2.1 用户主页（任务 1–4 已完成，任务 5 待联调） |
+| 当前阶段开发状态 | 阶段三·任务 1–4 已完成 |
 | 当前阶段测试状态 | 待独立测试 AI 验证 |
 | 最近更新时间 | 2026-05-21 |
 
@@ -44,6 +44,11 @@
 | 阶段二 | 任务 3：分类/标签接口 | 已完成 | suggest-category、suggest-tags |
 | 阶段二 | 任务 4：故事生成接口 | 已完成 | POST /api/ai/generate-story |
 | 阶段二 | 任务 5：AI 面板预交付 | 已完成（成员 E 代写） | `member_B/` + `collection_form/` + Add 页挂钩 |
+| 阶段三 | 任务 1：ProfilePage | 已完成 | `profile_page.dart` |
+| 阶段三 | 任务 2：收藏统计 | 已完成 | `profile_stats.dart` + `userStatsProvider` |
+| 阶段三 | 任务 3：EditProfilePage | 已完成 | mock 本地保存 |
+| 阶段三 | 任务 4：登录注册占位 | 已完成 | mock `authSessionProvider` |
+| 阶段三 | 任务 5：与成员 3 联调 | 部分 | Recent 卡片 + Member 3 全屏入口 |
 | 阶段二 | 任务 2–4 自检 | 14/14 通过 | `verify_phase2_tasks2_4_api.js` |
 
 ---

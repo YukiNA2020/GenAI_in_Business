@@ -20,6 +20,18 @@
 
 # Prompt 记录库
 
+## 2026-05-21 对话记录 27
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：进行阶段三任务 1–4（用户主页、统计、编辑资料、登录注册占位）。
+- **AI 行动**：
+  - 新增 `frontend/lib/features/profile/`（ProfilePage、widgets、providers、Edit/Login/Register 页）。
+  - 更新 `profile_design_page.dart` 挂载 ProfilePage；同步 `member_E/frontend/lib/features/profile/` 与 `Phase_3_Profile_Completion.md`。
+  - 更新 `Status.md`、本条记录。
+- **重要内容**：
+  - 资料编辑为本地 mock（Riverpod），未新增后端用户更新 API。
+  - 成员 C 的 rooms/settings 通过全屏入口访问，避免重复实现任务 5 全部内容。
+
 ## 2026-05-21 对话记录 26
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
