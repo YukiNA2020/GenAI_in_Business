@@ -10,15 +10,21 @@ class CollectionCard extends StatelessWidget {
     required this.item,
     this.categoryLabel,
     this.onTap,
+    this.compact = false,
   });
 
   final CollectionItem item;
   final String? categoryLabel;
   final VoidCallback? onTap;
+  /// Profile 横向 Recent exhibits 等窄高度区域使用，避免 Column 溢出。
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final label = categoryLabel ?? item.category ?? 'Exhibit';
+    if (compact) {
+      return _buildCompactCard(context, label);
+    }
     return Material(
       color: CollectoryColors.bgCard,
       borderRadius: BorderRadius.circular(8),
@@ -102,6 +108,73 @@ class CollectionCard extends StatelessWidget {
                     children: item.tags.take(3).map(_tagPill).toList(),
                   ),
                 ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactCard(BuildContext context, String label) {
+    return Material(
+      color: CollectoryColors.bgCard,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: CollectoryColors.borderLight),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A17120F),
+                blurRadius: 24,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: SizedBox(
+                    height: 72,
+                    width: double.infinity,
+                    child: CollectionExhibitImage(
+                      item: item,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.6,
+                    color: CollectoryColors.textLabel,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.2,
+                  ),
+                ),
               ],
             ),
           ),

@@ -35,7 +35,11 @@ final authSessionProvider =
 });
 
 class AuthSessionNotifier extends StateNotifier<AuthSession> {
-  AuthSessionNotifier() : super(const AuthSession(isLoggedIn: true, email: UserProfile.demo().email));
+  AuthSessionNotifier()
+      : super(const AuthSession(
+          isLoggedIn: true,
+          email: 'demo@collection-journey.app',
+        ));
 
   void signIn({required String email}) {
     state = AuthSession(isLoggedIn: true, email: email.trim());

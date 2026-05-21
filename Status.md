@@ -19,7 +19,7 @@
 # Collection Journey App - 项目状态
 
 > 上次更新：2026-05-21  
-> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（阶段三·任务 1–4：ProfilePage、统计、EditProfile、登录注册占位；`frontend/lib/features/profile/`）
+> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（阶段三·任务五：与成员 C `ProfileCollectionPreview` 单页联调；`profile_exhibit_utils.dart`）
 
 ---
 
@@ -137,6 +137,9 @@ GENAI_Group/
 | `frontend/lib/features/collection_browse/pages/add_exhibit_design_page.dart` | Add 页接入 `AiSuggestionPanel`（成员 E 挂钩） | ✅ 已更新（成员 E，2026-05-21） |
 | `frontend/lib/features/profile/` | 成员 E 阶段三：ProfilePage、统计、编辑、登录占位 | ✅ 完成（成员 E，2026-05-21），待独立测试 |
 | `frontend/lib/features/collection_browse/pages/profile_design_page.dart` | Profile Tab 挂载成员 E `ProfilePage` | ✅ 已更新（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_browse/utils/profile_exhibit_utils.dart` | 成员 E 任务五：Profile 统计/最近展品共享逻辑 | ✅ 完成（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_browse/widgets/profile_collection_preview.dart` | 成员 C + 成员 E 嵌入模式 `embeddedInMemberEProfile` | ✅ 已更新（成员 E 联调，2026-05-21） |
+| `member_E/docs/Phase_3_Task5_Member3_Integration.md` | 阶段三·任务五联调说明 | ✅ 完成（成员 E，2026-05-21） |
 | `member_E/docs/Phase_3_Profile_Completion.md` | 成员 E 阶段三完成说明 | ✅ 完成（成员 E，2026-05-21） |
 | `Prompt_library.md` | Prompt 记录库 | ✅ 完成 |
 | `Status.md` | 项目状态文档 | ✅ 完成 |
@@ -247,7 +250,7 @@ GENAI_Group/
 - [x] 任务 2：收藏统计 `GET /api/users/:id/stats`（成员 E，2026-05-21）
 - [x] 任务 3：EditProfilePage 本地 mock 保存（成员 E，2026-05-21）
 - [x] 任务 4：登录 / 注册占位 + mock 会话（成员 E，2026-05-21）
-- [ ] 任务 5：与成员 3 联调主页收藏展示（部分：Recent 用 CollectionCard；完整 rooms 经入口打开 Member 3 页）
+- [x] 任务 5：与成员 3 联调主页收藏展示（成员 E，2026-05-21：`ProfileCollectionPreview(embeddedInMemberEProfile: true)` 单页嵌入；`profile_exhibit_utils.dart`；待独立测试）
 
 ### V1.2 AI 辅助记录
 - [x] 成员 E 阶段二 AI 接口与面板预交付
@@ -383,6 +386,8 @@ GENAI_Group/
 2026-05-19（成员 C / 成员 3，联调与体验修复）：**Collection wall**（`collection_list_provider.dart`、`collection_wall_slivers.dart`、`design_gallery_page.dart`）：`page=1` 首屏加载；`pageSize=6`；总数 >6 时仅展示当前页 6 张 + Previous/Next（`wallDisplayPage`），自动拉取下一页 API；`CupertinoSliverRefreshControl` 下拉刷新（保留 keyword/category/tag/sort，清 error）；`_busy` 防重复请求。**Share**（`share_room_settings_page.dart`、`share_room_preview_page.dart`）：设置页严格对齐 PNG（无内嵌 Visitor preview）；Preview 按钮进入独立访客预览页，三项开关写入 `shareRoomPreviewOptionsProvider`；Preview 往返不丢开关状态。**Profile**（`profile_collection_preview.dart`）：Last added 年份黑色、与 Exhibits 等灰字对齐；`profilePublicPreviewProvider` 持久化。**Gallery 其它**：ROOM 01 点击 `openCollectionRoom`；Tag 弹层四角 20px 圆角且抬高避开底栏。**Collection Room**（`collection_room_page.dart`）：改回单屏 `Column+Spacer`；展品数来自 `GET /api/users/:id/stats`；Highlights/Timeline 各取 API 最近 3 条（无数据用设计稿占位）。**CollectoryPillToggle**（`collectory_pill_toggle.dart` + `member3_ui_settings_provider.dart`）：拖拽/点击正确提交，跨 Tab 与 Share→Preview 不重置。**状态栏**（`collectory_status_bar.dart`）：实时 `H:mm` + 中间黑色岛。**测试**：阶段四/五专项结果见 `Test.md`；`test_member3_api_contract.js` 32/32（backend 在线时）。**运行**：`flutter run -d web-server --web-port=8086`（Web 常用 8084–8086，端口占用时换端口）；`cd backend && npm run dev`。
 
 2026-05-21（成员 E / 成员 5，阶段二·任务五）：在 **member_B 工作区** 预交付 AI 建议面板（标注成员 E 编写）：`member_B/frontend/lib/features/collection_form/`（`ai_suggestion_service.dart`、`ai_suggestion_panel.dart` 等）与可运行副本 `frontend/lib/features/collection_form/`；说明见 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md`。**跨成员最小挂钩**：在成员 C 的 `add_exhibit_design_page.dart` 嵌入 `AiSuggestionPanel`（STORY NOTE 作 `description`，标题/分类/故事可写入表单；标签暂 SnackBar）。成员 B 接手后应迁入正式 `CreateCollectionPage` / `TagInputField`。未标记测试通过。
+
+2026-05-21（成员 E / 成员 5，阶段三·任务五）：与成员 3 联调 Profile。**单页** `ProfilePage`：成员 E 区（Header、四列 Stats、Edit profile）+ 成员 C 区（`ProfileCollectionPreview` 嵌入模式）。新增 `profile_exhibit_utils.dart` 统一 Recent/Last added/分类筛选逻辑；`profile_collection_preview.dart` 增加 `embeddedInMemberEProfile` 省略重复顶栏与统计。移除全屏「Open museum rooms」入口。
 
 2026-05-21（成员 E / 成员 5，阶段三·任务 1–4）：用户主页与资料。**新增** `frontend/lib/features/profile/`（`ProfilePage`、`ProfileHeader`、`ProfileStats`、`RecentCollectionsSection`、`EditProfilePage`、登录/注册占位页、`profile_providers` mock 资料与会话）。**跨成员**：`profile_design_page.dart` 改为挂载 `ProfilePage`；成员 C 的 `ProfileCollectionPreview` 经「Open museum rooms (Member 3)」全屏入口保留。统计复用成员 1 的 `GET /api/users/:id/stats`；无 `PUT /api/users`。待独立测试；任务 5 与成员 3 深度联调留待后续。
 

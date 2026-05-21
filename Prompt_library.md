@@ -20,6 +20,19 @@
 
 # Prompt 记录库
 
+## 2026-05-21 对话记录 28
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：阶段三已测试；进行任务五，成员 3 代码已完成，根据已有代码联调。
+- **AI 行动**：
+  - 单页整合 `ProfilePage` + `ProfileCollectionPreview(embeddedInMemberEProfile: true)`。
+  - 新增 `profile_exhibit_utils.dart`；`ProfileStats` 四列与成员 C 对齐。
+  - 重构 `profile_collection_preview.dart` 嵌入模式（成员 E 联调改动，已记录 Status）。
+  - 新增 `member_E/docs/Phase_3_Task5_Member3_Integration.md`；更新 Status / E_Status_Log。
+- **重要内容**：
+  - 跨成员改动限于 Profile 联调：`profile_collection_preview.dart` 增加可选参数，独立全屏模式仍可用。
+  - Recent 展品只保留成员 C 横滑区块，避免与成员 E 旧 `RecentCollectionsSection` 重复。
+
 ## 2026-05-21 对话记录 27
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新

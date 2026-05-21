@@ -48,7 +48,7 @@
 | 阶段三 | 任务 2：收藏统计 | 已完成 | `profile_stats.dart` + `userStatsProvider` |
 | 阶段三 | 任务 3：EditProfilePage | 已完成 | mock 本地保存 |
 | 阶段三 | 任务 4：登录注册占位 | 已完成 | mock `authSessionProvider` |
-| 阶段三 | 任务 5：与成员 3 联调 | 部分 | Recent 卡片 + Member 3 全屏入口 |
+| 阶段三 | 任务 5：与成员 3 联调 | 已完成 | 单页嵌入 + profile_exhibit_utils |
 | 阶段二 | 任务 2–4 自检 | 14/14 通过 | `verify_phase2_tasks2_4_api.js` |
 
 ---

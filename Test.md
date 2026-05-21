@@ -18,7 +18,7 @@
 # Collection Journey App - 测试记录
 
 > 上次更新：2026-05-21
-> 最近更新负责人：成员 E / 成员 5，由该成员的测试 AI 协助更新（**阶段一全阶段** + **阶段二·任务一** AI Provider 独立测试）
+> 最近更新负责人：成员 E / 成员 5，由该成员的测试 AI 协助更新（**阶段二·任务 2–5**：四个 AI HTTP 接口 + 表单面板联调交付物）
 
 ---
 
@@ -66,6 +66,8 @@
 | 成员 3 - Flutter UI 手测 | ⏭️ 未自动执行 | — | 2026-05-17 三轮 | 建议 `flutter run -d chrome` 按 `Browse_Flow_Test_Notes.md` 走 15 步 |
 | **成员 E - 阶段一（AI Prompt + API Contract）** | ✅ 通过 | **36/36**（脚本 15 + 扩展 21） | **2026-05-21 专项** | 四类 Prompt 文档 + Contract + `ai.prompts.js` / `ai.schemas.js`；**无** HTTP 路由（属阶段二任务 2–4，本阶段不要求） |
 | **成员 E - 阶段二·任务一（AI Provider 封装）** | ✅ 通过 | **11/11** | **2026-05-21 专项** | `ai.provider.js` mock/openai/超时/错误码；未测真实 OpenAI 计费调用 |
+| **成员 E - 阶段二·任务 2–4（四个 AI HTTP 接口）** | ✅ 通过 | **23/23**（脚本 14 + 扩展 9） | **2026-05-21 专项** | `backend` 已挂载 `/api/ai`；mock 下四端点 + 400/502 + E2E 写收藏 |
+| **成员 E - 阶段二·任务 5（AI 面板联调）** | ⚠️ 有条件通过 | **18/20**（代码 18 + UI 未测 2） | **2026-05-21 专项** | 面板/服务已交付并挂 Add 页；标签仅 SnackBar；成员 B 正式创建页待迁入 |
 
 ---
 
@@ -134,6 +136,67 @@
 | TC-ME-P2T1-11 | 根目录 `backend/` 未挂载 Provider | ✅ 通过 | 2026-05-21 | 仅 `member_E/` 内交付 | 合并前需与成员 A 确认 |
 
 **阶段二·任务一专项统计**：✅ 通过 **11/11**（脚本）+ 静态审查 11 项
+
+### 成员 E - 阶段二·任务 2–4：四个 AI HTTP 接口（2026-05-21 专项）
+
+> **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新  
+> **依据**：`member_E/Member_5_AI_Profile_Test_Detail_Plan.md` 第五节·任务 2–4（§231-273）及阶段二验收标准（§288-293）之接口部分  
+> **不测范围**：任务 5 前端 UI 手测、真实 OpenAI 计费、成员 3/4/6 模块
+
+| 用例编号 | 功能 | 测试状态 | 执行时间 | 结果 | 备注 |
+|----------|------|----------|----------|------|------|
+| **任务 2：POST /api/ai/suggest-title** |
+| TC-ME-P2T2-01 | `ai.service.suggestTitle` mock 合法 JSON | ✅ 通过 | 2026-05-21 | `verify_phase2_tasks2_4_api.js` | - |
+| TC-ME-P2T2-02 | HTTP 200 + `data.suggestions` 长度 3 | ✅ 通过 | 2026-05-21 | 运行时 localhost:3000 | - |
+| TC-ME-P2T2-03 | 缺/空 `description` → 400 `AI_VALIDATION_ERROR` | ✅ 通过 | 2026-05-21 | service + HTTP | - |
+| TC-ME-P2T2-04 | Provider 不可用 → `AI_PROVIDER_UNAVAILABLE` | ✅ 通过 | 2026-05-21 | `AI_PROVIDER=openai` 无 Key | HTTP 层为 502 |
+| **任务 3：分类 + 标签** |
+| TC-ME-P2T3-01 | `suggest-category` → category + confidence | ✅ 通过 | 2026-05-21 | mock 返回「明信片」0.75 | category 为中文 7 类之一 |
+| TC-ME-P2T3-02 | `suggest-tags` → 3–8 非空不重复 tags | ✅ 通过 | 2026-05-21 | 扩展测试 | - |
+| TC-ME-P2T3-03 | 分类不在固定列表时 schema 拒绝 | ✅ 通过 | 2026-05-21 | 阶段一 schema 静态审查 | 运行时 mock 恒合法 |
+| **任务 4：POST /api/ai/generate-story** |
+| TC-ME-P2T4-01 | `generate-story` → 非空 `data.story` | ✅ 通过 | 2026-05-21 | HTTP 200 | - |
+| TC-ME-P2T4-02 | 故事接口不依赖收藏已存在 | ✅ 通过 | 2026-05-21 | 独立 POST | 不影响手动保存 |
+| **集成与 E2E** |
+| TC-ME-P2-INT-01 | `backend/src/app.js` 挂载 `/api/ai` | ✅ 通过 | 2026-05-21 | 静态审查 + HTTP 可达 | 跨成员最小挂载已记录 Status |
+| TC-ME-P2-INT-02 | 响应格式 `{ success, data }` 与 Contract 一致 | ✅ 通过 | 2026-05-21 | 四端点抽样 | - |
+| TC-ME-P2-INT-03 | AI 失败后仍可 `POST /api/collections` | ✅ 通过 | 2026-05-21 | 400 后创建 201 | 验收标准 §293 |
+| TC-ME-P2-INT-04 | AI 标题 → 创建收藏 → GET 详情标题一致 | ✅ 通过 | 2026-05-21 | E2E 运行时 | id=21 等测试数据 |
+| TC-ME-P2-INT-05 | `GET /api/health` 与列表接口回归 | ✅ 通过 | 2026-05-21 | 挂载 AI 后仍正常 | - |
+
+**任务 2–4 专项统计**：✅ 通过 **14/14**（官方脚本）+ **9/9**（扩展 HTTP/E2E）= **23/23**
+
+### 成员 E - 阶段二·任务 5：和成员 2 联调 AI 面板（2026-05-21 专项）
+
+> **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新  
+> **依据**：`member_E/Member_5_AI_Profile_Test_Detail_Plan.md` 第五节·任务 5（§275-286）；交付说明 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md`  
+> **不测范围**：成员 B 正式 `CreateCollectionPage` 最终实现、Flutter UI 自动化点击（本机无 Flutter SDK）
+
+| 用例编号 | 功能 | 测试状态 | 执行时间 | 结果 | 备注 |
+|----------|------|----------|----------|------|------|
+| **交付物** |
+| TC-ME-P2T5-01 | `ai_suggestion_service.dart` 四个 API 方法 | ✅ 通过 | 2026-05-21 | 静态审查 | 解析 `success`/`error` 与 Contract 一致 |
+| TC-ME-P2T5-02 | `ai_suggestion_panel.dart` 四按钮独立 loading | ✅ 通过 | 2026-05-21 | `_loadingTitle` 等互不影响 | - |
+| TC-ME-P2T5-03 | AI 失败 SnackBar，不阻塞表单 | ✅ 通过 | 2026-05-21 | `_showAiError` | - |
+| TC-ME-P2T5-04 | `AiFormPayload` 与 Contract 字段对齐 | ✅ 通过 | 2026-05-21 | `toJson()` 省略空字段 | - |
+| TC-ME-P2T5-05 | `ai_category_mapping.dart` 中文↔slug | ✅ 通过 | 2026-05-21 | 含 stamp 等 8 类 | AI schema 仍为 7 类 |
+| TC-ME-P2T5-06 | `member_B/frontend/.../collection_form/` 副本存在 | ✅ 通过 | 2026-05-21 | 5 文件与主 `frontend/` 同步 | 供成员 B 认领 |
+| TC-ME-P2T5-07 | 联调文档 `Phase2_Task5_AI_Panel_by_Member_E.md` | ✅ 通过 | 2026-05-21 | 含运行步骤 | - |
+| **Add 页 Demo 挂钩** |
+| TC-ME-P2T5-08 | `add_exhibit_design_page.dart` 嵌入 `AiSuggestionPanel` | ✅ 通过 | 2026-05-21 | STORY NOTE → description | 成员 C Add 页，非成员 B 正式创建页 |
+| TC-ME-P2T5-09 | 标题建议 chip → 写入 Title 控制器 | ✅ 通过 | 2026-05-21 | `onTitleSelected` | 不自动覆盖未点击项 |
+| TC-ME-P2T5-10 | 分类建议 → Favorite tag | ✅ 通过 | 2026-05-21 | `onCategoryTagSelected` | 经 `tagLabelForAiCategory` |
+| TC-ME-P2T5-11 | 故事建议 → Story 字段 | ✅ 通过 | 2026-05-21 | `onStoryApplied` | 用户可继续编辑 |
+| TC-ME-P2T5-12 | Draft 保存 → `createCollection` API | ✅ 通过 | 2026-05-21 | `_saveDraft` + slug | 与 AI 调用解耦 |
+| TC-ME-P2T5-13 | 标签建议写入表单多标签字段 | ⚠️ 偏差 | 2026-05-21 | `onTagsSuggested: (_) {}` | 仅 SnackBar；Add 页无多标签 UI |
+| TC-ME-P2T5-14 | 成员 B 正式创建页已接入面板 | ⚠️ 偏差 | 2026-05-21 | 组件在 `collection_form/`，待 B 迁入 | 不判成员 E 任务 2–4 失败 |
+| **手测** |
+| TC-ME-P2T5-15 | Flutter Add 页点击四 AI 按钮 | ⏭️ 未测 | 2026-05-21 | 本机无 `flutter` CLI | 建议按 `Phase2_Task5` 文档手测 |
+| TC-ME-P2T5-16 | 弱网/502 时仍可手动 Draft 保存 | ⏭️ 未测 | 2026-05-21 | 代码路径已满足 §293 | 建议 chrome 手测 |
+
+**任务 5 专项统计**：✅ 通过 12 · ⚠️ 偏差 2 · ⏭️ 未测 2 · 合计 16 项
+
+**阶段二总体验收（§288-293）**：任务 2–4 **✅ 通过**；任务 5 **⚠️ 有条件通过**（交付物与 Add 页 Demo 链就绪，成员 B 正式表单与 UI 手测待补）
 
 ---
 
@@ -866,6 +929,25 @@
 | 成员 1 阶段五·任务二 测试报告 | 2026-05-15 | 配合成员 2 联调创建流程（创建/上传/编辑/删除/表单错误 5 流程 32 项） | ✅ 全部通过 (39/39) | 见下方详细说明 |
 | **成员 E 阶段一 测试报告** | **2026-05-21** | V1.1 四类 Prompt 文档 + `AI_API_Contract.md` + `ai.prompts.js` / `ai.schemas.js` | **✅ 全部通过 (36/36 自动化)** | 见下方详细说明；HTTP 路由不在本阶段范围 |
 | **成员 E 阶段二·任务一 测试报告** | **2026-05-21** | AI Provider（`generateJson`、mock/openai、超时、错误映射、JSON 解析） | **✅ 全部通过 (11/11)** | 见下方详细说明；未执行真实 OpenAI 计费请求 |
+| **成员 E 阶段二·任务 2–4 测试报告** | **2026-05-21** | 四个 `POST /api/ai/*`（service + HTTP + E2E 写收藏） | **✅ 全部通过 (23/23)** | `verify_phase2_tasks2_4_api.js` 14/14 + 扩展 9/9 |
+| **成员 E 阶段二·任务 5 测试报告** | **2026-05-21** | AI 面板 + `ai_suggestion_service` + Add 页挂钩 | **⚠️ 有条件通过 (18/20)** | 代码审查通过；标签未写入表单；Flutter 手测未执行 |
+
+### 成员 E 阶段二·任务 2–4 测试报告详情
+
+- **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新
+- **测试范围**：`ai.service.js`、`ai.routes.js`、`backend/src/routes/ai.routes.js`、`backend/src/app.js` 挂载；四个 AI 端点 HTTP 行为
+- **测试方法**：
+  1. `AI_PROVIDER=mock` 启动 `backend`（`npm run dev`）
+  2. `node member_E/scripts/verify_phase2_tasks2_4_api.js`（14/14）
+  3. Node 扩展测试：502 场景、E2E「AI 标题 → POST collections → GET 详情」、健康检查回归（9/9）
+- **测试结论**：**任务 2–4 全部通过。** 四个 AI 文字接口在 mock 下可用，输出结构稳定，参数错误与 Provider 不可用错误码符合 `AI_API_Contract.md`；AI 失败不阻塞收藏创建。
+
+### 成员 E 阶段二·任务 5 测试报告详情
+
+- **负责人**：成员 E / 成员 5，由该成员的测试 AI 协助更新
+- **测试范围**：`frontend/lib/features/collection_form/`、`add_exhibit_design_page.dart` 挂钩、`member_B/` 副本与联调文档
+- **测试方法**：静态代码审查 + 后端 E2E 验证「采纳 AI 标题后可 `createCollection`」；未执行 Flutter UI 自动化（本机无 SDK）
+- **测试结论**：**有条件通过。** 成员 E 已交付可复用 AI 面板与服务，并在 Add 页完成最小 Demo 链（输入 Story → AI → 采纳 → Draft 保存）。成员 B 仍需将 `collection_form/` 迁入正式创建页；标签建议暂仅 SnackBar；建议本机按 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` 完成 UI 手测。
 
 ### 成员 E 阶段一 测试报告详情
 
@@ -2341,3 +2423,4 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 ## 测试更新日志
 
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段一全阶段**独立测试（自动化 36/36，用例表 TC-ME-P1-01～24）；完成**阶段二·任务一** AI Provider 测试（11/11，TC-ME-P2T1-01～11）。结论：两项均 **✅ 通过**。未测真实 OpenAI 在线调用；`POST /api/ai/*` 路由留待阶段二任务 2–4。
+- **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段二·任务 2–4**（23/23，TC-ME-P2T2～INT）与**任务 5**交付物审查（18/20，TC-ME-P2T5）。结论：HTTP 四接口 **✅ 通过**；面板联调 **⚠️ 有条件通过**（Add 页 Demo 就绪，成员 B 正式页与 Flutter 手测待补）。

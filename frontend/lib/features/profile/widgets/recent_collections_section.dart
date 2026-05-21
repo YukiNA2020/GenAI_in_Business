@@ -52,6 +52,7 @@ class RecentCollectionsSection extends ConsumerWidget {
                       item: item,
                       categoryLabel: categoryNames[item.category],
                       onTap: () => openItemDetail(ref, item.id),
+                      compact: true,
                     ),
                   );
                 },

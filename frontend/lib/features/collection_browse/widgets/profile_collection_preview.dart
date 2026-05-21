@@ -9,6 +9,7 @@ import '../utils/collectory_room_catalog.dart';
 import '../providers/collection_list_provider.dart';
 import '../providers/member3_ui_settings_provider.dart';
 import '../services/collection_query_service.dart';
+import '../utils/profile_exhibit_utils.dart';
 import 'collectory_handoff_header.dart';
 import 'collection_card.dart';
 import 'collection_grid.dart';
@@ -17,8 +18,14 @@ import 'design/collectory_pill_toggle.dart';
 import 'design/collectory_top_bar.dart';
 
 /// Profile tab: stats API + recent [CollectionCard] + category preview (Member 3 phase 4).
+/// [embeddedInMemberEProfile]：成员 E 阶段三·任务五 — 嵌入 ProfilePage，省略顶栏/头像/统计重复块。
 class ProfileCollectionPreview extends ConsumerStatefulWidget {
-  const ProfileCollectionPreview({super.key});
+  const ProfileCollectionPreview({
+    super.key,
+    this.embeddedInMemberEProfile = false,
+  });
+
+  final bool embeddedInMemberEProfile;
 
   @override
   ConsumerState<ProfileCollectionPreview> createState() =>
@@ -42,6 +49,31 @@ class _ProfileCollectionPreviewState
       loading: () => <String, String>{},
       error: (_, __) => <String, String>{},
     );
+
+    if (widget.embeddedInMemberEProfile) {
+      return statsAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: CircularProgressIndicator(color: CollectoryColors.textLabel),
+          ),
+        ),
+        error: (_, __) => _buildMuseumSections(
+          ref: ref,
+          stats: demoUserStatsFallback,
+          allItems: list.items,
+          categoryNames: categoryNames,
+          publicPreview: publicPreview,
+        ),
+        data: (stats) => _buildMuseumSections(
+          ref: ref,
+          stats: stats,
+          allItems: list.items,
+          categoryNames: categoryNames,
+          publicPreview: publicPreview,
+        ),
+      );
+    }
 
     return statsAsync.when(
       loading: () => const Center(
@@ -77,19 +109,7 @@ class _ProfileCollectionPreviewState
     final exhibits = stats.totalCollections.toString();
     final rooms = stats.categoryCount.toString().padLeft(2, '0');
     final publicCount = stats.publicCollections.toString();
-    final lastAdded = _resolveLastAdded(allItems, stats.recentCollections);
-
-    var recent = _resolveRecentExhibits(stats, allItems);
-    if (publicPreview) {
-      recent = recent.where((e) => e.visibility == 'public').toList();
-    }
-    final favoriteCategoryId =
-        CollectoryFavoriteTags.categorySlugForTag(_activeFavoriteTag);
-    final favoriteItems = _filterProfileItems(
-      allItems,
-      publicOnly: publicPreview,
-      categoryId: favoriteCategoryId,
-    );
+    final lastAdded = resolveLastAdded(allItems, stats.recentCollections);
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(pad, 10, pad, 24),
@@ -154,10 +174,69 @@ class _ProfileCollectionPreviewState
               Expanded(child: _StatColumn(value: exhibits, label: 'Exhibits')),
               Expanded(child: _StatColumn(value: rooms, label: 'Rooms')),
               Expanded(child: _StatColumn(value: publicCount, label: 'Public')),
-              Expanded(child: _LastAddedStatColumn(display: lastAdded)),
+              Expanded(
+                child: _LastAddedStatColumn(
+                  display: ProfileLastAddedDisplay(
+                    year: lastAdded.year,
+                    monthDay: lastAdded.monthDay,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
+          ..._museumSectionWidgets(
+            ref: ref,
+            stats: stats,
+            allItems: allItems,
+            categoryNames: categoryNames,
+            publicPreview: publicPreview,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMuseumSections({
+    required WidgetRef ref,
+    required UserStats stats,
+    required List<CollectionItem> allItems,
+    required Map<String, String> categoryNames,
+    required bool publicPreview,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _museumSectionWidgets(
+        ref: ref,
+        stats: stats,
+        allItems: allItems,
+        categoryNames: categoryNames,
+        publicPreview: publicPreview,
+      ),
+    );
+  }
+
+  List<Widget> _museumSectionWidgets({
+    required WidgetRef ref,
+    required UserStats stats,
+    required List<CollectionItem> allItems,
+    required Map<String, String> categoryNames,
+    required bool publicPreview,
+  }) {
+    final recent = resolveRecentExhibits(
+      stats,
+      allItems,
+      publicOnly: publicPreview,
+    );
+    final favoriteCategoryId =
+        CollectoryFavoriteTags.categorySlugForTag(_activeFavoriteTag);
+    final favoriteItems = filterProfileItems(
+      allItems,
+      publicOnly: publicPreview,
+      categoryId: favoriteCategoryId,
+    );
+
+    return [
           _VisibilityCard(
             publicPreview: publicPreview,
             onToggle: () {
@@ -307,99 +386,8 @@ class _ProfileCollectionPreviewState
             ),
           ),
           const _HairlineDivider(),
-        ],
-      ),
-    );
+        ];
   }
-}
-
-List<CollectionItem> _resolveRecentExhibits(
-  UserStats stats,
-  List<CollectionItem> allItems,
-) {
-  final pool = allItems.isNotEmpty ? allItems : stats.recentCollections;
-  return _sortByNewestAcquired(pool).take(5).toList();
-}
-
-/// Newest first by [dateAcquired], then [createdAt].
-List<CollectionItem> _sortByNewestAcquired(List<CollectionItem> items) {
-  final copy = [...items];
-  copy.sort((a, b) {
-    final da = _sortableDate(a);
-    final db = _sortableDate(b);
-    return db.compareTo(da);
-  });
-  return copy;
-}
-
-String _sortableDate(CollectionItem item) {
-  final acquired = item.dateAcquired?.trim();
-  if (acquired != null && acquired.isNotEmpty) return acquired;
-  return item.createdAt?.trim() ?? '';
-}
-
-List<CollectionItem> _filterProfileItems(
-  List<CollectionItem> items, {
-  required bool publicOnly,
-  String? categoryId,
-}) {
-  var out = items;
-  if (publicOnly) {
-    out = out.where((e) => e.visibility == 'public').toList();
-  }
-  if (categoryId != null && categoryId.isNotEmpty) {
-    out = out.where((e) => e.category == categoryId).toList();
-  }
-  return out;
-}
-
-String? _itemDisplayDate(CollectionItem item) {
-  final acquired = item.dateAcquired?.trim();
-  if (acquired != null && acquired.isNotEmpty) return acquired;
-  final created = item.createdAt?.trim();
-  if (created != null && created.isNotEmpty) return created;
-  return null;
-}
-
-class _LastAddedDisplay {
-  const _LastAddedDisplay({this.year, required this.monthDay});
-
-  final String? year;
-  final String monthDay;
-}
-
-const _lastAddedEmpty = _LastAddedDisplay(monthDay: '—');
-
-_LastAddedDisplay _parseLastAddedDate(String raw) {
-  final iso = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})').firstMatch(raw.trim());
-  if (iso != null) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    final month = int.parse(iso.group(2)!);
-    final day = int.parse(iso.group(3)!);
-    if (month >= 1 && month <= 12) {
-      return _LastAddedDisplay(
-        year: iso.group(1),
-        monthDay: '${months[month - 1]} $day',
-      );
-    }
-    return _LastAddedDisplay(year: iso.group(1), monthDay: raw.substring(5, 10));
-  }
-  return _LastAddedDisplay(monthDay: raw.length > 9 ? raw.substring(0, 9) : raw);
-}
-
-_LastAddedDisplay _resolveLastAdded(
-  List<CollectionItem> allItems,
-  List<CollectionItem> recentFromStats,
-) {
-  final pool = allItems.isNotEmpty ? allItems : recentFromStats;
-  if (pool.isEmpty) return _lastAddedEmpty;
-  final newest = _sortByNewestAcquired(pool).first;
-  final raw = _itemDisplayDate(newest);
-  if (raw == null) return _lastAddedEmpty;
-  return _parseLastAddedDate(raw);
 }
 
 class _HairlineDivider extends StatelessWidget {
@@ -501,7 +489,7 @@ class _StatColumn extends StatelessWidget {
 class _LastAddedStatColumn extends StatelessWidget {
   const _LastAddedStatColumn({required this.display});
 
-  final _LastAddedDisplay display;
+  final ProfileLastAddedDisplay display;
 
   @override
   Widget build(BuildContext context) {

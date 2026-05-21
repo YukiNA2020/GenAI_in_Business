@@ -78,7 +78,8 @@ class ProfileHeader extends ConsumerWidget {
                 spacing: 8,
                 runSpacing: 6,
                 children: [
-                  OutlinedButton(
+                  _profileOutlineButton(
+                    label: 'Edit profile',
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
@@ -86,24 +87,10 @@ class ProfileHeader extends ConsumerWidget {
                         ),
                       );
                     },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      minimumSize: const Size(0, 32),
-                      side: const BorderSide(color: CollectoryColors.borderDark),
-                    ),
-                    child: Text(
-                      'Edit profile',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ),
                   if (!session.isLoggedIn)
-                    TextButton(
+                    _profileOutlineButton(
+                      label: 'Sign in',
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
@@ -111,17 +98,16 @@ class ProfileHeader extends ConsumerWidget {
                           ),
                         );
                       },
-                      child: const Text('Sign in'),
                     )
                   else
-                    TextButton(
+                    _profileOutlineButton(
+                      label: 'Sign out',
                       onPressed: () {
                         ref.read(authSessionProvider.notifier).signOut();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Signed out (mock).')),
                         );
                       },
-                      child: const Text('Sign out'),
                     ),
                 ],
               ),
@@ -129,6 +115,30 @@ class ProfileHeader extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  static Widget _profileOutlineButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        minimumSize: const Size(0, 32),
+        foregroundColor: CollectoryColors.textPrimary,
+        side: const BorderSide(color: CollectoryColors.borderDark),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: CollectoryColors.textPrimary,
+        ),
+      ),
     );
   }
 

@@ -58,6 +58,7 @@ member_E/
 | 任务 3 | `edit_profile_page.dart` |
 | 任务 4 | `login_placeholder_page.dart`、`register_placeholder_page.dart` |
 | 说明 | `docs/Phase_3_Profile_Completion.md` |
+| 任务 5：与成员 3 联调 | `docs/Phase_3_Task5_Member3_Integration.md` + `profile_exhibit_utils.dart` |
 
 ---
 
