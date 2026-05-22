@@ -12,15 +12,15 @@
 
 | 项目 | 当前结果 |
 |---|---|
-| 当前本地分支 | `memberE` |
-| 当前本地分支来源 | 基于已拉取的 `origin/feature/ai-profile-test` 最新提交创建 |
-| 当前远端跟踪 | 暂未设置远端跟踪；如需让队友看到，应在确认后推送为 `origin/memberE` |
+| 当前本地分支 | `feature/ai-profile-test` |
+| 当前本地分支来源 | 协作分支；成员 E 主要实现和本轮测试文档均同步到此分支 |
+| 当前远端跟踪 | `origin/feature/ai-profile-test` |
 | 参考远端分支 | `origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/Member-C` |
-| `origin/feature/ai-profile-test` 状态 | 已包含成员 E 阶段二到阶段五的大量代码和文档，提交作者显示为 `Jean030`；本地 `memberE` 从该状态切出 |
-| `origin/feature/member-1-task` 状态 | 最新提交包含房间 API / rooms 数据结构更新，但尚未合入当前 `memberE` |
-| 成员 E 当前工作建议 | 在 `memberE` 上继续工作；不要直接提交到 `main` 或 `feature/ai-profile-test` |
+| `origin/feature/ai-profile-test` 状态 | 已包含成员 E 阶段二到阶段五的大量代码和文档；本轮 DeepSeek 测试文档也同步到该分支 |
+| `origin/feature/member-1-task` 状态 | 最新提交包含房间 API / rooms 数据结构更新，但尚未合入当前 `feature/ai-profile-test` |
+| 成员 E 当前工作建议 | 小范围文档和测试结果可同步到 `feature/ai-profile-test`；大范围实验再单独开分支 |
 
-> 重要：`feature/ai-profile-test` 是已有协作/参考分支，不应再作为成员 E 后续直接提交分支。成员 E 后续独立开发、测试文档修订和提交，默认使用 `memberE`。
+> 重要：此前考虑过单独推送 `memberE`，但当前 E 的主要实现已经在 `feature/ai-profile-test`。现阶段优先保持该分支文档和测试结果最新；不要直接提交到 `main`。
 
 ### 成员 E 专属进度条
 
@@ -29,7 +29,7 @@
 | 阶段 | 进度 | 当前判断 | 说明 |
 |---|---|---|---|
 | 阶段一：AI Prompt 和 API Contract | ██████████ 100% | 已完成 | 四类 Prompt、AI API Contract、自检记录已完成 |
-| 阶段二：V1.2 AI 接口和表单联调 | ██████████ 100% | 远端已有实现，待成员 E 确认/独立测试 | 标题、分类标签、故事生成接口和 AI 面板预交付已在分支中出现；仍需成员 E 确认代码质量、独立测试和成员 B / 整体 UI 确认 |
+| 阶段二：V1.2 AI 接口和表单联调 | ██████████ 100% | 已完成真实 DeepSeek 测试 | 标题、分类标签、故事生成接口已通过 DeepSeek service/HTTP live；成员 B 最终表单仍待联调 |
 | 阶段三：V1.3 用户主页和资料页 | ██████████ 100% | 远端已有实现，待成员 E 确认/独立测试 | 分支中已出现用户主页、统计、资料编辑、登录/注册占位、成员 C 收藏展示接入 |
 | 阶段四：V2.1 图片识别和多风格故事 | ██████████ 100% | 远端已有实现，待成员 E 确认/独立测试 | 分支中已出现图片识别 Prompt、`analyze-image` 接口方案、多风格故事、Add 页面联动 |
 | 阶段五：测试计划、Bug 跟踪和 Demo 校验 | ██████████ 100% | 远端已有文档/脚本，待成员 E 确认/团队验收 | 分支中已出现测试计划、Bug 跟踪、E2E 测试脚本和给成员 F 的 Demo 交接内容 |
@@ -40,9 +40,8 @@
 
 | 任务 | 建议动作 | 判断依据 |
 |---|---|---|
-| 接管确认 E2-E5 | 先阅读远端新增代码和文档，确认哪些实现可保留、哪些需要修复或重做 | 远端分支已有代码，但成员 E 本人尚未确认 |
-| 独立测试 E2-E5 | 让新的测试 AI 按 `member_E/docs/E_Current_Status_and_Plan.md` 和 `member_E/docs/E_Technical_Route_Map.md` 执行测试，并写入 `member_E/E_Test_Log.md` / 根目录 `Test.md` | 测试通过前不要把这些任务写成最终完成 |
-| 检查并发布成员 E 分支 | 确认本地文档无误后，可将 `memberE` 推送为远端分支 | 当前 `memberE` 还只是本地分支 |
+| 接管确认 E2-E5 | 继续阅读远端新增代码和文档，确认哪些实现可保留、哪些需要修复或重做 | DeepSeek 和自动化回归已通过，但跨成员最终联调还没完成 |
+| 独立测试 E2-E5 | 已完成 DeepSeek / API 自动化；下一步补 Flutter 手测和成员 B 正式表单回归 | 测试结果已写入 `member_E/E_Test_Log.md` / 根目录 `Test.md` |
 | 文档同步 | 每次开发或测试后，同时更新 `member_E/E_Status_Log.md`、`member_E/E_Prompt_Log.md`，必要时同步根目录 `Status.md`、`Prompt_library.md`、`Test.md` | 团队需要知道“成员 E / 成员 5”修改了哪里 |
 | 兼容性复查 | 合并其他成员分支前，先重新执行 `git fetch --all --prune` 并检查差异 | 成员 A 的 rooms API 更新尚未进入当前分支 |
 
@@ -70,10 +69,10 @@
 
 ### 步骤 1：确认 Git 分支和远端状态
 
-1. 执行 `git status --short --branch`，确认当前是否在 `memberE`。
+1. 执行 `git status --short --branch`，确认当前是否在 `feature/ai-profile-test` 或用户指定的隔离分支。
 2. 执行 `git fetch --all --prune`，获取所有远端分支最新状态。
 3. 查看 `origin/main`、`origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/Member-C` 是否有新提交。
-4. 如果当前不在 `memberE`，先提醒用户，不要直接在 `main` 或其他成员分支上继续写成员 E 内容。
+4. 如果当前在 `main` 或无关成员分支，先提醒用户，不要直接继续写成员 E 内容。
 
 ### 步骤 2：读取核心状态文档
 
@@ -140,12 +139,12 @@
 | 任务编号 | 任务名称 | 前置依赖 | 当前状态 |
 |---|---|---|---|
 | E2-1 | 实现 AI Provider 封装 | 成员 A 后端框架 | ✅ 已完成 |
-| E2-2 | 实现标题建议接口 | Express AI 路由 | ✅ 已完成开发；🟡 待独立测试确认 |
-| E2-3 | 实现分类和标签建议接口 | Express AI 路由 | ✅ 已完成开发；🟡 待独立测试确认 |
-| E2-4 | 实现故事生成接口 | Express AI 路由 | ✅ 已完成开发；🟡 待独立测试确认 |
+| E2-2 | 实现标题建议接口 | Express AI 路由 | ✅ 已完成；DeepSeek HTTP live 通过 |
+| E2-3 | 实现分类和标签建议接口 | Express AI 路由 | ✅ 已完成；DeepSeek HTTP live 通过 |
+| E2-4 | 实现故事生成接口 | Express AI 路由 | ✅ 已完成；DeepSeek HTTP live 通过 |
 | E2-5 | 和成员 B 联调 AI 面板 | 成员 B 创建收藏页面 | ✅ 成员 E 已预交付；🟡 待最终 UI 联调确认 |
 
-**阶段二当前判断**：开发侧已完成。下一步应优先让独立测试 AI 测试 E2-2 至 E2-4，并把结果写入 `member_E/E_Test_Log.md`；如果结论需要团队知道，再同步根目录 `Test.md`。
+**阶段二当前判断**：开发侧与真实 DeepSeek 测试均已通过。下一步不需要再补第二个文字生成模型，优先做成员 B 正式表单联调、rooms API 对齐和最终 Demo 回归。
 
 ### 阶段三：V1.3 用户主页、登录注册占位和个人资料
 
@@ -164,12 +163,12 @@
 | 任务编号 | 任务名称 | 前置依赖 | 当前状态 |
 |---|---|---|---|
 | E4-1 | 设计图片识别 Prompt | 无 | ✅ 已完成 |
-| E4-2 | 实现图片识别接口方案 | 图片上传/存储链路 | ✅ 已完成当前方案；🟡 待独立测试和真实链路确认 |
+| E4-2 | 实现图片识别接口方案 | 图片上传/存储链路 | ✅ 已完成当前文本推断方案；真实 Vision 另评估 |
 | E4-3 | 设计多风格故事 Prompt | 无 | ✅ 已完成 |
 | E4-4 | 扩展故事生成接口 | 阶段二 AI 接口 | ✅ 已完成开发；🟡 待独立测试 |
 | E4-5 | 与成员 B 联调图片识别填表 | 成员 B 创建表单 | ✅ 已完成当前分支接入；🟡 待成员 B 最终页面确认 |
 
-**阶段四当前判断**：Prompt、接口方案和页面联动已完成。下一步重点是测试接口行为、失败兜底、Mock/真实 provider 切换，以及成员 B 页面最终合并后的回归。
+**阶段四当前判断**：Prompt、接口方案和页面联动已完成，DeepSeek 文本推断已通过。下一步重点是成员 B 页面最终合并后的回归；若产品必须“AI 真正看图”，再接 Vision API。
 
 ### 阶段五：V2.3 测试用例、Bug 跟踪和 Demo 校验
 
@@ -194,7 +193,7 @@
 
 开始前必须先阅读 README.md、Status.md、Test.md、Prompt_library.md、member_E/TODO_Guide.md、member_E/docs/E_Technical_Route_Map.md、member_E/E_Status_Log.md、member_E/E_Prompt_Log.md。
 
-请先确认当前分支是否为 memberE，并执行 git fetch --all --prune 查看远端更新。不要直接提交到 main 或 feature/ai-profile-test。
+请先确认当前分支是否为 feature/ai-profile-test 或用户指定的隔离分支，并执行 git fetch --all --prune 查看远端更新。不要直接提交到 main。
 
 如果该任务已经完成，请不要重复开发，只做必要的测试、Bug 修复或文档同步。完成后把改动交给我测试，并在成员 E 局部状态文档中标明“成员 E / 成员 5”。
 ```
@@ -242,8 +241,9 @@
 | 日期 | 更新内容 | 负责人 |
 |---|---|---|
 | 2026-05-22 | 解决文档冲突后，删除过时的 `E_Fresh_AI_Workflow.md`，将当前入口改为 `E_Current_Status_and_Plan.md`；成员 E 后续以线上最新实现为主做接管和整合 | 成员 E / 成员 5 |
-| 2026-05-22 | 从最新远端 `feature/ai-profile-test` 切出本地 `memberE` 后，重写成员 E 专属进度条和任务判断；将 E2-E5 改为“远端已有实现，待成员 E 接管确认和独立测试” | 成员 E / 成员 5 |
+| 2026-05-22 | 先从最新远端 `feature/ai-profile-test` 切出本地 `memberE` 做隔离判断；随后确认 E 主要成果已在 `feature/ai-profile-test`，文档和测试结果继续同步到该协作分支 | 成员 E / 成员 5 |
 | 2026-05-22 | 增加 `memberE` 分支规则、远端分支兼容性提醒、新 AI 开发/测试 Prompt 模板 | 成员 E / 成员 5 |
+| 2026-05-22 | DeepSeek 真实 LLM 测试通过：service live 5/5、HTTP live 5/5、阶段 1/2/4/5 回归 66/66、Flutter test 1/1 | 成员 E / 成员 5 |
 | 2026-05-21 | 新增 E3-4 精确技术路线，明确登录 / 注册占位的 Flutter 落点和验收标准 | 成员 E / 成员 5 |
 | 2026-05-21 | 根据 GitHub 远端分支和当前 `feature/ai-profile-test` 状态，更新成员 E 专属进度条、依赖解锁判断和当前可执行任务 | 成员 E / 成员 5 |
 | 2026-05-15 | 创建本文件，整理阶段二至阶段五的依赖表 | 成员 E / 成员 5 |

@@ -8,7 +8,7 @@
 
 ## 1. 总原则
 
-1. 当前工作分支是 `memberE`，不要直接在 `main` 或 `feature/ai-profile-test` 上开发或提交。
+1. 当前协作同步分支是 `feature/ai-profile-test`；不要直接在 `main` 上开发或提交。高风险实验再单独开 `memberE` 或 `codex/...` 分支。
 2. 一次只做一个任务，例如只做 `E3-4`，不要顺手完成其他任务。
 3. 成员 E 的 AI 后端代码优先放在 `member_E/backend/src/ai/`；根目录 `backend/` 只做必要的最小挂载或适配。
 4. 成员 E 的前端新增内容必须接入当前 Flutter App：`frontend/lib/app.dart` + `frontend/lib/features/collection_browse/`。不要另起一个脱离现有 `app.dart` 的孤立页面体系。
@@ -24,7 +24,7 @@
 | 后端框架 | Node.js + Express，根目录后端入口为 `backend/src/app.js` |
 | AI 业务代码 | `member_E/backend/src/ai/` |
 | AI 根目录挂载 | `backend/src/routes/ai.routes.js` 作为适配层，`backend/src/app.js` 挂载 `/api/ai` |
-| AI Provider | `generateJson(prompt, { validate, mockKind })`，无 Key 时可用 mock |
+| AI Provider | `generateJson(prompt, { validate, mockKind })`，无 Key 时可用 mock；DeepSeek OpenAI-compatible 已实测通过 |
 | AI 错误码 | `AI_VALIDATION_ERROR`、`AI_PROVIDER_UNAVAILABLE`、`AI_INVALID_RESPONSE` |
 | 分类输出 | AI 返回中文分类，写入收藏前映射为英文 slug，映射参考 `GET /api/categories` 或 `ai_category_mapping.dart` |
 | 前端框架 | Flutter + Riverpod |
@@ -32,7 +32,7 @@
 | AI 表单面板 | `frontend/lib/features/collection_form/` 和 `member_B/frontend/lib/features/collection_form/` |
 | Profile 当前实现 | `ProfileDesignPage` + `ProfileCollectionPreview`，不要重复造一个不接入 App 的 Profile |
 | 测试记录 | `member_E/E_Test_Log.md` 优先；必要时同步根目录 `Test.md` |
-| 当前分支来源 | `memberE` 基于最新 `origin/feature/ai-profile-test` 创建；远端 `origin/feature/member-1-task` 的 rooms API 尚未合并 |
+| 当前分支来源 | 当前同步分支为 `feature/ai-profile-test`；远端 `origin/feature/member-1-task` 的 rooms API 尚未合并 |
 
 ---
 
@@ -52,14 +52,14 @@
 
 ## 4. 阶段二：文字 AI 接口和表单联调
 
-阶段二在远端分支中已有实现，但需要成员 E 接管确认、独立测试和成员 B / 整体 UI 联调。不要只因为文件存在就判定最终完成。
+阶段二在远端分支中已有实现，且已通过 DeepSeek 真实 API 与自动化回归测试。剩余风险主要是成员 B 正式表单和整体 UI 联调。
 
 | 任务 | 当前状态 | 确定文件 | 技术路线 | 验收口径 |
 |---|---|---|---|---|
-| E2-1 AI Provider 封装 | 已完成 | `ai.provider.js`、`AI_Provider_Setup.md`、`.env.example`、`verify_phase2_task1_provider.js` | 使用 `generateJson()` 封装 OpenAI/mock、timeout、JSON 解析和错误映射 | 自检 11/11 通过；无 Key 时 mock 可跑 |
-| E2-2 标题建议接口 | 远端已有实现，待成员 E 确认/独立测试 | `ai.service.js`、`ai.routes.js`、`backend/src/routes/ai.routes.js` | `POST /api/ai/suggest-title`，description 必填，返回 3 个标题 | HTTP 返回结构符合 `AI_API_Contract.md` |
-| E2-3 分类和标签接口 | 远端已有实现，待成员 E 确认/独立测试 | 同上 | `POST /api/ai/suggest-category`、`POST /api/ai/suggest-tags` | 分类中文名合法；标签 3-8 个 |
-| E2-4 故事生成接口 | 远端已有实现，待成员 E 确认/独立测试 | 同上 | `POST /api/ai/generate-story`，调用 `buildStoryPrompt()` | AI 失败返回 502，不阻塞手动保存 |
+| E2-1 AI Provider 封装 | 已完成并通过 DeepSeek | `ai.provider.js`、`AI_Provider_Setup.md`、`.env.example`、`verify_phase2_task1_provider.js`、`verify_deepseek_provider_live.js` | 使用 `generateJson()` 封装 OpenAI-compatible/mock、timeout、JSON 解析和错误映射 | 自检 11/11；DeepSeek service live 5/5 |
+| E2-2 标题建议接口 | 已完成并通过 DeepSeek | `ai.service.js`、`ai.routes.js`、`backend/src/routes/ai.routes.js` | `POST /api/ai/suggest-title`，description 必填，返回 3 个标题 | HTTP live 通过 |
+| E2-3 分类和标签接口 | 已完成并通过 DeepSeek | 同上 | `POST /api/ai/suggest-category`、`POST /api/ai/suggest-tags` | HTTP live 通过 |
+| E2-4 故事生成接口 | 已完成并通过 DeepSeek | 同上 | `POST /api/ai/generate-story`，调用 `buildStoryPrompt()` | HTTP live 通过；AI 失败不阻塞手动保存 |
 | E2-5 AI 面板联调 | 远端已有预交付，待成员 E / 成员 B 确认 | `frontend/lib/features/collection_form/`、`member_B/frontend/lib/features/collection_form/`、`Phase2_Task5_AI_Panel_by_Member_E.md` | `AiSuggestionPanel` 调四个 AI 接口；Add 页有最小挂钩；成员 B 后续迁入正式创建表单 | 能从表单输入 description 后获取 AI 建议，且用户选择后写入表单 |
 
 阶段二测试优先级：
@@ -99,12 +99,12 @@
 
 ## 6. 阶段四：图片识别和多风格故事
 
-阶段四在远端最新分支中已有实现。当前实现看起来支持图片识别 mock / imageDescription 输入、多风格故事和 Add 页 Recognize 联调，但仍需成员 E 接管确认、独立测试和真实 UI 复测。
+阶段四在远端最新分支中已有实现，并已通过 DeepSeek 文本推断测试。注意：当前 `analyze-image` 不是直接看图的 Vision API，而是基于 `imageDescription` / `imageUrl` 文本生成建议。
 
 | 任务 | 当前状态 | 推荐文件 / 动作 | 技术路线 | 验收口径 |
 |---|---|---|---|---|
 | E4-1 图片识别 Prompt | 远端已有实现，待成员 E 确认/独立测试 | `docs/prompts/prompt_image.md`、`ai.prompts.js` | 输入图片描述 / imageUrl / 用户补充描述；输出 title、category、tags、description | 输出结构固定，分类仍为中文集合 |
-| E4-2 图片识别接口方案 | 远端已有实现，待成员 E 确认/独立测试 | `ai.schemas.js`、`ai.service.js`、`ai.routes.js`、`verify_phase4_tasks1_5_api.js` | 新增 `POST /api/ai/analyze-image`；无 Vision 时可用 mock / imageDescription | 无图片能力时仍可演示；AI 失败不影响用户手动填表 |
+| E4-2 图片识别接口方案 | 已完成当前文本推断方案 | `ai.schemas.js`、`ai.service.js`、`ai.routes.js`、`verify_phase4_tasks1_5_api.js` | 新增 `POST /api/ai/analyze-image`；无 Vision 时可用 mock / imageDescription，DeepSeek 文本推断已通过 | 无图片能力时仍可演示；AI 失败不影响用户手动填表 |
 | E4-3 多风格故事 Prompt | 远端已有实现，待成员 E 确认/独立测试 | `docs/prompts/prompt_story_styles.md`、`ai.prompts.js` | 支持 `concise`、`scrapbook`、`travel`、`vintage` 四种 style | 每种 style 有明确语气说明和 JSON 输出样例 |
 | E4-4 扩展故事生成接口 | 远端已有实现，待成员 E 确认/独立测试 | `buildStoryPrompt()`、`generateStory()`、`validateStoryResponse()` | 沿用 `POST /api/ai/generate-story`，新增可选 `style` 参数；不新增重复故事接口 | 不传 style 保持旧行为；传 style 后输出符合风格 |
 | E4-5 图片识别填表联调 | 远端已有接入，待成员 E / 成员 B 确认 | `AiSuggestionPanel`、`ai_image_analysis.dart`、Add 页 Recognize | 用户上传 / 模拟图片描述后点击 Recognize，建议写入标题/分类/标签/描述 | 能从 Add 页触发，失败时只提示，不阻塞保存 |
@@ -112,7 +112,7 @@
 阶段四重要边界：
 
 1. 图片上传、图片保存、collections 图片字段主要是成员 A / B 范围，成员 E 只消费图片 URL / 描述做 AI 建议。
-2. 如果没有真实 Vision API key，优先保持 mock 可演示。
+2. 当前已接入 DeepSeek 文本 LLM；如果产品要求真正识别上传图片，再评估 Vision API。
 3. 新增接口必须同步 `AI_Routes_Integration.md` 或新增阶段四接口说明文档。
 
 ---
@@ -136,9 +136,9 @@
 | 范围 | 结论 | 说明 |
 |---|---|---|
 | 阶段一 | 已明确 | 已有 Prompt 文档、Contract、JS builder、schema、自检 |
-| 阶段二 | 已明确，远端已有实现 | 已有 Provider、service、routes、根目录挂载、联调说明、自检；待成员 E 确认 |
+| 阶段二 | 已明确并通过真实 API 测试 | 已有 Provider、service、routes、根目录挂载、联调说明、自检；DeepSeek service/HTTP live 已通过 |
 | 阶段三 | 已明确，远端已有实现 | 当前实现位于 `frontend/lib/features/profile/`，并通过 Profile Tab 接入；待成员 E 确认 |
-| 阶段四 | 已明确，远端已有实现 | 图片识别 mock / imageDescription、多风格故事和 Add 页联调已实现；待成员 E 确认 |
+| 阶段四 | 已明确并通过文本 LLM 测试 | 图片描述文本推断、多风格故事和 Add 页联调已实现；真实 Vision 是否接入另评估 |
 | 阶段五 | 已明确，远端已有文档/脚本 | 测试计划、Bug 表、Demo e2e 和成员 6 handoff 已出现；待成员 E 确认 |
 
 如果新的 AI 发现实际代码与本文件冲突，应先停止并说明冲突，不要自行选择一条路线硬写。
@@ -154,7 +154,7 @@
 3. 后端新增 `GET /api/rooms` 和 `GET /api/rooms/:id`。
 4. Seed 数据变为每月一个 room，五月包含四类展品各 4 件。
 
-当前 `memberE` 分支尚未合并该成员 A 更新。后续如果合并，应更新成员 E Profile / Room 相关路线：
+当前 `feature/ai-profile-test` 尚未合并该成员 A 更新。后续如果合并，应更新成员 E Profile / Room 相关路线：
 
 1. `ProfilePage` 和成员 C room 入口优先读取后端 rooms API，而不是只依赖 `collectory_room_catalog.dart`。
 2. Add / AI 填表如能选择 room，应写入 `roomId`。

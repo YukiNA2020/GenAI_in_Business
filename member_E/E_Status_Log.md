@@ -21,10 +21,10 @@
 |---|---|
 | 当前负责人 | 成员 E / 成员 5 |
 | 当前工作区 | `member_E/` |
-| 当前 Git 分支 | `memberE`（本地新分支，基于最新 `origin/feature/ai-profile-test` 创建；尚未推送远端） |
-| 当前阶段 | 远端已有阶段二到五实现，成员 E 正在接管确认 |
-| 当前阶段开发状态 | `origin/feature/ai-profile-test` 中已有成员 E 相关代码；需成员 E 确认哪些可接管、哪些需要重做或修复 |
-| 当前阶段测试状态 | 待独立测试 AI 验证；测试通过前不要写成最终完成 |
+| 当前 Git 分支 | `feature/ai-profile-test`（成员 E 主要成果已在该分支；`memberE` 暂不需要推送远端） |
+| 当前阶段 | 阶段二到五已有实现，成员 E 正在做真实 API、联调和收尾测试 |
+| 当前阶段开发状态 | DeepSeek 真实 LLM 已接入并通过测试；后续重点是 rooms API / 成员 B 正式表单 / 真实 Vision 是否需要接入 |
+| 当前阶段测试状态 | DeepSeek service live 5/5、HTTP live 5/5、阶段 1/2/4/5 回归 66/66、Flutter 单测 1/1 |
 | 最近更新时间 | 2026-05-22 |
 
 ---
@@ -38,13 +38,14 @@
 | 2026-05-22 | 检查技术路线兼容性 | 已发现并修正路线文档中过期状态 | 阶段三到五不再简单写成待开发，而应写为远端已有实现、待成员 E 接管确认和独立测试；未来 rooms 联调需关注成员 A 的 `roomId` / rooms API |
 | 2026-05-22 | 整理文档冲突 | 删除过时 `E_Fresh_AI_Workflow.md`，新增 `E_Current_Status_and_Plan.md` | 后续以当前线上实现为主，成员 E 进入接管、复测、整合状态 |
 | 2026-05-22 | DeepSeek 接入计划 | 新增 `DeepSeek_API_Integration_Test_Plan.md` | 下一步先验证真实 LLM 输出，再做 rooms API 和成员 B 表单整合 |
+| 2026-05-22 | DeepSeek 真实 API 测试 | `deepseek-v4-flash` 真实调用通过 | service live 5/5、HTTP live 5/5、阶段 1/2/4/5 回归 66/66、Flutter test 1/1 |
 
 ### 后续 Git 使用规则（成员 E）
 
-1. 成员 E 后续开发优先在 `memberE` 分支进行。
-2. 开始工作前先执行 `git fetch --all --prune`，再确认是否需要从 `origin/feature/ai-profile-test` 或其他协作分支吸收更新。
-3. 不要直接提交到 `main`，也不要直接把新工作推回 `feature/ai-profile-test`。
-4. 当 `memberE` 第一次需要让同伴看到时，再推送为远端 `origin/memberE`。
+1. 成员 E 当前文档和真实 LLM 测试结果同步到 `feature/ai-profile-test`，方便同伴查看。
+2. 开始工作前先执行 `git fetch --all --prune`，再确认是否需要从其他协作分支吸收更新。
+3. 不要直接提交到 `main`。
+4. 如果后续有高风险实验或大范围重构，再单独创建 `memberE` / `codex/...` 分支隔离。
 
 ---
 
@@ -63,6 +64,7 @@
 | 阶段二 | 任务 2：标题建议接口 | 已完成 | POST /api/ai/suggest-title |
 | 阶段二 | 任务 3：分类/标签接口 | 已完成 | suggest-category、suggest-tags |
 | 阶段二 | 任务 4：故事生成接口 | 已完成 | POST /api/ai/generate-story |
+| 阶段二 | DeepSeek 真实 LLM 接入 | 已完成（2026-05-22） | service live 5/5，HTTP live 5/5，现有 provider 无需重写 |
 | 阶段二 | 任务 5：AI 面板预交付 | 已完成（成员 E 代写） | `member_B/` + `collection_form/` + Add 页挂钩 |
 | 阶段三 | 任务 1：ProfilePage | 已完成 | `profile_page.dart` |
 | 阶段三 | 任务 2：收藏统计 | 已完成 | `profile_stats.dart` + `userStatsProvider` |
@@ -96,7 +98,7 @@
 | `E_Test_Log.md` | 成员 E 局部测试记录 | 已创建 |
 | `docs/E_Current_Status_and_Plan.md` | 当前结构、宏观计划和微观技术细节入口 | 已完成（2026-05-22，以当前线上实现为主） |
 | `docs/E_Technical_Route_Map.md` | 成员 E 全任务技术路线地图 | 已完成（2026-05-22，按远端最新阶段三到五状态修正） |
-| `docs/DeepSeek_API_Integration_Test_Plan.md` | DeepSeek API 接入和真实 LLM 测试执行计划 | 已完成（2026-05-22，等待新 AI 对话执行） |
+| `docs/DeepSeek_API_Integration_Test_Plan.md` | DeepSeek API 接入和真实 LLM 测试执行计划 | 已完成（2026-05-22，真实测试已执行并通过） |
 | `docs/prompts/prompt_title.md` | 标题生成 Prompt | 已完成（2026-05-21 增 §6） |
 | `scripts/verify_phase1_task1_title.js` | 任务一自检脚本 | 已完成（15/15） |
 | `docs/prompts/prompt_category.md` | 分类建议 Prompt | 已完成 |

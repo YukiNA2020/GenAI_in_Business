@@ -110,12 +110,12 @@ GENAI_Group/
 | `Member_3_Collection_Wall_Search_Detail_Plan.md` | 成员 3 收藏墙、浏览与搜索详细任务 | ✅ 完成 |
 | `Member_4_UI_Visual_Design_Detail_Plan.md` | 成员 4 UI 视觉设计与功能逻辑详细任务 | ✅ 完成 |
 | `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` | 成员 5 AI、用户主页与测试详细任务 | ✅ 已移入成员 E 工作区 |
-| `member_E/TODO_Guide.md` | 成员 E 专属可执行任务、依赖判断和进度条 | ✅ 已更新（成员 E，2026-05-22）：基于 `memberE` 本地分支和远端最新扫描，采用“远端已有实现，待成员 E 确认/测试”口径 |
+| `member_E/TODO_Guide.md` | 成员 E 专属可执行任务、依赖判断和进度条 | ✅ 已更新（成员 E，2026-05-22）：当前测试和文档同步到 `feature/ai-profile-test`，DeepSeek 真实 API 已通过 |
 | `member_E/E_Status_Log.md` | 成员 E 局部状态记录，用于阶段结束后同步根目录 Status | ✅ 完成 |
 | `member_E/E_Prompt_Log.md` | 成员 E 局部 Prompt 和决策记录，用于阶段结束后同步根目录 Prompt_library | ✅ 完成 |
 | `member_E/E_Test_Log.md` | 成员 E 局部测试记录，用于阶段结束后同步根目录 Test | ✅ 完成 |
 | `member_E/docs/E_Current_Status_and_Plan.md` | 成员 E 当前项目结构、宏观计划和微观技术细节入口 | ✅ 完成（成员 E，2026-05-22）：以当前线上实现为主，作为接管和后续整合依据 |
-| `member_E/docs/E_Technical_Route_Map.md` | 成员 E 全阶段任务技术路线地图 | ✅ 完成（成员 E，2026-05-22）：已按远端阶段三到五已有实现状态修正，等待成员 E 接管确认 |
+| `member_E/docs/E_Technical_Route_Map.md` | 成员 E 全阶段任务技术路线地图 | ✅ 完成（成员 E，2026-05-22）：已按当前协作分支和 DeepSeek 真实测试结果修正 |
 | `member_E/docs/prompts/prompt_title.md` | 成员 E 阶段一标题生成 Prompt | ✅ 完成（成员 E，2026-05-21），待独立测试 |
 | `member_E/scripts/verify_phase1_task1_title.js` | 成员 E 阶段一·任务一标题 Prompt 自检脚本 | ✅ 完成（成员 E，2026-05-21），开发自检 15/15 通过 |
 | `member_E/docs/prompts/prompt_category.md` | 成员 E 阶段一分类建议 Prompt | ✅ 完成，待独立测试 |
@@ -124,9 +124,10 @@ GENAI_Group/
 | `member_E/docs/AI_API_Contract.md` | 成员 E 阶段一 AI API 输入输出和错误合同 | ✅ 完成，待独立测试 |
 | `member_E/backend/src/ai/ai.prompts.js` | 成员 E 阶段一 Prompt builder | ✅ 完成，待独立测试 |
 | `member_E/backend/src/ai/ai.schemas.js` | 成员 E 阶段一 Schema、类别、错误码和校验函数 | ✅ 完成，待独立测试 |
-| `member_E/backend/src/ai/ai.provider.js` | 成员 E 阶段二·任务一 AI Provider（`generateJson`、OpenAI/mock、超时与错误映射） | ✅ 完成（成员 E，2026-05-21），待独立测试 |
-| `member_E/docs/AI_Provider_Setup.md` | 成员 E 阶段二 Provider 环境变量与运行说明 | ✅ 完成（成员 E，2026-05-21） |
-| `member_E/.env.example` | 成员 E AI 环境变量示例（无密钥） | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/backend/src/ai/ai.provider.js` | 成员 E 阶段二·任务一 AI Provider（`generateJson`、OpenAI-compatible/mock、超时与错误映射） | ✅ 完成；DeepSeek 真实 API 已测通过（2026-05-22） |
+| `member_E/docs/AI_Provider_Setup.md` | 成员 E 阶段二 Provider 环境变量、DeepSeek 配置与运行说明 | ✅ 完成；已同步 DeepSeek 真实测试结果 |
+| `member_E/.env.example` | 成员 E AI 环境变量示例（无密钥） | ✅ 完成；含 DeepSeek 示例，不含真实 key |
+| `member_E/scripts/verify_deepseek_provider_live.js` | 成员 E DeepSeek 真实 LLM 验证脚本 | ✅ 完成（2026-05-22），service live 5/5 |
 | `member_E/scripts/verify_phase2_task1_provider.js` | 成员 E 阶段二·任务一 Provider 自检 | ✅ 完成（成员 E，2026-05-21），11/11 通过 |
 | `member_E/backend/src/ai/ai.service.js` | 成员 E 阶段二·任务 2–4 AI 业务层 | ✅ 完成（成员 E，2026-05-21） |
 | `member_E/backend/src/ai/ai.routes.js` | 成员 E AI 路由工厂 `createAiRouter` | ✅ 完成（成员 E，2026-05-21） |
@@ -254,6 +255,7 @@ GENAI_Group/
 - [x] 任务 2：实现标题建议接口 `POST /api/ai/suggest-title`（成员 E，2026-05-21）
 - [x] 任务 3：实现分类和标签建议接口（成员 E，2026-05-21）
 - [x] 任务 4：实现故事生成接口 `POST /api/ai/generate-story`（成员 E，2026-05-21）
+- [x] DeepSeek 真实 LLM 接入测试（成员 E，2026-05-22）：service live 5/5、HTTP live 5/5，`deepseek-v4-flash` 可用
 - [x] 任务 5：AI 建议面板预交付（成员 E 代写至 `member_B/` + `frontend/lib/features/collection_form/`；Add 页最小挂钩，待成员 B 正式表单与独立测试）
 - [x] 阶段二·任务 2–4 开发自检：`verify_phase2_tasks2_4_api.js` 14/14（待独立测试 AI）
 
@@ -266,7 +268,7 @@ GENAI_Group/
 
 ### 成员 E 阶段四：V2.3 AI 图片识别和多风格故事
 - [x] 任务 1：设计图片识别 Prompt（成员 E，2026-05-21：`prompt_image.md`）
-- [x] 任务 2：实现 `POST /api/ai/analyze-image`（成员 E，2026-05-21，mock/Vision 方案）
+- [x] 任务 2：实现 `POST /api/ai/analyze-image`（成员 E，2026-05-21；2026-05-22 DeepSeek 文本推断通过，真实 Vision 未接入）
 - [x] 任务 3：设计多风格故事 Prompt（成员 E，2026-05-21：`prompt_story_styles.md`）
 - [x] 任务 4：扩展 `POST /api/ai/generate-story` + `style`（成员 E，2026-05-21）
 - [x] 任务 5：与成员 2 联调图片识别填表（成员 E，2026-05-21：Add 页 Upload→Recognize→自动填表；待独立测试）
@@ -345,7 +347,7 @@ GENAI_Group/
 - [x] 创建 `member_E/` 工作区并移入成员 E 技术路线文件
 - [x] 为成员 E 建立局部状态、Prompt 和测试记录文件
 - [x] 完善成员文件夹局部记录到根目录主文档的同步规则
-- [x] 为成员 E 创建独立本地分支 `memberE`，避免继续在 `feature/ai-profile-test` 上开发
+- [x] 评估成员 E 独立本地分支 `memberE`；当前决定不推远端，文档和测试结果同步到 `feature/ai-profile-test`
 - [x] 检查同伴远端更新并修正成员 E 技术路线文档
 - [x] 解决成员 E 文档合并冲突，删除过时的 `E_Fresh_AI_Workflow.md`，新增 `E_Current_Status_and_Plan.md`
 - [x] 完成成员 E 阶段一 AI Prompt 模板和 API Contract
@@ -363,11 +365,13 @@ GENAI_Group/
 
 ## 备注
 
-2026-05-22（成员 E / 成员 5，文档冲突整理）：根据当前线上仓库状态重新整理成员 E 文档。删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`，新增 `member_E/docs/E_Current_Status_and_Plan.md`，将成员 E 口径从“按昨晚旧任务文档继续逐项开发”改为“以当前已有实现为主，接管、复测、适配成员 A rooms API、等待成员 B 正式表单联调”。`memberE` 仍作为成员 E 后续优先工作分支；如与原有协作分支出现严重问题，可说明原因后回到 `feature/ai-profile-test` 处理。
+2026-05-22（成员 E / 成员 5，DeepSeek 真实 LLM 测试）：用户已在本地提供 DeepSeek API。使用 `deepseek-v4-flash` 完成真实调用验证：`verify_deepseek_provider_live.js` service live **5/5**，HTTP live **5/5**（`suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：文字生成大模型已可用，现有 provider 无需重写；`analyze-image` 当前仍是图片描述文本 + LLM 推断，不是真实 Vision。
 
-2026-05-22（成员 E / 成员 5，分支与路线检查）：已从远端拉取最新更新。当前本地已从最新 `origin/feature/ai-profile-test` 创建独立分支 `memberE`；`feature/ai-profile-test` 视为协作 / 参考分支，成员 E 后续优先在 `memberE` 开发，必要时可说明原因后回到原分支处理。检查发现远端 `origin/feature/ai-profile-test` 已出现成员 E 阶段三、四、五相关代码实现，提交作者显示为 `Jean030`，因此只能判断“远端已有实现 / 疑似同伴或另一个 AI 代做了一部分”，不能直接视为成员 E 已确认完成。已将 `member_E/TODO_Guide.md`、`member_E/docs/E_Technical_Route_Map.md` 和成员 E 状态记录修正为“待成员 E 接管确认和独立测试”的口径。
+2026-05-22（成员 E / 成员 5，文档冲突整理）：根据当前线上仓库状态重新整理成员 E 文档。删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`，新增 `member_E/docs/E_Current_Status_and_Plan.md`，将成员 E 口径从“按昨晚旧任务文档继续逐项开发”改为“以当前已有实现为主，接管、复测、适配成员 A rooms API、等待成员 B 正式表单联调”。`memberE` 后续仅在高风险实验或大范围重构时再使用；当前协作文档和测试结果同步到 `feature/ai-profile-test`。
 
-2026-05-22（成员 E / 成员 5，同伴更新兼容性）：已检查 `origin/feature/member-1-task` 最新提交 `a26da25`，成员 A 新增 `rooms` 表、`collections.room_id`、`GET /api/rooms`、`GET /api/rooms/:id` 和每月 room seed 数据。该更新尚未合并进当前 `memberE` 分支；后续合并成员 A 分支时，成员 E Profile / Room 相关路线应优先对齐 `roomId` 和 rooms API，避免继续只依赖本地 `collectory_room_catalog.dart`。
+2026-05-22（成员 E / 成员 5，分支与路线检查）：已从远端拉取最新更新。曾从最新 `origin/feature/ai-profile-test` 创建本地隔离分支 `memberE`；后续判断 E 的主要成果已在 `feature/ai-profile-test`，因此 `memberE` 暂不推远端，当前文档和测试结果继续同步到 `feature/ai-profile-test`。检查发现远端 `origin/feature/ai-profile-test` 已出现成员 E 阶段三、四、五相关代码实现，提交作者显示为 `Jean030`，因此最初采用“远端已有实现 / 待成员 E 接管确认和独立测试”的口径；DeepSeek 与自动化回归已在 2026-05-22 补测通过。
+
+2026-05-22（成员 E / 成员 5，同伴更新兼容性）：已检查 `origin/feature/member-1-task` 最新提交 `a26da25`，成员 A 新增 `rooms` 表、`collections.room_id`、`GET /api/rooms`、`GET /api/rooms/:id` 和每月 room seed 数据。该更新尚未合并进当前 `feature/ai-profile-test`；后续合并成员 A 分支时，成员 E Profile / Room 相关路线应优先对齐 `roomId` 和 rooms API，避免继续只依赖本地 `collectory_room_catalog.dart`。
 
 以下为历史记录：2026-05-08 时项目尚处于规划阶段，尚未开始实际开发；当时已根据 `Final_Team_Work_Division.md` 重新确认最终分工，成员 1-5 负责开发相关工作，成员 6 负责 PPT、报告、视频和 Demo 展示材料。当前截至 2026-05-22，后端、Flutter 前端、成员 E AI/Profile/测试等已有大量实现，后续应以最新分支状态和本文件顶部记录为准。
 

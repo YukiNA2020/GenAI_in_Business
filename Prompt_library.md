@@ -20,6 +20,20 @@
 
 # Prompt 记录库
 
+## 2026-05-22 对话记录 34
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助更新
+- **用户要求**：用户已在本地加入 DeepSeek API，要求完整测试项目中 DeepSeek 的实际可用性，同步测试文档，并判断是否还需要新增其他大模型 API 来替代 mock。
+- **AI 行动**：
+  - 使用 `backend/.env` 中的 DeepSeek 配置执行真实 LLM 测试，确认不打印完整 API key。
+  - 运行 `verify_deepseek_provider_live.js`、阶段 1/2/4/5 自动化脚本和 `flutter test`。
+  - 更新 `member_E/E_Test_Log.md`、根目录 `Test.md`、`member_E/docs/AI_Provider_Setup.md`、`member_E/E_Status_Log.md` 和 `.env.example`。
+  - 新增并保留 `backend/.gitignore`，用于保护 `backend/.env` 不被提交。
+- **重要内容**：
+  - `deepseek-v4-flash` 真实调用通过：service live 5/5，HTTP live 5/5，阶段 1/2/4/5 回归 66/66，Flutter 单测 1/1。
+  - 当前不需要再加第二个文字生成大模型 API；真正仍缺的是 Vision/图片理解能力，因为 `analyze-image` 现在是“图片描述文本 + LLM 推断”，不是直接看图。
+  - 本轮 E2E 写入 `backend/data/collections.db` 的测试数据不应提交；真实 key 只留在本地 `backend/.env`。
+
 ## 2026-05-22 对话记录 33
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新

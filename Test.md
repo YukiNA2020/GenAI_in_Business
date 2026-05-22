@@ -70,6 +70,7 @@
 | **成员 E - 阶段二·任务 5（AI 面板联调）** | ⚠️ 有条件通过 | **18/20**（代码 18 + UI 未测 2） | **2026-05-21 专项** | 面板/服务已交付并挂 Add 页；标签仅 SnackBar；成员 B 正式创建页待迁入 |
 | **成员 E - 阶段四·任务 1–5（图片识别 + 多风格故事）** | ✅ 通过 | **27/29**（脚本 15 + 静态 12 + UI 未测 2） | **2026-05-21 专项** | `analyze-image` + `style`；mock 可按关键词区分票根/黑胶；**需重启 backend** 后 HTTP 才可用 |
 | **成员 E - 阶段五·任务 1–5（测试 / Bug / Demo / 成员 6）** | ✅ 通过 | **35/37**（API 22 + 用例 13 + UI 手测 2 待勾） | **2026-05-21 专项** | `verify_phase5_demo_e2e.js` **11/11×2**；`Member6_Demo_Handoff.md` |
+| **成员 E - DeepSeek 真实 LLM 接入** | ✅ 通过 | **DeepSeek live 10/10 + 回归 66/66** | **2026-05-22 真实 API** | `deepseek-v4-flash`；service 5/5、HTTP 5/5、阶段 1/2/4/5 回归 + Flutter 单测通过；不提交 key |
 | **成员 E - 用户体验测试（Flutter Release 模式）** | ✅ 通过 | — | **2026-05-22 用户测试** | Add/Gallery/Profile 路径正常；Debug 黄黑条和 Bottom overflow 需用 Release 模式消除 |
 
 ---
@@ -1047,6 +1048,29 @@
 | **成员 E 阶段二·任务 5 测试报告** | **2026-05-21** | AI 面板 + `ai_suggestion_service` + Add 页挂钩 | **⚠️ 有条件通过 (18/20)** | 代码审查通过；标签未写入表单；Flutter 手测未执行 |
 | **成员 E 阶段四·任务 1–5 测试报告** | **2026-05-21** | `analyze-image` + 四风格 `generate-story` + Add Recognize | **✅ 通过 (15/15 脚本 + 12/12 静态)** | HTTP 需最新 backend；UI 手测 2 项未执行 |
 | **成员 E 阶段五·任务 1–5 测试报告** | **2026-05-21** | 测试计划 / 用例 / Bug 表 / Demo e2e / 成员 6 交接 | **✅ 通过 (API 22/22 + 用例 15/15)** | 测试 AI 独立复测：`verify_phase5_demo_e2e.js` 11/11×2（id=28/30）；UI Checklist 2 项待演示勾选 |
+| **成员 E DeepSeek 真实 LLM 测试报告** | **2026-05-22** | DeepSeek service live、HTTP live、阶段 1/2/4/5 回归、Flutter 单测 | **✅ 通过 (DeepSeek 10/10 + 回归 66/66 + Flutter 1/1)** | 模型 `deepseek-v4-flash`；`analyze-image` 是文本描述推断，不是真实 Vision |
+
+### 成员 E DeepSeek 真实 LLM 测试报告详情
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助执行与更新测试文档
+- **测试范围**：真实 DeepSeek API 接入、`member_E/backend/src/ai/ai.provider.js`、根后端 `/api/ai/*` 路由、成员 E 阶段 1/2/4/5 回归、Flutter 单测
+- **配置**：`AI_PROVIDER=openai`、`AI_BASE_URL=https://api.deepseek.com`、`AI_MODEL=deepseek-v4-flash`、`AI_TIMEOUT_MS=30000`；真实 key 仅保存在 `backend/.env`
+- **执行结果**：
+
+| 测试项 | 命令 / 范围 | 结果 |
+|---|---|---|
+| DeepSeek service live | `verify_deepseek_provider_live.js` | ✅ 5/5 |
+| DeepSeek HTTP live | `suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image` | ✅ 5/5 |
+| 阶段一标题 Prompt | `verify_phase1_task1_title.js` | ✅ 15/15 |
+| 阶段二 Provider | `verify_phase2_task1_provider.js` | ✅ 11/11 |
+| 阶段二 HTTP | `verify_phase2_tasks2_4_api.js` | ✅ 14/14 |
+| 阶段四 AI 接口 | `verify_phase4_tasks1_5_api.js` | ✅ 15/15 |
+| 阶段五 Demo E2E | `verify_phase5_demo_e2e.js` | ✅ 11/11，写入 collection id=32 |
+| Flutter 单测 | `flutter test` | ✅ 1/1 |
+
+- **测试结论**：DeepSeek 真实 API 已可用，现有 provider 无需重写；标题、分类、标签、故事、`analyze-image` 都能返回可解析 JSON。
+- **边界说明**：`analyze-image` 当前输入是 `imageDescription` 或 `imageUrl` 文本，模型并没有接收真实图片二进制/多模态消息，因此它不是完整 Vision 能力。
+- **安全说明**：`backend/.gitignore` 已保护 `backend/.env`；提交时不要加入真实 key，也不要提交本轮 E2E 改动后的 `backend/data/collections.db`。
 
 ### 成员 E 阶段五·任务 1–5 测试报告详情
 
@@ -2311,9 +2335,9 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 |--------|------|------|----------|----------|--------|------|------|
 | BUG-ME-001 | AI → API | AI 返回中文 `category`，collections 表存英文 slug | AI suggest-category 后直接 POST 中文 category | 中 | 成员 E / B | 已规避 | Add 页经 `tagLabelForAiCategory` + slug；写入前需 `GET /api/categories` |
 | BUG-ME-002 | Add / AI 面板 | AI 标签仅 SnackBar + 行内文案，未写入正式 Tag 多选 | Recognize 或 Tags 成功 | 低 | 成员 B | 待成员 B | 成员 E 预交付范围；正式表单接 `TagInputField` |
-| BUG-ME-003 | AI HTTP | 旧 backend 进程无 `/analyze-image` → 404 | 未重启即调 analyze-image | 中 | 成员 E | 已规避 | 重启 `AI_PROVIDER=mock npm run dev` |
+| BUG-ME-003 | AI HTTP | 旧 backend 进程无 `/analyze-image` → 404 | 未重启即调 analyze-image | 中 | 成员 E | 已规避 | 重启 backend；真实 DeepSeek 测试需从 `backend/` 目录读 `.env` |
 | BUG-ME-004 | Profile UI | 展示名硬编码「Group I」（`UserProfile.demo()`），非后端用户资料 | 打开 Profile Tab | 低 | 成员 E | 待联调 | 无 `GET /api/users/:id` 资料接口；`Member6_Demo_Handoff.md` 仍写「Tong」为文档滞后 |
-| BUG-ME-005 | AI Vision | 无真实 Vision，仅 `imageDescription` mock | Upload 后 Recognize | 低 | 成员 E | 已知限制 | 课程 Demo 可接受；V2 接 Vision API |
+| BUG-ME-005 | AI Vision | 无真实 Vision，仅 `imageDescription` / `imageUrl` 文本描述 + LLM 推断 | Upload 后 Recognize | 低 | 成员 E | 已知限制 | DeepSeek 文本 API 已可用；若要真实看图需另接 Vision API |
 
 ---
 
@@ -2589,3 +2613,4 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段五·任务 1–5**：测试计划七模块、核心用例 TC-ME-P5-01～15、Bug 表 BUG-ME-001～005、Demo API `verify_phase5_demo_e2e.js` **11/11 连续 2 轮**、成员 6 材料 `Member6_Demo_Handoff.md`。结论：**✅ 通过**（Flutter Demo Checklist 2 项留演示前勾选）。
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：**阶段五·任务 1–5 独立复测**：交付物齐全；`verify_phase5_demo_e2e.js` 再跑 2 轮 **11/11**（collection id=28、30）；BUG-ME-004 更正为硬编码「Group I」。结论维持 **✅ 通过**。
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段四·任务 1–5**（脚本 15/15，TC-ME-P4T1～P4T5）。结论：**✅ 通过**；`analyze-image` 与四风格 story 可用（mock）；Add 页 Recognize 填表代码就绪；测试 backend 须为最新代码以免 404。
+- **2026-05-22**（成员 E / 成员 5，Codex）：完成 **DeepSeek 真实 LLM 接入测试**。`verify_deepseek_provider_live.js` **5/5**，HTTP live **5/5**（含 `analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：`deepseek-v4-flash` 可用；当前仍无真实 Vision，`analyze-image` 是文本描述推断。

@@ -32,15 +32,54 @@
 
 DeepSeek 可按 OpenAI-compatible provider 方式接入。不要提交真实 key。
 
+> **⚠️ 不要把真实 API Key 写入文档或测试日志。Key 只能出现在 `backend/.env` 中，且 `.env` 必须添加到 `.gitignore`。**
+
 ```env
 AI_PROVIDER=openai
-AI_API_KEY=填入你的_DeepSeek_API_Key
+AI_API_KEY=YOUR_DEEPSEEK_API_KEY_HERE
 AI_BASE_URL=https://api.deepseek.com
 AI_MODEL=deepseek-v4-flash
 AI_TIMEOUT_MS=30000
 ```
 
+**配置步骤：**
+
+1. 复制 `member_E/.env.example` 为 `backend/.env`（如果还没有）。
+2. 在 `backend/.env` 中取消 DeepSeek 相关注释，填入真实 key。
+3. 在 `backend/` 目录启动后端：`npm run dev`。如果 `.env` 中没有写 `AI_PROVIDER=openai`，也可以临时用 `AI_PROVIDER=openai npm run dev`。
+
+**冒烟测试（不需要启动 backend）：**
+
+```bash
+export AI_API_KEY=YOUR_DEEPSEEK_API_KEY_HERE
+AI_PROVIDER=openai \
+AI_BASE_URL=https://api.deepseek.com \
+AI_MODEL=deepseek-v4-flash \
+AI_TIMEOUT_MS=30000 \
+node member_E/scripts/verify_deepseek_provider_live.js
+```
+
+**DeepSeek live 验证脚本：**
+
+```bash
+node member_E/scripts/verify_deepseek_provider_live.js
+```
+
+该脚本会依次调用 `suggestTitle`、`suggestCategory`、`suggestTags`、`generateStory(concise)`、`generateStory(travel)`，并用现有 schema 做结构校验。不会打印 API Key。
+
 详细执行步骤见 `member_E/docs/DeepSeek_API_Integration_Test_Plan.md`。
+
+**2026-05-22 实测结果：**
+
+| 范围 | 结果 | 备注 |
+|---|---|---|
+| DeepSeek service live | ✅ 5/5 | 标题、分类、标签、concise story、travel story |
+| DeepSeek HTTP live | ✅ 5/5 | `suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image` |
+| 成员 E 自动化回归 | ✅ 55/55 | 阶段一 15、阶段二 Provider 11、阶段二 HTTP 14、阶段四 15 |
+| 阶段五 Demo E2E | ✅ 11/11 | 真实 DeepSeek 后端下写入 collection id=32 |
+| Flutter 单测 | ✅ 1/1 | `flutter test` |
+
+结论：当前 DeepSeek 配置可用，现有 provider 不需要额外改代码。`analyze-image` 目前仍是“图片描述文本 + LLM 推断”，不是直接上传图片给 Vision 模型。
 
 ### 模式说明
 
@@ -58,7 +97,7 @@ node member_E/scripts/verify_phase2_task1_provider.js
 
 # 使用真实 OpenAI（需自行 export OPENAI_API_KEY）
 export AI_PROVIDER=openai
-export OPENAI_API_KEY=sk-...
+export OPENAI_API_KEY=YOUR_OPENAI_API_KEY
 node -e "
 const p=require('./member_E/backend/src/ai/ai.provider');
 const b=require('./member_E/backend/src/ai/ai.prompts');

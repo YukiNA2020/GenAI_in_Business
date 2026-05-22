@@ -10,10 +10,10 @@
 
 | 项目 | 当前口径 |
 |---|---|
-| 当前工作分支 | `memberE` |
-| 分支来源 | 基于 `origin/feature/ai-profile-test` 最新提交 `fafcf63` 创建 |
-| 主要原则 | 后续成员 E 内容优先放在 `memberE`，保持和其他成员工作隔离 |
-| 备用方案 | 如果 `memberE` 与原有协作分支出现严重合并问题，可以回到 `feature/ai-profile-test` 继续处理，但需要先说明原因并记录 |
+| 当前工作分支 | `feature/ai-profile-test` |
+| 分支来源 | 协作分支，已包含成员 E 主要实现 |
+| 主要原则 | 当前小范围测试和文档同步直接放在 `feature/ai-profile-test`；高风险实验再单独开分支 |
+| 备用方案 | 如果后续要做大范围重构，可重新创建 `memberE` 或 `codex/...` 分支隔离 |
 | 当前冲突处理口径 | 以线上最新实现为主，昨晚未提交的旧任务规划文档只保留仍有价值的结构和技术细节 |
 | 尚未合入的重要分支 | `origin/feature/member-1-task`，包含 `rooms` 表、`collections.room_id`、`GET /api/rooms`、`GET /api/rooms/:id` |
 
@@ -31,7 +31,7 @@ GenAI_in_Business/
 │       │   ├── categories.routes.js
 │       │   ├── users.routes.js
 │       │   └── ai.routes.js               # 成员 E AI 路由适配层
-│       └── db/schema.sql                  # 当前 memberE 尚未包含 rooms 表
+│       └── db/schema.sql                  # 当前 feature/ai-profile-test 尚未包含 rooms 表
 ├── frontend/
 │   └── lib/
 │       ├── app.dart                       # Flutter 四 Tab + overlay 入口
@@ -57,21 +57,21 @@ GenAI_in_Business/
 | 阶段 | 当前状态 | 说明 |
 |---|---|---|
 | 阶段一：Prompt + Contract | 已完成并有自检 | 四类 Prompt、`AI_API_Contract.md`、`ai.prompts.js`、`ai.schemas.js` |
-| 阶段二：文字 AI 接口 | 已有实现，需复测 HTTP | `suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`；Provider 支持 mock/OpenAI |
+| 阶段二：文字 AI 接口 | 已完成并通过真实 DeepSeek 测试 | `suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`；Provider 支持 mock/OpenAI-compatible DeepSeek |
 | 阶段二：AI 面板联调 | 有 Demo 级接入 | `AiSuggestionPanel` 已挂 Add 页；正式创建页仍等成员 B 整合 |
 | 阶段三：Profile | 已有实现 | Profile、stats、Edit profile、login/register mock、成员 C 展示嵌入 |
 | 阶段四：图片识别 + 多风格故事 | 已有实现 | `analyze-image`、`style`、Recognize 填表；真实 Vision 尚未接入 |
 | 阶段五：测试和 Demo | 已有文档和脚本 | `verify_phase5_demo_e2e.js`、`Phase5_Demo_Checklist.md`、`Member6_Demo_Handoff.md` |
 
-这些状态表示“当前分支已有可用实现”，不等于最终团队整合完成。下一步重点是复测、接成员 A rooms API、接成员 B 正式表单和最终 Demo 回归。
+这些状态表示“当前分支已有可用实现”，不等于最终团队整合完成。DeepSeek 文字生成已通过真实 API 测试；下一步重点是接成员 A rooms API、接成员 B 正式表单、判断是否需要真实 Vision，以及最终 Demo 回归。
 
 ---
 
 ## 4. 下一步宏观计划
 
-### P0：清理文档冲突
+### P0：清理文档冲突（已完成）
 
-目标：让 `memberE` 回到干净可提交状态。
+目标：让成员 E 文档回到适配当前分支的可提交状态。
 
 动作：
 
@@ -79,17 +79,17 @@ GenAI_in_Business/
 2. 保留并更新 `TODO_Guide.md`、`E_Technical_Route_Map.md` 和本文件。
 3. 标记 `Prompt_library.md`、`Status.md`、`E_Prompt_Log.md`、`E_Status_Log.md` 冲突已解决。
 
-### P1：发布成员 E 分支
+### P1：同步成员 E 文档到协作分支（已采用）
 
-目标：让队友能看到成员 E 当前接管版本。
+目标：让队友能在 `feature/ai-profile-test` 看到成员 E 当前接管版本和测试结果。
 
 动作：
 
-1. 确认 `git status` 只剩文档整理相关改动。
-2. 提交到 `memberE`。
-3. 推送 `git push -u origin memberE`。
+1. 确认 `git status` 不包含 `backend/.env`。
+2. 将测试文档和无密钥配置示例提交到 `feature/ai-profile-test`。
+3. `memberE` 暂不需要推到 GitHub；只有后续大改或实验时再开隔离分支。
 
-### P2：复测当前成员 E 能力
+### P2：复测当前成员 E 能力（DeepSeek 已完成）
 
 目标：证明当前实现可以运行，而不是只在文档里显示完成。
 
@@ -97,9 +97,9 @@ GenAI_in_Business/
 
 1. 在 `backend/` 安装依赖并启动后端。
 2. 跑成员 E 自检脚本。
-3. 先接 DeepSeek API，完成真实 LLM 输出测试，详见 `member_E/docs/DeepSeek_API_Integration_Test_Plan.md`。
-4. 复跑 `/api/ai/*` HTTP 层。
-5. 如本机有 Flutter，再按 `Phase5_Demo_Checklist.md` 手测 Add / Gallery / Profile。
+3. DeepSeek service live：5/5。
+4. `/api/ai/*` DeepSeek HTTP live：5/5。
+5. 阶段 1/2/4/5 自动化回归：66/66；Flutter 单测：1/1。
 
 ### P3：接成员 A rooms API
 
@@ -146,6 +146,7 @@ GenAI_in_Business/
 | Prompt | `member_E/backend/src/ai/ai.prompts.js` |
 | Schema | `member_E/backend/src/ai/ai.schemas.js` |
 | Mock 模式 | 无 Key 时自动 mock；也可显式 `AI_PROVIDER=mock` |
+| DeepSeek 模式 | `AI_PROVIDER=openai` + `AI_BASE_URL=https://api.deepseek.com`，已用 `deepseek-v4-flash` 实测通过 |
 | 错误码 | `AI_VALIDATION_ERROR`、`AI_PROVIDER_UNAVAILABLE`、`AI_INVALID_RESPONSE` |
 
 ### AI 分类写入
@@ -179,7 +180,7 @@ frontend/lib/features/profile/pages/profile_page.dart
 
 ### Rooms 适配
 
-当前 `memberE` 的前端 room 逻辑主要来自成员 C 的静态目录：
+当前 `feature/ai-profile-test` 的前端 room 逻辑主要来自成员 C 的静态目录：
 
 ```text
 frontend/lib/features/collection_browse/utils/collectory_room_catalog.dart

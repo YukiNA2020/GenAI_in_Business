@@ -267,3 +267,89 @@ AI_PROVIDER=mock npm run dev
 1. 详细测试过程先写在本文件。
 2. 阶段测试完成后，将测试摘要、通过率、失败用例和 Bug 摘要同步到根目录 `Test.md`。
 3. 已同步本次结果至根目录 `Test.md`，由测试 AI 协助更新。
+---
+
+## DeepSeek 真实 LLM 接入测试（2026-05-22）
+
+> 负责人：成员 E / 成员 5
+> 测试目的：验证现有 AI Provider 和 `/api/ai/*` HTTP 路由能否通过 DeepSeek API 返回稳定结构化 JSON。
+> 安全边界：真实 key 只放在 `backend/.env`，测试日志只记录 provider / base URL / model，不记录完整 key。
+
+### 环境配置
+
+| 配置项 | 值 |
+|---|---|
+| AI_PROVIDER | `openai` |
+| AI_BASE_URL | `https://api.deepseek.com` |
+| AI_MODEL | `deepseek-v4-flash` |
+| AI_TIMEOUT_MS | `30000` |
+| 解析模式 | openai-compatible（真实 DeepSeek API） |
+
+### 本轮执行命令
+
+```bash
+node member_E/scripts/verify_phase1_task1_title.js
+node member_E/scripts/verify_phase2_task1_provider.js
+set -a; source backend/.env; set +a; node member_E/scripts/verify_deepseek_provider_live.js
+cd backend && npm run dev
+node member_E/scripts/verify_phase2_tasks2_4_api.js
+node member_E/scripts/verify_phase4_tasks1_5_api.js
+node member_E/scripts/verify_phase5_demo_e2e.js
+cd frontend && flutter test
+```
+
+### Service 层测试（verify_deepseek_provider_live.js）
+
+| 接口 | DeepSeek 返回摘要 | 结构校验 | 状态 |
+|---|---|---|---|
+| suggestTitle | `["蓝色明信片与小书店地图","东京书店的蓝色记忆","手写街区地图的明信片"]` | 3 个非空标题 | ✅ PASS |
+| suggestCategory | `{"category":"明信片","confidence":0.95}` | category 在集合内，confidence 0~1 | ✅ PASS |
+| suggestTags | `["东京","明信片","小书店","手写地图","旅行","蓝色"]` | 6 个非空标签 | ✅ PASS |
+| generateStory(concise) | story 长度 72 字 | 非空字符串 | ✅ PASS |
+| generateStory(travel) | story 长度 90 字 | 非空字符串 | ✅ PASS |
+
+**Service 层结果：5/5 全部通过**
+
+### HTTP 层测试（backend 读取 backend/.env）
+
+| 端点 | 实际返回摘要 | 状态 |
+|---|---|---|
+| POST /api/ai/suggest-title | `["神保町春天的蓝","店主手绘地图明信片","小书店的春天回忆"]` | ✅ PASS |
+| POST /api/ai/suggest-category | `{"category":"明信片","confidence":0.95}` | ✅ PASS |
+| POST /api/ai/suggest-tags | `["东京","明信片","神保町","旅行","书店","手绘地图","春天","蓝色"]` | ✅ PASS |
+| POST /api/ai/generate-story(style=travel) | 返回旅行风 story | ✅ PASS |
+| POST /api/ai/analyze-image | 返回 `suggestedTitle/category/tags/description` | ✅ PASS |
+
+**HTTP 层结果：5/5 全部通过**
+
+### 回归测试
+
+| 范围 | 命令 | 结果 |
+|---|---|---|
+| 阶段一标题 Prompt | `verify_phase1_task1_title.js` | ✅ 15/15 |
+| 阶段二 Provider mock/error | `verify_phase2_task1_provider.js` | ✅ 11/11 |
+| 阶段二 HTTP 接口 | `verify_phase2_tasks2_4_api.js` | ✅ 14/14 |
+| 阶段四 analyze-image + story style | `verify_phase4_tasks1_5_api.js` | ✅ 15/15 |
+| 阶段五 Demo E2E | `verify_phase5_demo_e2e.js` | ✅ 11/11，写入 collection id=32 |
+| Flutter 单测 | `flutter test` | ✅ 1/1 |
+
+### 结论
+
+DeepSeek API（`deepseek-v4-flash`）可通过现有 AI Provider 直接接入，**无需修改 provider 代码**。
+
+1. 标题、分类、标签、故事生成、`analyze-image` 的结构化 JSON 都能通过现有 schema。
+2. `response_format: { type: "json_object" }` 在本轮 DeepSeek 模型上可用。
+3. 阶段二、阶段四、阶段五的自动化脚本在真实 DeepSeek 后端下未发现回归。
+4. `analyze-image` 目前仍是“图片描述文本 + LLM 推断”，不是直接上传图片给 Vision 模型。
+5. `backend/.gitignore` 已用于保护 `backend/.env`，不要提交真实 key。
+
+### 文件同步
+
+本轮应提交的文件：
+- `backend/.gitignore`（保护 `.env`）
+- `member_E/.env.example`（DeepSeek 配置示例）
+- `member_E/scripts/verify_deepseek_provider_live.js`（真实 LLM 验证脚本）
+- `member_E/docs/AI_Provider_Setup.md`（DeepSeek 配置和已验证结果）
+- `member_E/E_Test_Log.md` 与根目录 `Test.md`（测试结果）
+
+**不要提交** `backend/.env`（含真实 API Key）和测试写入后的 `backend/data/collections.db`。

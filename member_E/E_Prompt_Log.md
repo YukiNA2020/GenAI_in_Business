@@ -29,6 +29,16 @@
 
 ---
 
+## 2026-05-22 成员 E 局部记录（DeepSeek 真实 API 测试）
+
+- 负责人：成员 E / 成员 5，由 Codex 协助更新
+- 用户要求：用户已添加 DeepSeek API，要求完整测试项目中 DeepSeek 的实际可用性，同步测试文档，并判断是否还需要新增其他大模型 API。
+- AI 行动：执行 `verify_deepseek_provider_live.js`、阶段 1/2/4/5 自动化回归和 `flutter test`；更新 `E_Test_Log.md`、根目录 `Test.md`、`AI_Provider_Setup.md`、`E_Status_Log.md`、`.env.example` 与根目录 `Prompt_library.md`。
+- 重要决策：DeepSeek 文本生成 API 已可用，不需要为了文字生成再接一个模型；如果项目想让上传图片后由 AI 真正看图识别，需要另接 Vision/多模态模型，而不是图片生成模型。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
 ## 2026-05-22 成员 E 局部记录（DeepSeek API 接入计划）
 
 - 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
