@@ -2,7 +2,7 @@
 
 本文件夹是成员 E / 成员 5 的独立工作区，用于存放 AI 功能、用户主页、测试支持相关的任务文档和阶段交付物。
 
-当前已完成：阶段一；阶段二（含任务五 AI 面板预交付）；阶段三·任务 1–4「用户主页与资料」。
+当前 `memberE` 分支已包含成员 E 阶段一至阶段五的大部分实现：AI Prompt / Contract、AI Provider 与 HTTP 接口、AI 面板预交付、Profile、图片识别、多风格故事、测试和 Demo handoff。后续重点不是从零开发，而是接管确认、复测、适配成员 A rooms API、等待成员 B 正式表单联调。
 
 ---
 
@@ -24,12 +24,21 @@ member_E/
 │   ├── AI_API_Contract.md
 │   ├── AI_Provider_Setup.md
 │   ├── AI_Routes_Integration.md
+│   ├── E_Current_Status_and_Plan.md
+│   ├── E_Technical_Route_Map.md
 │   ├── Phase_1_Completion_Report.md
+│   ├── Phase_3_Profile_Completion.md
+│   ├── Phase_4_Tasks1_5_Completion.md
+│   ├── Phase_5_Tasks1_5_Completion.md
+│   ├── Member6_Demo_Handoff.md
+│   ├── Phase5_Demo_Checklist.md
 │   └── prompts/
 │       ├── prompt_title.md
 │       ├── prompt_category.md
 │       ├── prompt_tags.md
-│       └── prompt_story.md
+│       ├── prompt_story.md
+│       ├── prompt_image.md
+│       └── prompt_story_styles.md
 └── backend/
     └── src/
         └── ai/
@@ -39,6 +48,19 @@ member_E/
             ├── ai.service.js
             └── ai.routes.js
 ```
+
+---
+
+## 2. 当前接管入口
+
+| 文档 | 用途 |
+|---|---|
+| `docs/E_Current_Status_and_Plan.md` | 当前结构、宏观计划、微观技术细节，优先阅读 |
+| `docs/E_Technical_Route_Map.md` | 各阶段任务落点、边界和验收口径 |
+| `TODO_Guide.md` | 快速判断下一步可做什么 |
+| `E_Status_Log.md` / `E_Prompt_Log.md` / `E_Test_Log.md` | 成员 E 局部状态、决策和测试记录 |
+
+已删除过时的 `docs/E_Fresh_AI_Workflow.md`。后续不要再按旧的 E3-4 单任务模板启动开发。
 
 ---
 
@@ -64,7 +86,7 @@ member_E/
 
 ---
 
-## 2. 当前阶段一交付物
+## 2.2 阶段一交付物
 
 | 阶段一任务 | 交付物 |
 |---|---|

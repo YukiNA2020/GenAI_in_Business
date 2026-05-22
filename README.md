@@ -183,36 +183,35 @@ git push origin feature/core-api-data
 如果还没有本地仓库，先克隆：
 
 ```bash
-git clone https://github.com/YukiNA2020/GENAI_Group.git
-cd GENAI_Group
+git clone https://github.com/YukiNA2020/GenAI_in_Business.git
+cd GenAI_in_Business
 ```
 
 如果仓库已经在本地，请进入项目目录：
 
 ```bash
-cd GENAI_Group
+cd GenAI_in_Business
 ```
 
 ### 6.2 每次开始工作前
 
-每次开始写代码或改文档前，都先拿到最新版本：
+每次开始写代码或改文档前，都先拿到远端最新分支信息：
 
 ```bash
-git checkout main
-git pull origin main
+git fetch --all --prune
 ```
 
 然后切换到自己的功能分支。第一次开发时创建分支：
 
 ```bash
-git checkout -b feature/your-member-task
+git switch -c feature/your-member-task
 ```
 
 已经有自己的分支时：
 
 ```bash
-git checkout feature/your-member-task
-git pull origin main
+git switch feature/your-member-task
+git pull --ff-only origin feature/your-member-task
 ```
 
 建议分支名：
@@ -223,8 +222,10 @@ git pull origin main
 | 成员 B / 成员 2 | `feature/create-upload-flow` |
 | 成员 C / 成员 3 | `feature/collection-wall-search` |
 | 成员 D / 成员 4 | `feature/ui-design-assets` |
-| 成员 E / 成员 5 | `feature/ai-profile-test` |
+| 成员 E / 成员 5 | `memberE` |
 | 成员 6 | `feature/report-ppt-demo` |
+
+> 注意：当前团队最新工作不一定都已经合并到 `main`。成员 E / 成员 5 后续应优先在自己的 `memberE` 分支工作；`feature/ai-profile-test` 是已有远端协作分支，作为同步来源和必要时的备用工作分支。成员 E 当前结构、下一步计划和技术细节见 `member_E/docs/E_Current_Status_and_Plan.md`。
 
 ### 6.3 完成任务后提交
 
@@ -238,10 +239,10 @@ git status
 
 ```bash
 git add <本次任务修改过的文件>
-git commit -m "Member A: describe completed work"
+git commit -m "成员A，完成阶段一任务一"
 ```
 
-提交信息请把 `Member A` 替换成自己的成员标识，例如 `Member B`、`Member C`、`Member D`、`Member E` 或 `Member 6`。
+提交信息请把 `成员A` 和任务名替换成自己的成员标识和实际任务，例如 `成员E，完成阶段三任务四登录注册占位`。
 
 推送到 GitHub：
 
@@ -250,6 +251,12 @@ git push origin feature/your-member-task
 ```
 
 然后在 GitHub 上创建 Pull Request，让团队检查后再合并。不要直接把未确认的功能推到 `main`。
+
+成员 E / 成员 5 如果使用 `memberE` 分支，推送命令为：
+
+```bash
+git push -u origin memberE
+```
 
 ---
 

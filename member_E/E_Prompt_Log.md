@@ -29,6 +29,26 @@
 
 ---
 
+## 2026-05-22 成员 E 局部记录（文档冲突整理）
+
+- 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- 用户要求：处理因昨晚未提交文档和同伴后续远端实现导致的 Git 冲突；以当前线上仓库最新状态为主，删除已经没用的文件，重写适配当前结构、下一步宏观计划和微观技术细节的成员 E 文档；后续成员 E 内容优先放在 `memberE` 分支，必要时可回到原分支处理。
+- AI 行动：删除 `member_E/docs/E_Fresh_AI_Workflow.md`；新增 `member_E/docs/E_Current_Status_and_Plan.md`；更新 `README.md`、`Status.md`、`TODO_Guide.md` 和成员 E 局部状态记录里的文档入口与分支说明。
+- 重要决策：成员 E 当前路线从“按旧任务模板继续开发”改为“以当前已有实现为主进行接管、复测和整合”；`memberE` 是优先隔离分支，`feature/ai-profile-test` 保留为参考/备用分支；下一步重点是发布 `memberE`、复测 HTTP/UI、适配成员 A rooms API、接成员 B 正式表单。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
+## 2026-05-22 成员 E 局部记录（创建 memberE 分支与路线兼容性检查）
+
+- 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- 用户要求：确认 `feature/ai-profile-test` 是别人的分支，成员 E 应该开一个新的分支；同时拉取同伴更新并检查是否与成员 E 技术路线不一致，如有则修正文档；随后确认远端出现的成员 E 代码是否可能是同伴代做。
+- AI 行动：从远端拉取最新更新；从最新 `origin/feature/ai-profile-test` 创建本地 `memberE` 分支；检查 `origin/feature/member-1-task` 最新 rooms API 更新；确认 `origin/feature/ai-profile-test` 上有作者 `Jean030` 提交的成员 E 阶段二到五代码和文档；更新 `TODO_Guide.md`、`E_Technical_Route_Map.md`、`E_Status_Log.md`、`Status.md` 和根目录 `Prompt_library.md`。（当时曾新增的 `E_Fresh_AI_Workflow.md` 已在后续文档冲突整理中删除。）
+- 重要决策：成员 E 后续不直接在 `feature/ai-profile-test` 上开发，改在 `memberE` 分支工作；远端最新只能说明“已有成员 E 相关实现 / 疑似同伴或另一个 AI 代做了一部分”，不能直接写成成员 E 已确认完成，路线文档应以“待成员 E 接管确认和独立测试”为准；成员 A 的 rooms API 暂未合并进 `memberE`，但未来 Profile / Room 路线需要预留 `roomId` 和 `GET /api/rooms` 对齐。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
 ## 2026-05-21 成员 E 局部记录（阶段三·任务 1–4）
 
 - 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新

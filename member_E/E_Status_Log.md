@@ -21,10 +21,29 @@
 |---|---|
 | 当前负责人 | 成员 E / 成员 5 |
 | 当前工作区 | `member_E/` |
-| 当前阶段 | 阶段五：测试 / Bug / Demo（任务 1–5 已完成） |
-| 当前阶段开发状态 | 成员 E 计划内开发项已全部完成 |
-| 当前阶段测试状态 | 待独立测试 AI 验证 |
-| 最近更新时间 | 2026-05-21 |
+| 当前 Git 分支 | `memberE`（本地新分支，基于最新 `origin/feature/ai-profile-test` 创建；尚未推送远端） |
+| 当前阶段 | 远端已有阶段二到五实现，成员 E 正在接管确认 |
+| 当前阶段开发状态 | `origin/feature/ai-profile-test` 中已有成员 E 相关代码；需成员 E 确认哪些可接管、哪些需要重做或修复 |
+| 当前阶段测试状态 | 待独立测试 AI 验证；测试通过前不要写成最终完成 |
+| 最近更新时间 | 2026-05-22 |
+
+---
+
+## Git 分支记录
+
+| 日期 | 操作 | 结果 | 备注 |
+|---|---|---|---|
+| 2026-05-22 | 拉取远端更新 | `origin/feature/ai-profile-test` 更新到 `fafcf63`；`origin/feature/member-1-task` 更新到 `a26da25` | E 原远端分支已有阶段三到五相关实现，提交作者显示为 `Jean030`；成员 A 新增 rooms API |
+| 2026-05-22 | 创建成员 E 独立本地分支 | 当前分支为 `memberE` | `feature/ai-profile-test` 不再作为成员 E 后续直接开发分支 |
+| 2026-05-22 | 检查技术路线兼容性 | 已发现并修正路线文档中过期状态 | 阶段三到五不再简单写成待开发，而应写为远端已有实现、待成员 E 接管确认和独立测试；未来 rooms 联调需关注成员 A 的 `roomId` / rooms API |
+| 2026-05-22 | 整理文档冲突 | 删除过时 `E_Fresh_AI_Workflow.md`，新增 `E_Current_Status_and_Plan.md` | 后续以当前线上实现为主，成员 E 进入接管、复测、整合状态 |
+
+### 后续 Git 使用规则（成员 E）
+
+1. 成员 E 后续开发优先在 `memberE` 分支进行。
+2. 开始工作前先执行 `git fetch --all --prune`，再确认是否需要从 `origin/feature/ai-profile-test` 或其他协作分支吸收更新。
+3. 不要直接提交到 `main`，也不要直接把新工作推回 `feature/ai-profile-test`。
+4. 当 `memberE` 第一次需要让同伴看到时，再推送为远端 `origin/memberE`。
 
 ---
 
@@ -70,9 +89,12 @@
 |---|---|---|
 | `Member_5_AI_Profile_Test_Detail_Plan.md` | 成员 E 技术路线和任务说明 | 已移入本文件夹 |
 | `README.md` | 成员 E 工作区说明和同步规则 | 已创建 |
+| `TODO_Guide.md` | 成员 E 专属可执行任务和依赖进度条 | 已更新至 2026-05-22 当前分支状态 |
 | `E_Status_Log.md` | 成员 E 局部状态记录 | 已创建 |
 | `E_Prompt_Log.md` | 成员 E 局部 Prompt / 决策记录 | 已创建 |
 | `E_Test_Log.md` | 成员 E 局部测试记录 | 已创建 |
+| `docs/E_Current_Status_and_Plan.md` | 当前结构、宏观计划和微观技术细节入口 | 已完成（2026-05-22，以当前线上实现为主） |
+| `docs/E_Technical_Route_Map.md` | 成员 E 全任务技术路线地图 | 已完成（2026-05-22，按远端最新阶段三到五状态修正） |
 | `docs/prompts/prompt_title.md` | 标题生成 Prompt | 已完成（2026-05-21 增 §6） |
 | `scripts/verify_phase1_task1_title.js` | 任务一自检脚本 | 已完成（15/15） |
 | `docs/prompts/prompt_category.md` | 分类建议 Prompt | 已完成 |

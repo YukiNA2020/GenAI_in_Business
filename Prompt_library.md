@@ -20,6 +20,34 @@
 
 # Prompt 记录库
 
+## 2026-05-22 对话记录 32
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：先处理 Git 冲突。说明昨晚八点多写的部分技术文档未提交，后来同伴又在远端做了一部分成员 E 内容，所以应以当前线上仓库最新状态为主，删除已经没用的文件，重写适配当前项目状态的文档；成员 E 后续优先放在单独 `memberE` 分支，如原有分支更合适可回到原分支处理。
+- **AI 行动**：
+  - 删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`。
+  - 新增 `member_E/docs/E_Current_Status_and_Plan.md`，集中记录当前结构、已有实现、下一步宏观计划和微观技术细节。
+  - 更新 `README.md`、`Status.md`、`member_E/TODO_Guide.md`、`member_E/E_Status_Log.md` 和 `member_E/E_Prompt_Log.md` 中的成员 E 文档入口和分支口径。
+  - 以当前线上实现为主，保留“接管、复测、适配 rooms API、等待成员 B 正式表单联调”的路线。
+- **重要内容**：
+  - 成员 E 当前不是从零开发，而是接管当前分支已有 AI/Profile/Test 实现。
+  - `memberE` 是后续优先隔离分支；`feature/ai-profile-test` 保留为参考和必要时的备用处理分支。
+  - 成员 A 的 rooms API 尚未合并进当前 `memberE`，仍是下一步整合重点。
+
+## 2026-05-22 对话记录 31
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：说明 `feature/ai-profile-test` 是别人的分支，成员 E 应该基于当前最新内容另开自己的新分支；同时拉取同伴更新，检查是否和成员 E 技术路线不一致，并修正相关 MD 文档；随后确认远端出现的成员 E 代码是否可能是同伴代做。
+- **AI 行动**：
+  - 从 GitHub 拉取远端更新，`origin/feature/ai-profile-test` 已快进到 `fafcf63`，提交作者显示为 `Jean030`，提交信息包含 `Member E: phase 3/4/5...`，不只是文档，也包含前端、后端、AI 和测试脚本代码。
+  - 从最新 `origin/feature/ai-profile-test` 创建本地新分支 `memberE`，避免继续直接在他人分支上开发。
+  - 检查 `origin/feature/member-1-task` 最新提交 `a26da25`，确认成员 A 新增 `rooms` 表、`room_id` 字段和 `GET /api/rooms` / `GET /api/rooms/:id`。
+  - 合并本地文档补强与远端最新状态，更新成员 E 路线文档、状态文档和 Git 分支规则。
+- **重要内容**：
+  - 成员 E 后续工作应在 `memberE` 分支，不再把 `feature/ai-profile-test` 当作自己的提交分支。
+  - 远端最新内容已经出现成员 E 阶段三到阶段五的代码实现，但这只能说明“远端已有实现 / 疑似同伴或另一个 AI 代做了一部分”，不能直接等同于成员 E 本人确认完成；相关 MD 应按“待成员 E 接管确认和独立测试”的口径修正。
+  - 成员 A 的 rooms API 尚未合并进 `memberE` 当前代码，但会影响未来 Profile / Room 联调路线：后续合并成员 A 分支时，应优先对齐 `roomId`、`GET /api/rooms` 和月度 room 数据结构。
+
 ## 2026-05-21 对话记录 30
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
