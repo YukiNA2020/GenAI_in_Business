@@ -97,8 +97,9 @@ GenAI_in_Business/
 
 1. 在 `backend/` 安装依赖并启动后端。
 2. 跑成员 E 自检脚本。
-3. 复跑 `/api/ai/*` HTTP 层。
-4. 如本机有 Flutter，再按 `Phase5_Demo_Checklist.md` 手测 Add / Gallery / Profile。
+3. 先接 DeepSeek API，完成真实 LLM 输出测试，详见 `member_E/docs/DeepSeek_API_Integration_Test_Plan.md`。
+4. 复跑 `/api/ai/*` HTTP 层。
+5. 如本机有 Flutter，再按 `Phase5_Demo_Checklist.md` 手测 Add / Gallery / Profile。
 
 ### P3：接成员 A rooms API
 

@@ -29,6 +29,16 @@
 
 ---
 
+## 2026-05-22 成员 E 局部记录（DeepSeek API 接入计划）
+
+- 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- 用户要求：将 DeepSeek API 接入和真实 LLM 测试的具体执行方法写成文档，方便另开新 AI 对话执行；用户会自己提供 API key。
+- AI 行动：新增 `docs/DeepSeek_API_Integration_Test_Plan.md`；更新 `AI_Provider_Setup.md`、`.env.example`、`README.md`、`E_Current_Status_and_Plan.md` 和根目录 `Prompt_library.md`。
+- 重要决策：DeepSeek 真实 LLM 测试应先于 rooms API 和成员 B 正式表单整合；任务边界是不提交 key、不改 rooms、不做 Flutter 大改，只验证现有 provider 能否用真实模型稳定返回 JSON。
+- 是否需要同步根目录 `Prompt_library.md`：是（已同步）。
+
+---
+
 ## 2026-05-22 成员 E 局部记录（文档冲突整理）
 
 - 负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新

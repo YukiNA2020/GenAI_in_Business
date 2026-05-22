@@ -28,6 +28,20 @@
 | `AI_TIMEOUT_MS` | `15000` | 请求超时（毫秒） |
 | `AI_BASE_URL` | `https://api.openai.com/v1` | 兼容 OpenAI 协议的 Base URL |
 
+### DeepSeek 配置示例
+
+DeepSeek 可按 OpenAI-compatible provider 方式接入。不要提交真实 key。
+
+```env
+AI_PROVIDER=openai
+AI_API_KEY=填入你的_DeepSeek_API_Key
+AI_BASE_URL=https://api.deepseek.com
+AI_MODEL=deepseek-v4-flash
+AI_TIMEOUT_MS=30000
+```
+
+详细执行步骤见 `member_E/docs/DeepSeek_API_Integration_Test_Plan.md`。
+
 ### 模式说明
 
 - **auto**：有 Key 时走 OpenAI，无 Key 时走 mock（本地开发/Demo 推荐）。

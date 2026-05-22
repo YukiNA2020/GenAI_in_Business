@@ -20,6 +20,18 @@
 
 # Prompt 记录库
 
+## 2026-05-22 对话记录 33
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：在完成成员 E mock 单元测试和整体用户测试后，判断下一步是否应先接入 DeepSeek 真实 API；随后要求把 DeepSeek API 接入和真实 LLM 测试的具体方法写入文档，供新的 AI 对话执行，用户会自己提供 API key。
+- **AI 行动**：
+  - 新增 `member_E/docs/DeepSeek_API_Integration_Test_Plan.md`，明确目标、分支边界、环境变量、建议新增 live 测试脚本、命令顺序、通过标准、常见问题和给新 AI 的完整 Prompt。
+  - 更新 `member_E/docs/AI_Provider_Setup.md` 和 `member_E/.env.example`，补充 DeepSeek OpenAI-compatible 配置示例。
+  - 更新 `member_E/README.md` 和 `member_E/docs/E_Current_Status_and_Plan.md`，把 DeepSeek 真实 LLM 测试放到 rooms API / 成员 B 表单整合之前。
+- **重要内容**：
+  - 当前 mock 已证明代码结构可跑，下一步应验证真实 LLM 输出是否稳定符合 JSON schema。
+  - 本任务边界是 DeepSeek provider/live HTTP 测试，不合并 rooms API、不接成员 B 正式表单、不提交任何 API key。
+
 ## 2026-05-22 对话记录 32
 
 - **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新

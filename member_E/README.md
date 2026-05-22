@@ -26,6 +26,7 @@ member_E/
 │   ├── AI_Routes_Integration.md
 │   ├── E_Current_Status_and_Plan.md
 │   ├── E_Technical_Route_Map.md
+│   ├── DeepSeek_API_Integration_Test_Plan.md
 │   ├── Phase_1_Completion_Report.md
 │   ├── Phase_3_Profile_Completion.md
 │   ├── Phase_4_Tasks1_5_Completion.md
@@ -57,6 +58,7 @@ member_E/
 |---|---|
 | `docs/E_Current_Status_and_Plan.md` | 当前结构、宏观计划、微观技术细节，优先阅读 |
 | `docs/E_Technical_Route_Map.md` | 各阶段任务落点、边界和验收口径 |
+| `docs/DeepSeek_API_Integration_Test_Plan.md` | DeepSeek API 接入和真实 LLM 测试步骤 |
 | `TODO_Guide.md` | 快速判断下一步可做什么 |
 | `E_Status_Log.md` / `E_Prompt_Log.md` / `E_Test_Log.md` | 成员 E 局部状态、决策和测试记录 |
 

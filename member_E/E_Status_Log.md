@@ -37,6 +37,7 @@
 | 2026-05-22 | 创建成员 E 独立本地分支 | 当前分支为 `memberE` | `feature/ai-profile-test` 不再作为成员 E 后续直接开发分支 |
 | 2026-05-22 | 检查技术路线兼容性 | 已发现并修正路线文档中过期状态 | 阶段三到五不再简单写成待开发，而应写为远端已有实现、待成员 E 接管确认和独立测试；未来 rooms 联调需关注成员 A 的 `roomId` / rooms API |
 | 2026-05-22 | 整理文档冲突 | 删除过时 `E_Fresh_AI_Workflow.md`，新增 `E_Current_Status_and_Plan.md` | 后续以当前线上实现为主，成员 E 进入接管、复测、整合状态 |
+| 2026-05-22 | DeepSeek 接入计划 | 新增 `DeepSeek_API_Integration_Test_Plan.md` | 下一步先验证真实 LLM 输出，再做 rooms API 和成员 B 表单整合 |
 
 ### 后续 Git 使用规则（成员 E）
 
@@ -95,6 +96,7 @@
 | `E_Test_Log.md` | 成员 E 局部测试记录 | 已创建 |
 | `docs/E_Current_Status_and_Plan.md` | 当前结构、宏观计划和微观技术细节入口 | 已完成（2026-05-22，以当前线上实现为主） |
 | `docs/E_Technical_Route_Map.md` | 成员 E 全任务技术路线地图 | 已完成（2026-05-22，按远端最新阶段三到五状态修正） |
+| `docs/DeepSeek_API_Integration_Test_Plan.md` | DeepSeek API 接入和真实 LLM 测试执行计划 | 已完成（2026-05-22，等待新 AI 对话执行） |
 | `docs/prompts/prompt_title.md` | 标题生成 Prompt | 已完成（2026-05-21 增 §6） |
 | `scripts/verify_phase1_task1_title.js` | 任务一自检脚本 | 已完成（15/15） |
 | `docs/prompts/prompt_category.md` | 分类建议 Prompt | 已完成 |
