@@ -26,7 +26,8 @@ async function createCollection(req, res, next) {
 
 async function listCollections(req, res, next) {
   try {
-    const { page, pageSize, keyword, category, tag, sort, visibility } = req.query;
+    const { page, pageSize, keyword, category, tag, sort, visibility, year, month } =
+      req.query;
     const data = await service.list({
       page,
       pageSize,
@@ -35,6 +36,8 @@ async function listCollections(req, res, next) {
       tag,
       sort,
       visibility,
+      year,
+      month,
     });
     return success(res, data);
   } catch (err) {

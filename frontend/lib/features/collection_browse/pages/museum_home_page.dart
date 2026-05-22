@@ -6,6 +6,7 @@ import '../../../core/theme/collectory_tokens.dart';
 import '../../../core/theme/collectory_theme.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
+import '../utils/collectory_room_catalog.dart';
 import '../widgets/design/collectory_top_bar.dart';
 import '../widgets/design/museum_hall_scene.dart';
 import '../widgets/design/museum_home_layout_spec.dart';
@@ -42,10 +43,11 @@ class MuseumHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exhibitCount = ref.watch(userStatsProvider).maybeWhen(
-          data: (s) => s.totalCollections,
-          orElse: () => null,
-        );
+    final list = ref.watch(collectionMuseumCatalogProvider);
+    final mayRoom = CollectoryRoomCatalog.rooms.first;
+    final int? exhibitCount = list.loading && list.items.isEmpty
+        ? null
+        : CollectoryRoomCatalog.itemsInRoom(list.items, mayRoom).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,10 +58,14 @@ class MuseumHomePage extends ConsumerWidget {
             children: [
               Positioned.fill(
                 child: MuseumHallScene(
-                  onTickets: () => openGalleryWithCategory(ref, 'ticket'),
-                  onMemories: () => openGalleryWithCategory(ref, 'postcard'),
-                  onMinerals: () => openGalleryWithCategory(ref, 'mineral'),
-                  onVinyl: () => openGalleryWithCategory(ref, 'vinyl'),
+                  onTickets: () =>
+                      openHomeHallCategoryInGalleryWall(ref, 'ticket'),
+                  onMemories: () =>
+                      openHomeHallCategoryInGalleryWall(ref, 'postcard'),
+                  onMinerals: () =>
+                      openHomeHallCategoryInGalleryWall(ref, 'mineral'),
+                  onVinyl: () =>
+                      openHomeHallCategoryInGalleryWall(ref, 'vinyl'),
                 ),
               ),
               Positioned(

@@ -1,100 +1,142 @@
-const { COLLECTION_CATEGORIES } = require('./ai.schemas');
+const { COLLECTION_CATEGORIES, normalizeStoryStyle } = require('./ai.schemas');
+
+const STORY_STYLE_HINTS = {
+  concise: 'Concise: short sentences, restrained tone, about 80–120 words.',
+  scrapbook: 'Scrapbook: like a margin note in a journal; gentle time markers such as "today" or "later".',
+  travel: 'Travel diary: emphasize route, place, and first encounter; light and place matter.',
+  vintage: 'Vintage: quiet nostalgia, unhurried tone, no exaggeration.',
+};
 
 function valueOrEmpty(value) {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '未提供';
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : 'not provided';
 }
 
 function buildTitlePrompt(input = {}) {
-  return `你是 Collection Journey App 的 AI 收藏记录助手。请根据用户提供的信息，为这件收藏品生成 3 个中文标题建议。
+  return `You are the AI assistant for Collection Journey App. Generate 3 English title suggestions for this collectible.
 
-生成规则：
-1. 每个标题不超过 20 个中文字符。
-2. 标题要温暖、有个人记忆感，但不要夸张。
-3. 不要编造用户没有提供的事实、品牌、地点、人物或事件。
-4. 如果信息不足，请使用更中性的标题。
-5. 只输出 JSON，不要输出 Markdown 或解释文字。
+Rules:
+1. Each title must be 80 characters or fewer.
+2. Warm and personal, but not dramatic.
+3. Do not invent facts, brands, places, people, or events the user did not provide.
+4. If information is sparse, use neutral titles.
+5. Output JSON only—no Markdown or explanation.
 
-用户输入：
-- 类别：${valueOrEmpty(input.category)}
-- 地点：${valueOrEmpty(input.location)}
-- 日期：${valueOrEmpty(input.dateAcquired)}
-- 描述：${valueOrEmpty(input.description)}
+User input:
+- Category: ${valueOrEmpty(input.category)}
+- Location: ${valueOrEmpty(input.location)}
+- Date acquired: ${valueOrEmpty(input.dateAcquired)}
+- Description: ${valueOrEmpty(input.description)}
 
-请严格按照以下 JSON 格式输出：
+Output format:
 {
-  "suggestions": ["标题1", "标题2", "标题3"]
+  "suggestions": ["Title 1", "Title 2", "Title 3"]
 }`;
 }
 
 function buildCategoryPrompt(input = {}) {
-  return `你是 Collection Journey App 的收藏分类助手。请根据用户输入，从固定类别列表中选择一个最合适的类别。
+  return `You are the collection category assistant for Collection Journey App. Pick the best category from the fixed list.
 
-固定类别只能是：
+Fixed categories only:
 ${JSON.stringify(COLLECTION_CATEGORIES)}
 
-分类规则：
-1. category 必须严格来自固定类别列表。
-2. confidence 是 0 到 1 之间的小数，表示你对分类的信心。
-3. 如果信息不足或无法判断，请选择 "其他"，confidence 不要高于 0.5。
-4. 不要输出固定类别以外的名称。
-5. 只输出 JSON，不要输出 Markdown 或解释文字。
+Rules:
+1. category must be exactly one value from the fixed list.
+2. confidence is a decimal from 0 to 1.
+3. If unsure, choose "Other Collections" with confidence no higher than 0.5.
+4. Do not output names outside the list.
+5. Output JSON only.
 
-用户输入：
-- 标题：${valueOrEmpty(input.title)}
-- 描述：${valueOrEmpty(input.description)}
-- 地点：${valueOrEmpty(input.location)}
-- 图片描述：${valueOrEmpty(input.imageDescription)}
+User input:
+- Title: ${valueOrEmpty(input.title)}
+- Description: ${valueOrEmpty(input.description)}
+- Location: ${valueOrEmpty(input.location)}
+- Image description: ${valueOrEmpty(input.imageDescription)}
 
-请严格按照以下 JSON 格式输出：
+Output format:
 {
-  "category": "明信片",
+  "category": "Postcards",
   "confidence": 0.82
 }`;
 }
 
 function buildTagsPrompt(input = {}) {
-  return `你是 Collection Journey App 的收藏标签助手。请根据用户提供的信息，为这件收藏品生成 3 到 8 个中文标签。
+  return `You are the collection tags assistant for Collection Journey App. Generate 3 to 8 English tags.
 
-标签规则：
-1. 每个标签要短，建议 2 到 6 个中文字符。
-2. 标签不能重复。
-3. 不要输出过于泛化的标签，例如“收藏”“物品”“记录”。
-4. 尽量包含地点、类别、情绪、主题或使用场景。
-5. 如果信息不足，也要返回至少 3 个保守标签。
-6. 只输出 JSON，不要输出 Markdown 或解释文字。
+Rules:
+1. Keep tags short (about 2–24 characters).
+2. No duplicates.
+3. Avoid overly generic tags such as "collection", "item", or "record".
+4. Prefer place, category, mood, theme, or use case when possible.
+5. Return at least 3 conservative tags even if input is sparse.
+6. Output JSON only.
 
-用户输入：
-- 标题：${valueOrEmpty(input.title)}
-- 类别：${valueOrEmpty(input.category)}
-- 地点：${valueOrEmpty(input.location)}
-- 描述：${valueOrEmpty(input.description)}
+User input:
+- Title: ${valueOrEmpty(input.title)}
+- Category: ${valueOrEmpty(input.category)}
+- Location: ${valueOrEmpty(input.location)}
+- Description: ${valueOrEmpty(input.description)}
 
-请严格按照以下 JSON 格式输出：
+Output format:
 {
-  "tags": ["东京", "明信片", "旅行", "书店"]
+  "tags": ["Tokyo", "postcard", "travel", "bookshop"]
 }`;
 }
 
 function buildStoryPrompt(input = {}) {
-  return `你是 Collection Journey App 的收藏故事助手。请根据用户提供的信息，生成一段 100 到 150 个中文字符左右的收藏故事草稿。
+  const style = normalizeStoryStyle(input.style);
+  const styleHint = STORY_STYLE_HINTS[style] || STORY_STYLE_HINTS.concise;
 
-写作规则：
-1. 语气温暖、自然，有个人记忆感。
-2. 不要编造用户没有提供的具体事实、人物、品牌或事件。
-3. 如果信息不足，请围绕“保存这件收藏的意义”写得更保守。
-4. 文本应方便用户继续编辑，不要写成广告文案。
-5. 只输出 JSON，不要输出 Markdown 或解释文字。
+  return `You are the collection story assistant for Collection Journey App. Write an English story draft of about 80–150 words.
 
-用户输入：
-- 标题：${valueOrEmpty(input.title)}
-- 类别：${valueOrEmpty(input.category)}
-- 地点：${valueOrEmpty(input.location)}
-- 日期：${valueOrEmpty(input.dateAcquired)}
-- 描述：${valueOrEmpty(input.description)}
+Style (required):
+- Style code: ${style}
+- ${styleHint}
 
-请严格按照以下 JSON 格式输出：
+Rules:
+1. Warm, natural, personal tone.
+2. Do not invent specific facts, people, brands, or events the user did not provide.
+3. If information is sparse, write conservatively about why keeping this piece matters.
+4. Easy for the user to edit; not ad copy.
+5. Output JSON only.
+
+User input:
+- Title: ${valueOrEmpty(input.title)}
+- Category: ${valueOrEmpty(input.category)}
+- Location: ${valueOrEmpty(input.location)}
+- Date acquired: ${valueOrEmpty(input.dateAcquired)}
+- Description: ${valueOrEmpty(input.description)}
+- Image description: ${valueOrEmpty(input.imageDescription)}
+
+Output format:
 {
-  "story": "生成的故事文本"
+  "story": "Story text here"
+}`;
+}
+
+function buildAnalyzeImagePrompt(input = {}) {
+  return `You are the collectible image recognition assistant for Collection Journey App. Suggest title, category, tags, and a short description from the image information.
+
+Fixed categories only:
+${JSON.stringify(COLLECTION_CATEGORIES)}
+
+Rules:
+1. suggestedCategory must be from the fixed list.
+2. suggestedTags: 3 to 8 unique English tags.
+3. suggestedTitle: 80 characters or fewer, warm and editable.
+4. description: 1–2 sentences on what it appears to be—not a full story.
+5. Do not invent details not visible in the image.
+6. Output JSON only.
+
+Image info:
+- Image description: ${valueOrEmpty(input.imageDescription)}
+- Image URL: ${valueOrEmpty(input.imageUrl)}
+
+Output format:
+{
+  "suggestedTitle": "Vintage exhibition ticket",
+  "suggestedCategory": "Tickets",
+  "suggestedTags": ["exhibition", "ticket", "vintage"],
+  "description": "This looks like a printed event or exhibition ticket."
 }`;
 }
 
@@ -103,4 +145,5 @@ module.exports = {
   buildCategoryPrompt,
   buildTagsPrompt,
   buildStoryPrompt,
+  buildAnalyzeImagePrompt,
 };

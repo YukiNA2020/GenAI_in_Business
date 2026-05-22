@@ -87,3 +87,21 @@
   "suggestions": ["我的收藏记忆", "一件小小收藏", "值得保存的瞬间"]
 }
 ```
+
+---
+
+## 6. 代码复用与自检
+
+| 文件 | 说明 |
+|---|---|
+| `member_E/backend/src/ai/ai.prompts.js` | `buildTitlePrompt(input)` 将本节模板参数化，供阶段二 AI Provider 调用 |
+| `member_E/backend/src/ai/ai.schemas.js` | `hasRequiredDescription()`、`validateTitleResponse()` 校验请求与响应 |
+| `member_E/scripts/verify_phase1_task1_title.js` | 任务一本地自检（不调用真实 AI） |
+
+自检命令（在项目根目录执行）：
+
+```bash
+node member_E/scripts/verify_phase1_task1_title.js
+```
+
+阶段二实现 `POST /api/ai/suggest-title` 时，成功响应的 `data` 结构须与本节输出格式一致，详见 `member_E/docs/AI_API_Contract.md` §3.1。

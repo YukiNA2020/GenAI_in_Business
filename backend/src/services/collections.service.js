@@ -52,7 +52,7 @@ async function create(data) {
   return toCamelCase(created);
 }
 
-async function list({ page, pageSize, keyword, category, tag, sort, visibility } = {}) {
+async function list({ page, pageSize, keyword, category, tag, sort, visibility, year, month } = {}) {
   const { items, total } = await repo.findAll({
     page,
     pageSize,
@@ -61,6 +61,8 @@ async function list({ page, pageSize, keyword, category, tag, sort, visibility }
     tag,
     sort,
     visibility,
+    year,
+    month,
   });
   return {
     items: items.map(toCamelCase),

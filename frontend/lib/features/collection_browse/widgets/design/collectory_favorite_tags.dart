@@ -40,16 +40,19 @@ class CollectoryFavoriteTagRow extends StatelessWidget {
     super.key,
     required this.activeTag,
     required this.onTagTap,
+    this.highlightActive = true,
   });
 
   final String activeTag;
   final ValueChanged<String> onTagTap;
+  /// Profile 跳转 Gallery 时不高亮选中项
+  final bool highlightActive;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: CollectoryFavoriteTags.labels.map((tag) {
-        final active = tag == activeTag;
+        final active = highlightActive && tag == activeTag;
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(

@@ -27,6 +27,62 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
   final _collectionWallKey = GlobalKey();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      applyPendingGalleryWallCategory(ref);
+      _consumePendingScrollToWall();
+    });
+  }
+
+  static const _maxScrollAttempts = 45;
+
+  void _scrollToCollectionWall({int attempt = 0}) {
+    if (!ref.read(pendingGalleryScrollToWallProvider)) return;
+
+    final target = _collectionWallKey.currentContext;
+    if (target != null) {
+      ref.read(pendingGalleryScrollToWallProvider.notifier).state = false;
+      Scrollable.ensureVisible(
+        target,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+        alignment: 0.0,
+      );
+      return;
+    }
+
+    final controller = _scrollController;
+    if (controller.hasClients) {
+      final max = controller.position.maxScrollExtent;
+      if (max > 80) {
+        ref.read(pendingGalleryScrollToWallProvider.notifier).state = false;
+        controller.animateTo(
+          max,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+        );
+        return;
+      }
+    }
+
+    if (attempt >= _maxScrollAttempts) {
+      ref.read(pendingGalleryScrollToWallProvider.notifier).state = false;
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scrollToCollectionWall(attempt: attempt + 1);
+    });
+  }
+
+  void _consumePendingScrollToWall() {
+    if (!ref.read(pendingGalleryScrollToWallProvider)) return;
+    _scrollToCollectionWall();
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -34,27 +90,33 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
 
   void _openLayerCategory(GalleryLayerSpec spec) {
     openGalleryWithCategory(ref, spec.categorySlugs.first);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final target = _collectionWallKey.currentContext;
-      if (target != null) {
-        Scrollable.ensureVisible(
-          target,
-          duration: const Duration(milliseconds: 450),
-          curve: Curves.easeOutCubic,
-          alignment: 0.02,
-        );
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final list = ref.watch(collectionListProvider);
-    final items = list.items;
-    final total = list.total;
+    ref.listen<bool>(pendingGalleryScrollToWallProvider, (previous, next) {
+      if (next) _consumePendingScrollToWall();
+    });
+    ref.listen<CollectionListState>(collectionListProvider, (previous, next) {
+      if (!ref.read(pendingGalleryScrollToWallProvider)) return;
+      if (previous?.loading == true && !next.loading) {
+        _consumePendingScrollToWall();
+      }
+    });
+    ref.listen<CollectoryRoomSpec?>(collectionRoomWallFilterProvider,
+        (previous, next) {
+      if (next != null && ref.read(pendingGalleryScrollToWallProvider)) {
+        _consumePendingScrollToWall();
+      }
+    });
+
+    final archive = ref.watch(collectionMuseumCatalogProvider);
+    final wall = ref.watch(collectionListProvider);
+    final items = archive.items;
+    final total = wall.total;
     final pad = CollectoryColors.screenPadding;
-    final roomIndex = ref.watch(collectionRoomIndexProvider);
-    final room = CollectoryRoomCatalog.forIndex(roomIndex);
+    final displayRoomIndex = CollectoryRoomCatalog.currentMonthRoomIndex();
+    final room = CollectoryRoomCatalog.currentMonthRoom;
 
     return CustomScrollView(
       controller: _scrollController,
@@ -94,7 +156,7 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
                   ),
                   const SizedBox(height: 12),
                   RoomSelectorRow(
-                    selectedIndex: roomIndex,
+                    selectedIndex: displayRoomIndex,
                     onSelect: (i) => openCollectionRoom(ref, roomIndex: i),
                   ),
                   const _HairlineDivider(margin: EdgeInsets.symmetric(vertical: 12)),
@@ -113,13 +175,19 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
                         .copyWith(fontSize: 13),
                   ),
                   const SizedBox(height: 12),
-                  if (list.loading && items.isEmpty)
-                    const SizedBox(
+                  if (archive.loading && items.isEmpty)
+                    SizedBox(
                       height: 200,
                       child: Center(
-                        child: CircularProgressIndicator(
-                          color: CollectoryColors.textLabel,
-                        ),
+                        child: archive.error != null
+                            ? Text(
+                                archive.error!,
+                                textAlign: TextAlign.center,
+                                style: CollectoryHandoffHeader.bodySecondary(),
+                              )
+                            : const CircularProgressIndicator(
+                                color: CollectoryColors.textLabel,
+                              ),
                       ),
                     )
                   else
@@ -129,7 +197,7 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
                       physics: const NeverScrollableScrollPhysics(),
                       mainAxisSpacing: 14,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 0.88,
+                      childAspectRatio: 0.8,
                       children: [
                         for (final spec in galleryLayerSpecs)
                           Builder(
@@ -148,7 +216,6 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
                   const _HairlineDivider(),
                   const SizedBox(height: 12),
                   Row(
-                    key: _collectionWallKey,
                     children: [
                       Expanded(
                         child: Text(
@@ -179,6 +246,7 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
           CollectionWallSlivers(
             scrollController: _scrollController,
             showWallHeader: false,
+            sectionKey: _collectionWallKey,
           ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

@@ -138,22 +138,67 @@ abstract final class CollectoryRoomCatalog {
     return rooms[index];
   }
 
+  /// Gallery 顶栏 room 条固定高亮「当前月」（demo 回退 May 2026 / ROOM 01）
+  static int currentMonthRoomIndex() {
+    final now = DateTime.now();
+    for (var i = 0; i < rooms.length; i++) {
+      final spec = rooms[i];
+      if (spec.month == now.month && spec.year == now.year) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  static CollectoryRoomSpec get currentMonthRoom =>
+      forIndex(currentMonthRoomIndex());
+
+  static const List<String> wallMonthLabels = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  static String monthLabel(int month) =>
+      month >= 1 && month <= 12 ? wallMonthLabels[month - 1] : '—';
+
+  /// Collection wall 年份下拉（去重排序）
+  static List<int> get wallFilterYears {
+    final years = rooms.map((r) => r.year).toSet().toList()..sort();
+    return years;
+  }
+
+  static int? _yearOf(CollectionItem item) {
+    final raw = item.dateAcquired ?? item.createdAt;
+    if (raw == null || raw.length < 4) return null;
+    return int.tryParse(raw.substring(0, 4));
+  }
+
   static int? _monthOf(CollectionItem item) {
     final raw = item.dateAcquired ?? item.createdAt;
     if (raw == null || raw.length < 7) return null;
     return int.tryParse(raw.substring(5, 7));
   }
 
-  /// 属于该月 room 的藏品；May 无日期匹配时回退全量（demo seed）
+  /// 属于该 room 对应年月的藏品（优先 dateAcquired，否则 createdAt）
+  static bool itemMatchesRoom(CollectionItem item, CollectoryRoomSpec spec) {
+    return _yearOf(item) == spec.year && _monthOf(item) == spec.month;
+  }
+
   static List<CollectionItem> itemsInRoom(
     List<CollectionItem> items,
     CollectoryRoomSpec spec,
   ) {
-    final byMonth =
-        items.where((item) => _monthOf(item) == spec.month).toList();
-    if (byMonth.isNotEmpty) return byMonth;
-    if (spec.index == 0) return items;
-    return [];
+    return items.where((item) => itemMatchesRoom(item, spec)).toList();
   }
 
   static String formatTimelineDate(String? raw, CollectoryRoomSpec spec) {

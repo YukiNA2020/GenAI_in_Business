@@ -8,7 +8,10 @@ import '../providers/app_navigation_provider.dart';
 import '../utils/collectory_room_catalog.dart';
 import '../providers/collection_list_provider.dart';
 import '../providers/member3_ui_settings_provider.dart';
+import '../../profile/models/user_profile.dart';
+import '../../profile/providers/profile_providers.dart';
 import '../services/collection_query_service.dart';
+import '../utils/profile_exhibit_utils.dart';
 import 'collectory_handoff_header.dart';
 import 'collection_card.dart';
 import 'collection_grid.dart';
@@ -17,8 +20,14 @@ import 'design/collectory_pill_toggle.dart';
 import 'design/collectory_top_bar.dart';
 
 /// Profile tab: stats API + recent [CollectionCard] + category preview (Member 3 phase 4).
+/// [embeddedInMemberEProfile]：成员 E 阶段三·任务五 — 嵌入 ProfilePage，省略顶栏/头像/统计重复块。
 class ProfileCollectionPreview extends ConsumerStatefulWidget {
-  const ProfileCollectionPreview({super.key});
+  const ProfileCollectionPreview({
+    super.key,
+    this.embeddedInMemberEProfile = false,
+  });
+
+  final bool embeddedInMemberEProfile;
 
   @override
   ConsumerState<ProfileCollectionPreview> createState() =>
@@ -27,14 +36,13 @@ class ProfileCollectionPreview extends ConsumerStatefulWidget {
 
 class _ProfileCollectionPreviewState
     extends ConsumerState<ProfileCollectionPreview> {
-  String _activeFavoriteTag = CollectoryFavoriteTags.labels.first;
-
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(userStatsProvider);
-    final list = ref.watch(collectionListProvider);
+    final list = ref.watch(collectionMuseumCatalogProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final publicPreview = ref.watch(profilePublicPreviewProvider);
+    final profile = ref.watch(userProfileProvider);
     final pad = CollectoryColors.screenPadding;
 
     final categoryNames = categoriesAsync.when(
@@ -43,6 +51,17 @@ class _ProfileCollectionPreviewState
       error: (_, __) => <String, String>{},
     );
 
+    if (widget.embeddedInMemberEProfile) {
+      final stats = statsAsync.valueOrNull ?? demoUserStatsFallback;
+      return _buildMuseumSections(
+        ref: ref,
+        stats: stats,
+        allItems: list.items,
+        categoryNames: categoryNames,
+        publicPreview: publicPreview,
+      );
+    }
+
     return statsAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(color: CollectoryColors.textLabel),
@@ -50,6 +69,7 @@ class _ProfileCollectionPreviewState
       error: (_, __) => _buildScrollBody(
         ref: ref,
         pad: pad,
+        profile: profile,
         stats: demoUserStatsFallback,
         allItems: list.items,
         categoryNames: categoryNames,
@@ -58,6 +78,7 @@ class _ProfileCollectionPreviewState
       data: (stats) => _buildScrollBody(
         ref: ref,
         pad: pad,
+        profile: profile,
         stats: stats,
         allItems: list.items,
         categoryNames: categoryNames,
@@ -69,26 +90,15 @@ class _ProfileCollectionPreviewState
   Widget _buildScrollBody({
     required WidgetRef ref,
     required double pad,
+    required UserProfile profile,
     required UserStats stats,
     required List<CollectionItem> allItems,
     required Map<String, String> categoryNames,
     required bool publicPreview,
   }) {
-    final exhibits = stats.totalCollections.toString();
-    final rooms = stats.categoryCount.toString().padLeft(2, '0');
-    final publicCount = stats.publicCollections.toString();
-    final lastAdded = _resolveLastAdded(allItems, stats.recentCollections);
-
-    var recent = _resolveRecentExhibits(stats, allItems);
-    if (publicPreview) {
-      recent = recent.where((e) => e.visibility == 'public').toList();
-    }
-    final favoriteCategoryId =
-        CollectoryFavoriteTags.categorySlugForTag(_activeFavoriteTag);
-    final favoriteItems = _filterProfileItems(
-      allItems,
-      publicOnly: publicPreview,
-      categoryId: favoriteCategoryId,
+    final display = resolveProfileStatsDisplay(
+      museumCatalogItems: allItems,
+      stats: stats,
     );
 
     return SingleChildScrollView(
@@ -129,7 +139,7 @@ class _ProfileCollectionPreviewState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tong',
+                      profile.displayName,
                       style: GoogleFonts.inter(
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
@@ -137,12 +147,14 @@ class _ProfileCollectionPreviewState
                         height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'Monthly rooms, concert memories, minerals, and small personal archives.',
-                      style: CollectoryHandoffHeader.bodySecondary()
-                          .copyWith(fontSize: 13, height: 1.35),
-                    ),
+                    if (profile.bio.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        profile.bio,
+                        style: CollectoryHandoffHeader.bodySecondary()
+                            .copyWith(fontSize: 13, height: 1.35),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -151,13 +163,72 @@ class _ProfileCollectionPreviewState
           const _HairlineDivider(margin: EdgeInsets.symmetric(vertical: 14)),
           Row(
             children: [
-              Expanded(child: _StatColumn(value: exhibits, label: 'Exhibits')),
-              Expanded(child: _StatColumn(value: rooms, label: 'Rooms')),
-              Expanded(child: _StatColumn(value: publicCount, label: 'Public')),
-              Expanded(child: _LastAddedStatColumn(display: lastAdded)),
+              Expanded(
+                child: _StatColumn(
+                  value: display.exhibitsLabel,
+                  label: 'Exhibits',
+                ),
+              ),
+              Expanded(
+                child: _StatColumn(value: display.roomsLabel, label: 'Rooms'),
+              ),
+              Expanded(
+                child: _StatColumn(
+                  value: display.publicLabel,
+                  label: 'Public',
+                ),
+              ),
+              Expanded(
+                child: _LastAddedStatColumn(display: display.lastAdded),
+              ),
             ],
           ),
           const SizedBox(height: 16),
+          ..._museumSectionWidgets(
+            ref: ref,
+            stats: stats,
+            allItems: allItems,
+            categoryNames: categoryNames,
+            publicPreview: publicPreview,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMuseumSections({
+    required WidgetRef ref,
+    required UserStats stats,
+    required List<CollectionItem> allItems,
+    required Map<String, String> categoryNames,
+    required bool publicPreview,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _museumSectionWidgets(
+        ref: ref,
+        stats: stats,
+        allItems: allItems,
+        categoryNames: categoryNames,
+        publicPreview: publicPreview,
+      ),
+    );
+  }
+
+  List<Widget> _museumSectionWidgets({
+    required WidgetRef ref,
+    required UserStats stats,
+    required List<CollectionItem> allItems,
+    required Map<String, String> categoryNames,
+    required bool publicPreview,
+  }) {
+    // Full archive catalog — never Gallery wall category/tag filters.
+    final recent = resolveRecentExhibits(
+      stats,
+      allItems,
+      publicOnly: publicPreview,
+    );
+    return [
           _VisibilityCard(
             publicPreview: publicPreview,
             onToggle: () {
@@ -219,23 +290,10 @@ class _ProfileCollectionPreviewState
           ),
           const SizedBox(height: 8),
           CollectoryFavoriteTagRow(
-            activeTag: _activeFavoriteTag,
-            onTagTap: (tag) => setState(() => _activeFavoriteTag = tag),
+            activeTag: '',
+            highlightActive: false,
+            onTagTap: (tag) => openProfileFavoriteTagInGalleryWall(ref, tag),
           ),
-          const SizedBox(height: 12),
-          if (favoriteItems.isEmpty)
-            Text(
-              publicPreview
-                  ? 'No public exhibits in this category.'
-                  : 'No exhibits in this category.',
-              style: CollectoryHandoffHeader.bodySecondary(),
-            )
-          else
-            CollectionGrid(
-              items: favoriteItems,
-              categoryNames: categoryNames,
-              onItemTap: (item) => openItemDetail(ref, item.id),
-            ),
           const SizedBox(height: 20),
           Text(
             'Collection rooms',
@@ -257,9 +315,13 @@ class _ProfileCollectionPreviewState
                     child: Builder(
                       builder: (context) {
                         final spec = CollectoryRoomCatalog.rooms[i];
+                        final count =
+                            CollectoryRoomCatalog.itemsInRoom(allItems, spec)
+                                .length;
                         return _RoomPreviewCard(
                           room: spec.roomCode,
                           title: spec.monthYear,
+                          subtitle: '$count exhibits',
                           color: spec.cardColor,
                           preview: spec.isPreview,
                           onTap: () => openCollectionRoom(ref, roomIndex: i),
@@ -307,99 +369,8 @@ class _ProfileCollectionPreviewState
             ),
           ),
           const _HairlineDivider(),
-        ],
-      ),
-    );
+        ];
   }
-}
-
-List<CollectionItem> _resolveRecentExhibits(
-  UserStats stats,
-  List<CollectionItem> allItems,
-) {
-  final pool = allItems.isNotEmpty ? allItems : stats.recentCollections;
-  return _sortByNewestAcquired(pool).take(5).toList();
-}
-
-/// Newest first by [dateAcquired], then [createdAt].
-List<CollectionItem> _sortByNewestAcquired(List<CollectionItem> items) {
-  final copy = [...items];
-  copy.sort((a, b) {
-    final da = _sortableDate(a);
-    final db = _sortableDate(b);
-    return db.compareTo(da);
-  });
-  return copy;
-}
-
-String _sortableDate(CollectionItem item) {
-  final acquired = item.dateAcquired?.trim();
-  if (acquired != null && acquired.isNotEmpty) return acquired;
-  return item.createdAt?.trim() ?? '';
-}
-
-List<CollectionItem> _filterProfileItems(
-  List<CollectionItem> items, {
-  required bool publicOnly,
-  String? categoryId,
-}) {
-  var out = items;
-  if (publicOnly) {
-    out = out.where((e) => e.visibility == 'public').toList();
-  }
-  if (categoryId != null && categoryId.isNotEmpty) {
-    out = out.where((e) => e.category == categoryId).toList();
-  }
-  return out;
-}
-
-String? _itemDisplayDate(CollectionItem item) {
-  final acquired = item.dateAcquired?.trim();
-  if (acquired != null && acquired.isNotEmpty) return acquired;
-  final created = item.createdAt?.trim();
-  if (created != null && created.isNotEmpty) return created;
-  return null;
-}
-
-class _LastAddedDisplay {
-  const _LastAddedDisplay({this.year, required this.monthDay});
-
-  final String? year;
-  final String monthDay;
-}
-
-const _lastAddedEmpty = _LastAddedDisplay(monthDay: '—');
-
-_LastAddedDisplay _parseLastAddedDate(String raw) {
-  final iso = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})').firstMatch(raw.trim());
-  if (iso != null) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    final month = int.parse(iso.group(2)!);
-    final day = int.parse(iso.group(3)!);
-    if (month >= 1 && month <= 12) {
-      return _LastAddedDisplay(
-        year: iso.group(1),
-        monthDay: '${months[month - 1]} $day',
-      );
-    }
-    return _LastAddedDisplay(year: iso.group(1), monthDay: raw.substring(5, 10));
-  }
-  return _LastAddedDisplay(monthDay: raw.length > 9 ? raw.substring(0, 9) : raw);
-}
-
-_LastAddedDisplay _resolveLastAdded(
-  List<CollectionItem> allItems,
-  List<CollectionItem> recentFromStats,
-) {
-  final pool = allItems.isNotEmpty ? allItems : recentFromStats;
-  if (pool.isEmpty) return _lastAddedEmpty;
-  final newest = _sortByNewestAcquired(pool).first;
-  final raw = _itemDisplayDate(newest);
-  if (raw == null) return _lastAddedEmpty;
-  return _parseLastAddedDate(raw);
 }
 
 class _HairlineDivider extends StatelessWidget {
@@ -501,7 +472,7 @@ class _StatColumn extends StatelessWidget {
 class _LastAddedStatColumn extends StatelessWidget {
   const _LastAddedStatColumn({required this.display});
 
-  final _LastAddedDisplay display;
+  final ProfileLastAddedDisplay display;
 
   @override
   Widget build(BuildContext context) {
@@ -618,11 +589,13 @@ class _RoomPreviewCard extends StatelessWidget {
     required this.title,
     required this.color,
     required this.onTap,
+    this.subtitle,
     this.preview = false,
   });
 
   final String room;
   final String title;
+  final String? subtitle;
   final Color color;
   final VoidCallback onTap;
   final bool preview;
@@ -686,6 +659,14 @@ class _RoomPreviewCard extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: CollectoryHandoffHeader.bodySecondary()
+                            .copyWith(fontSize: 9, height: 1.1),
+                      ),
+                    ],
                   ],
                 ),
                 Container(

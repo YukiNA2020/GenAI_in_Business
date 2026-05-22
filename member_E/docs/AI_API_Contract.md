@@ -218,6 +218,49 @@ HTTP 状态：`502`
 
 ---
 
+## 7. 阶段四扩展（V2.3）
+
+### 7.1 图片识别
+
+```text
+POST /api/ai/analyze-image
+```
+
+请求（`imageDescription` 与 `imageUrl` 至少一项）：
+
+```json
+{
+  "imageDescription": "一张泛黄的展览票根，边缘略有磨损"
+}
+```
+
+成功响应：
+
+```json
+{
+  "success": true,
+  "data": {
+    "suggestedTitle": "复古展览票根",
+    "suggestedCategory": "票根",
+    "suggestedTags": ["展览", "票根", "复古"],
+    "description": "这看起来像一张展览或活动票根。"
+  }
+}
+```
+
+### 7.2 多风格故事
+
+`POST /api/ai/generate-story` 新增可选字段 `style`：
+
+| style | 说明 |
+|---|---|
+| `concise` | 简洁风（默认） |
+| `scrapbook` | 手账风 |
+| `travel` | 旅行日记风 |
+| `vintage` | 复古风 |
+
+---
+
 ## 6. 与成员 B 的联调确认项
 
 | 确认项 | 当前约定 |

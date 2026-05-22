@@ -66,73 +66,93 @@ class _LayeredExhibitTileState extends State<LayeredExhibitTile> {
     });
   }
 
+  List<Offset> _restOffsetsFor(double side) {
+    final scale = side / 112.0;
+    return _restOffsets
+        .map((o) => Offset(o.dx * scale, o.dy * scale))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cardColor = Color(widget.spec.cardColor);
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: (_) {
-        setState(() => _dragNorm = Offset.zero);
-        widget.onDragEnd?.call();
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.spec.layerLabel,
-            style: CollectoryTypography.metaLabel,
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 112,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                for (var i = 0; i < 3; i++)
-                  Positioned(
-                    left: _restOffsets[i].dx,
-                    top: _restOffsets[i].dy,
-                    right: 6 - i * 2.0,
-                    bottom: 4 + i * 2.0,
-                    child: TweenAnimationBuilder<Offset>(
-                      duration: CollectoryMotion.medium,
-                      curve: CollectoryMotion.ease,
-                      tween: Tween<Offset>(end: _parallaxOffset(i)),
-                      builder: (context, offset, child) {
-                        return Transform.translate(offset: offset, child: child);
-                      },
-                      child: _LayerCard(
-                        color: i == 2
-                            ? cardColor
-                            : cardColor.withValues(alpha: 0.32 + i * 0.14),
-                        child: i == 2
-                            ? Center(
-                                child: GalleryCategoryIllustration(
-                                  specKey: widget.spec.key,
-                                ),
-                              )
-                            : null,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = constraints.maxWidth;
+        final offsets = _restOffsetsFor(side);
+
+        return GestureDetector(
+          onTap: widget.onTap,
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: (_) {
+            setState(() => _dragNorm = Offset.zero);
+            widget.onDragEnd?.call();
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                widget.spec.layerLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: CollectoryTypography.metaLabel,
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                width: side,
+                height: side,
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    for (var i = 0; i < 3; i++)
+                      Positioned(
+                        left: offsets[i].dx,
+                        top: offsets[i].dy,
+                        right: (6 - i * 2.0) * (side / 112.0),
+                        bottom: (4 + i * 2.0) * (side / 112.0),
+                        child: TweenAnimationBuilder<Offset>(
+                          duration: CollectoryMotion.medium,
+                          curve: CollectoryMotion.ease,
+                          tween: Tween<Offset>(end: _parallaxOffset(i)),
+                          builder: (context, offset, child) {
+                            return Transform.translate(
+                              offset: offset,
+                              child: child,
+                            );
+                          },
+                          child: _LayerCard(
+                            color: i == 2
+                                ? cardColor
+                                : cardColor.withValues(alpha: 0.32 + i * 0.14),
+                            child: i == 2
+                                ? Center(
+                                    child: GalleryCategoryIllustration(
+                                      specKey: widget.spec.key,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.spec.defaultTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: CollectoryColors.textPrimary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            widget.spec.defaultTitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: CollectoryColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

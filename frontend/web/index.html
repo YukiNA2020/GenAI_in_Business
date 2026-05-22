@@ -35,6 +35,23 @@
 </head>
 <body style="margin:0;background:#F7F1E7;">
   <div id="loading" style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#7C7469;">Loading Collectory…</div>
+  <script>
+    (function () {
+      var loading = document.getElementById('loading');
+      function hideLoading() {
+        if (loading) loading.remove();
+      }
+      new MutationObserver(function () {
+        if (document.querySelector('flutter-view, flt-glass-pane, flt-scene-host')) {
+          hideLoading();
+        }
+      }).observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () {
+        if (!loading || !document.getElementById('loading')) return;
+        loading.innerHTML = 'Still loading… Run: cd frontend && flutter build web --release, then serve build/web on port 8090.';
+      }, 90000);
+    })();
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

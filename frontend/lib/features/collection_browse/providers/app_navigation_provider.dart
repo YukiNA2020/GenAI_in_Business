@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/models/user_profile.dart';
+import '../../profile/providers/profile_providers.dart';
 import '../utils/collectory_room_catalog.dart';
+import '../widgets/design/collectory_favorite_tags.dart';
 import 'collection_list_provider.dart';
 
 /// 叠层 — 对齐 collectory-ui-handoff.md 原型逻辑
@@ -34,6 +37,20 @@ final collectionRoomIndexProvider = StateProvider<int>((ref) => 0);
 
 /// 打开 Collection room 前的 Tab，用于返回
 final collectionRoomOriginTabProvider = StateProvider<int>((ref) => 0);
+
+/// Home/Profile room → Open wall：仅按 room 年月筛选，不用 Gallery 分类/标签筛选
+final collectionRoomWallFilterProvider =
+    StateProvider<CollectoryRoomSpec?>((ref) => null);
+
+/// Home hall 四选一 → 仅在 Gallery Tab 应用，不写入 archive
+final pendingGalleryWallCategoryProvider = StateProvider<String?>((ref) => null);
+
+/// Room Open wall / Home 种类 / Profile tag → Gallery 后自动滚到 Collection wall
+final pendingGalleryScrollToWallProvider = StateProvider<bool>((ref) => false);
+
+void requestGalleryScrollToCollectionWall(WidgetRef ref) {
+  ref.read(pendingGalleryScrollToWallProvider.notifier).state = true;
+}
 
 void openItemDetail(WidgetRef ref, int collectionId) {
   ref.read(detailIsPublicViewProvider.notifier).state = false;
@@ -80,8 +97,10 @@ void openCollectionWall(WidgetRef ref) {
 }
 
 void goToGalleryTab(WidgetRef ref, {String? categorySlug}) {
+  ref.read(collectionRoomWallFilterProvider.notifier).state = null;
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = 1;
+  requestGalleryScrollToCollectionWall(ref);
   if (categorySlug != null) {
     ref.read(collectionListProvider.notifier).updateFilters(
           category: categorySlug,
@@ -92,14 +111,45 @@ void goToGalleryTab(WidgetRef ref, {String? categorySlug}) {
   }
 }
 
+/// Home / Profile room → Gallery Collection wall（预选该 room 年月）
+void openCollectionWallForRoom(WidgetRef ref, {required int roomIndex}) {
+  final room = CollectoryRoomCatalog.forIndex(roomIndex);
+  ref.read(collectionRoomIndexProvider.notifier).state = room.index;
+  ref.read(collectionRoomWallFilterProvider.notifier).state = null;
+  closeMember3Overlay(ref);
+  ref.read(member3TabIndexProvider.notifier).state = 1;
+  requestGalleryScrollToCollectionWall(ref);
+  ref
+      .read(collectionListProvider.notifier)
+      .applyWallDateFilter(year: room.year, month: room.month)
+      .then((_) {
+    requestGalleryScrollToCollectionWall(ref);
+  });
+}
+
+void restoreMuseumCatalogForHomeProfile(WidgetRef ref) {
+  ref.read(pendingGalleryWallCategoryProvider.notifier).state = null;
+  ref.read(pendingGalleryScrollToWallProvider.notifier).state = false;
+  ref.read(collectionRoomWallFilterProvider.notifier).state = null;
+  ref.read(collectionListProvider.notifier).resetWallFilters();
+  final demo = UserProfile.demo();
+  ref.read(userProfileProvider.notifier).updateProfile(
+        displayName: demo.displayName,
+        bio: demo.bio,
+      );
+  ref.read(collectionArchiveProvider.notifier).refresh();
+}
+
 void goToHomeTab(WidgetRef ref) {
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = 0;
+  restoreMuseumCatalogForHomeProfile(ref);
 }
 
 void goToProfileTab(WidgetRef ref) {
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = 3;
+  restoreMuseumCatalogForHomeProfile(ref);
 }
 
 /// Gallery / Profile 同月 room（同 [roomIndex]）进入同一 Collection room 页
@@ -108,6 +158,7 @@ void openCollectionRoom(WidgetRef ref, {required int roomIndex}) {
   ref.read(collectionRoomIndexProvider.notifier).state = i;
   ref.read(collectionRoomOriginTabProvider.notifier).state =
       ref.read(member3TabIndexProvider);
+  ref.read(collectionArchiveProvider.notifier).refresh();
   ref.read(member3OverlayProvider.notifier).state = Member3Overlay.collectionRoom;
 }
 
@@ -125,9 +176,56 @@ void openLayerMotion(WidgetRef ref) {
   ref.read(member3OverlayProvider.notifier).state = Member3Overlay.layerMotion;
 }
 
-/// Home: Tickets/Memories/Minerals/Vinyl → Gallery + category filter
+/// Home hall: Tickets / Memories / Minerals / Vinyl → Gallery + wall category chip.
+void openHomeHallCategoryInGalleryWall(
+  WidgetRef ref,
+  String categorySlug,
+) {
+  ref.read(collectionRoomWallFilterProvider.notifier).state = null;
+  ref.read(pendingGalleryWallCategoryProvider.notifier).state = null;
+  requestGalleryScrollToCollectionWall(ref);
+  closeMember3Overlay(ref);
+  ref.read(member3TabIndexProvider.notifier).state = 1;
+  applyGalleryWallCategoryFilter(ref, categorySlug);
+}
+
+/// Profile Favorite tags → Gallery Collection wall（不在 Profile 内筛选）
+void openProfileFavoriteTagInGalleryWall(WidgetRef ref, String tagLabel) {
+  final slug = CollectoryFavoriteTags.categorySlugForTag(tagLabel);
+  if (slug == null) return;
+  openHomeHallCategoryInGalleryWall(ref, slug);
+}
+
+/// Collection wall only — select category chip and reload (not archive).
+void applyGalleryWallCategoryFilter(WidgetRef ref, String categorySlug) {
+  ref.read(collectionRoomWallFilterProvider.notifier).state = null;
+  ref.read(collectionListProvider.notifier).updateFilters(
+        category: categorySlug,
+        clearCategory: false,
+        clearTag: true,
+        keyword: '',
+      );
+}
+
+/// Apply [pendingGalleryWallCategoryProvider] on Gallery tab (wall only).
+void applyPendingGalleryWallCategory(WidgetRef ref) {
+  final slug = ref.read(pendingGalleryWallCategoryProvider);
+  if (slug == null) return;
+  ref.read(pendingGalleryWallCategoryProvider.notifier).state = null;
+  applyGalleryWallCategoryFilter(ref, slug);
+}
+
+/// Gallery layered tiles / layer motion → same wall-only category filter.
 void openGalleryWithCategory(WidgetRef ref, String categorySlug) {
-  goToGalleryTab(ref, categorySlug: categorySlug);
+  final onGalleryTab = ref.read(member3TabIndexProvider) == 1 &&
+      ref.read(member3OverlayProvider) == Member3Overlay.none;
+  if (onGalleryTab) {
+    ref.read(pendingGalleryWallCategoryProvider.notifier).state = null;
+    applyGalleryWallCategoryFilter(ref, categorySlug);
+    requestGalleryScrollToCollectionWall(ref);
+    return;
+  }
+  openHomeHallCategoryInGalleryWall(ref, categorySlug);
 }
 
 /// Item Detail: Back → Gallery View
@@ -158,6 +256,9 @@ void closeCollectionRoom(WidgetRef ref) {
   final origin = ref.read(collectionRoomOriginTabProvider);
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = origin;
+  if (origin == 0 || origin == 3) {
+    restoreMuseumCatalogForHomeProfile(ref);
+  }
 }
 
 @Deprecated('Use closeCollectionRoom')
@@ -167,6 +268,7 @@ void closeRoomToHome(WidgetRef ref) => closeCollectionRoom(ref);
 void closeShareToProfile(WidgetRef ref) {
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = 3;
+  restoreMuseumCatalogForHomeProfile(ref);
 }
 
 /// Add: Draft/Cancel → Collection Room
@@ -187,6 +289,6 @@ void onShellNavTap(WidgetRef ref, int index) {
   closeMember3Overlay(ref);
   ref.read(member3TabIndexProvider.notifier).state = index;
   if (index == 1) {
-    ref.read(collectionListProvider.notifier).refresh();
+    applyPendingGalleryWallCategory(ref);
   }
 }

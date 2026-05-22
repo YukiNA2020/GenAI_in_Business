@@ -14,6 +14,8 @@ class CollectionQueryState {
     this.category,
     this.tag,
     this.visibility,
+    this.filterYear,
+    this.filterMonth,
     this.sortBy = SortOption.newest,
     this.page = 1,
     this.pageSize = 12,
@@ -24,12 +26,24 @@ class CollectionQueryState {
   final String? tag;
   /// 对应 backend SQLite `collections.visibility`（经 GET /api/collections 筛选）
   final String? visibility;
+  /// Collection wall 按 date_acquired 筛选（1–12）
+  final int? filterYear;
+  final int? filterMonth;
   final SortOption sortBy;
   final int page;
   final int pageSize;
 
-  /// pageSize=6：Collection wall 每页 6 张卡片
-  static const initial = CollectionQueryState(pageSize: 6);
+  /// Collection wall UI/API 默认每页 6 张卡片
+  static const int wallPageSize = 6;
+
+  static const initial = CollectionQueryState(pageSize: wallPageSize);
+
+  bool get hasActiveWallFilters =>
+      keyword.trim().isNotEmpty ||
+      (category != null && category!.isNotEmpty) ||
+      (tag != null && tag!.isNotEmpty) ||
+      filterYear != null ||
+      filterMonth != null;
 
   CollectionQueryState copyWith({
     String? keyword,
@@ -39,6 +53,10 @@ class CollectionQueryState {
     bool clearTag = false,
     String? visibility,
     bool clearVisibility = false,
+    int? filterYear,
+    int? filterMonth,
+    bool clearYear = false,
+    bool clearMonth = false,
     SortOption? sortBy,
     int? page,
     int? pageSize,
@@ -48,6 +66,8 @@ class CollectionQueryState {
       category: clearCategory ? null : (category ?? this.category),
       tag: clearTag ? null : (tag ?? this.tag),
       visibility: clearVisibility ? null : (visibility ?? this.visibility),
+      filterYear: clearYear ? null : (filterYear ?? this.filterYear),
+      filterMonth: clearMonth ? null : (filterMonth ?? this.filterMonth),
       sortBy: sortBy ?? this.sortBy,
       page: page ?? this.page,
       pageSize: pageSize ?? this.pageSize,
@@ -62,6 +82,8 @@ class CollectionQueryState {
       if (category != null && category!.isNotEmpty) 'category': category,
       if (tag != null && tag!.isNotEmpty) 'tag': tag,
       if (visibility != null && visibility!.isNotEmpty) 'visibility': visibility,
+      if (filterYear != null) 'year': filterYear,
+      if (filterMonth != null) 'month': filterMonth,
       'sort': sortBy.apiValue,
     };
   }

@@ -8,11 +8,16 @@ import '../providers/collection_list_provider.dart';
 import '../providers/member3_ui_settings_provider.dart';
 import '../services/collection_query_service.dart';
 import '../widgets/collectory_handoff_header.dart';
+import '../../collection_form/models/ai_form_payload.dart';
+import '../../collection_form/models/ai_image_analysis.dart';
+import '../../collection_form/utils/ai_category_mapping.dart';
+import '../../collection_form/widgets/ai_suggestion_panel.dart';
 import '../widgets/design/collectory_favorite_tags.dart';
 import '../widgets/design/collectory_pill_toggle.dart';
 import '../widgets/design/exhibit_illustrations.dart';
 
 /// Figma Collectory - Add New Exhibit — 单屏无滚动
+/// AI suggestion panel: Member E phase 2 task 5 (Add page hook)
 class AddExhibitDesignPage extends ConsumerStatefulWidget {
   const AddExhibitDesignPage({super.key});
 
@@ -26,6 +31,9 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
   final _storyController = TextEditingController();
   String _activeTag = CollectoryFavoriteTags.labels.first;
   bool _saving = false;
+  String? _imageDescription;
+  String? _pendingAiTagsNote;
+  static const ExhibitIconKind _demoPhotoKind = ExhibitIconKind.vinyl;
 
   @override
   void dispose() {
@@ -54,7 +62,10 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
             userId: demoUserId,
           );
       ref.invalidate(userStatsProvider);
-      await ref.read(collectionListProvider.notifier).refresh();
+      await refreshCollectionCatalog(
+        archive: ref.read(collectionArchiveProvider.notifier),
+        wall: ref.read(collectionListProvider.notifier),
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Exhibit saved via API')),
@@ -104,7 +115,9 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
     return SizedBox.expand(
       child: Padding(
         padding: EdgeInsets.fromLTRB(pad, 8, pad, 6),
-        child: Column(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
@@ -176,7 +189,7 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
               style: CollectoryHandoffHeader.bodySecondary()
                   .copyWith(fontSize: 13, height: 1.35),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -185,7 +198,7 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
               ),
               child: Row(
                 children: [
-                  const ExhibitIcon(kind: ExhibitIconKind.vinyl, size: 56),
+                  ExhibitIcon(kind: _demoPhotoKind, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -210,10 +223,15 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                           alignment: Alignment.centerLeft,
                           child: FilledButton(
                             onPressed: () {
+                              setState(() {
+                                _imageDescription = _mockImageDescriptionForKind(
+                                  _demoPhotoKind,
+                                );
+                              });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'POST /api/collections/:id/image — Member B',
+                                    'Demo photo attached — tap Recognize in AI panel.',
                                   ),
                                 ),
                               );
@@ -245,7 +263,7 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                 ],
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 12),
             _FieldBlock(
               label: 'EXHIBIT TITLE',
               child: TextField(
@@ -289,14 +307,62 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                 ),
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 8),
+            AiSuggestionPanel(
+              hasImageForAnalysis: () =>
+                  (_imageDescription?.trim().isNotEmpty ?? false),
+              buildPayload: () {
+                final slug =
+                    CollectoryFavoriteTags.categorySlugForTag(_activeTag);
+                final note = _storyController.text.trim();
+                return AiFormPayload(
+                  description: note.isEmpty
+                      ? (_imageDescription ?? 'Collectible photo')
+                      : note,
+                  title: _titleController.text.trim().isEmpty
+                      ? null
+                      : _titleController.text.trim(),
+                  category: slug == null
+                      ? null
+                      : apiSlugToCategoryName[slug],
+                  imageDescription: _imageDescription,
+                );
+              },
+              onImageAnalysisApplied: _applyImageAnalysis,
+              onTitleSelected: (title) {
+                _titleController.text = title;
+              },
+              onCategoryTagSelected: (tag) {
+                setState(() => _activeTag = tag);
+              },
+              onTagsSuggested: (tags) {
+                setState(() {
+                  _pendingAiTagsNote = tags.join(' · ');
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('AI tags: ${tags.join(', ')}')),
+                );
+              },
+              onStoryApplied: (story) {
+                _storyController.text = story;
+              },
+            ),
+            if (_pendingAiTagsNote != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'AI tags: $_pendingAiTagsNote',
+                style: CollectoryHandoffHeader.bodySecondary()
+                    .copyWith(fontSize: 10),
+              ),
+            ],
+            const SizedBox(height: 12),
             Text('TAGS', style: CollectoryHandoffHeader.metaLabel()),
             const SizedBox(height: 8),
             CollectoryFavoriteTagRow(
               activeTag: _activeTag,
               onTagTap: (tag) => setState(() => _activeTag = tag),
             ),
-            const Spacer(flex: 3),
+            const SizedBox(height: 12),
             const _HairlineDivider(),
             const SizedBox(height: 8),
             Text('VISIBILITY', style: CollectoryHandoffHeader.metaLabel()),
@@ -324,10 +390,35 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
             ),
             const SizedBox(height: 8),
             const _HairlineDivider(),
+            const SizedBox(height: 16),
           ],
+        ),
         ),
       ),
     );
+  }
+
+  void _applyImageAnalysis(AiImageAnalysis result) {
+    _titleController.text = result.suggestedTitle;
+    final tag = tagLabelForAiCategory(result.suggestedCategory);
+    setState(() {
+      if (tag != null) _activeTag = tag;
+      _storyController.text = result.description;
+      _pendingAiTagsNote = result.suggestedTags.join(' · ');
+      _imageDescription = result.description;
+    });
+  }
+
+  static String _mockImageDescriptionForKind(ExhibitIconKind kind) {
+    return switch (kind) {
+      ExhibitIconKind.ticket =>
+        'A slightly yellowed exhibition ticket photo with worn edges and clear print',
+      ExhibitIconKind.vinyl =>
+        'Vinyl record cover photo with saturated colors and a visible center label',
+      ExhibitIconKind.mineral =>
+        'Close-up of a natural mineral specimen with crystal reflections',
+      _ => 'Collectible object photo with soft lighting for category recognition',
+    };
   }
 }
 

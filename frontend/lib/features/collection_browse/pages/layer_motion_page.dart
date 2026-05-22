@@ -18,7 +18,7 @@ class LayerMotionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(collectionListProvider).items;
+    final items = ref.watch(collectionMuseumCatalogProvider).items;
     final pad = CollectoryColors.screenPadding;
 
     return SafeArea(
@@ -85,7 +85,7 @@ class LayerMotionPage extends ConsumerWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 20,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 0.82,
+                    childAspectRatio: 0.8,
                     children: [
                       for (final spec in galleryLayerSpecs)
                         LayeredExhibitTile(

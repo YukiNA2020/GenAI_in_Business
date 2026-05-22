@@ -20,6 +20,108 @@
 
 # Prompt 记录库
 
+## 2026-05-21 对话记录 30
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：已测试；进行阶段五任务 1–5 的开发。
+- **AI 行动**：
+  - 任务 1–3：更新 `Test.md`（测试计划、TC-ME-P5 用例、BUG-ME-001～005）。
+  - 任务 4：`verify_phase5_demo_e2e.js` 全链路 API 11/11，连续执行 2 轮；`Phase5_Demo_Checklist.md`。
+  - 任务 5：`Member6_Demo_Handoff.md`（PPT 要点、AI 样例、Demo 流程、规避说明）。
+  - 更新 Status / E_Status_Log / E_Test_Log / README。
+- **重要内容**：
+  - 阶段五以文档与自动化为主，不新增业务代码。
+  - Demo 结论：AI 失败不阻塞保存；中文 category 写入前需 slug 映射。
+
+## 2026-05-21 对话记录 29
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：进行阶段四任务 1–5 的开发。
+- **AI 行动**：
+  - 任务 1/3：新增 `prompt_image.md`、`prompt_story_styles.md`。
+  - 任务 2/4：`analyze-image` 接口、`generate-story` 扩展 `style`；更新 schemas/prompts/provider/service/routes。
+  - 任务 5：扩展 `AiSuggestionPanel` 与 Add 页 Upload→Recognize 填表联调。
+  - 自检 `verify_phase4_tasks1_5_api.js`（12/12 服务层）；更新 Status / E_Status_Log / AI_API_Contract。
+- **重要内容**：
+  - Demo 无 Vision 时用 `imageDescription` 模拟图片输入；后续可接真实 Vision。
+  - 多风格故事供成员 6 Demo 展示；默认 `concise`。
+
+## 2026-05-21 对话记录 28
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：阶段三已测试；进行任务五，成员 3 代码已完成，根据已有代码联调。
+- **AI 行动**：
+  - 单页整合 `ProfilePage` + `ProfileCollectionPreview(embeddedInMemberEProfile: true)`。
+  - 新增 `profile_exhibit_utils.dart`；`ProfileStats` 四列与成员 C 对齐。
+  - 重构 `profile_collection_preview.dart` 嵌入模式（成员 E 联调改动，已记录 Status）。
+  - 新增 `member_E/docs/Phase_3_Task5_Member3_Integration.md`；更新 Status / E_Status_Log。
+- **重要内容**：
+  - 跨成员改动限于 Profile 联调：`profile_collection_preview.dart` 增加可选参数，独立全屏模式仍可用。
+  - Recent 展品只保留成员 C 横滑区块，避免与成员 E 旧 `RecentCollectionsSection` 重复。
+
+## 2026-05-21 对话记录 27
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：进行阶段三任务 1–4（用户主页、统计、编辑资料、登录注册占位）。
+- **AI 行动**：
+  - 新增 `frontend/lib/features/profile/`（ProfilePage、widgets、providers、Edit/Login/Register 页）。
+  - 更新 `profile_design_page.dart` 挂载 ProfilePage；同步 `member_E/frontend/lib/features/profile/` 与 `Phase_3_Profile_Completion.md`。
+  - 更新 `Status.md`、本条记录。
+- **重要内容**：
+  - 资料编辑为本地 mock（Riverpod），未新增后端用户更新 API。
+  - 成员 C 的 rooms/settings 通过全屏入口访问，避免重复实现任务 5 全部内容。
+
+## 2026-05-21 对话记录 26
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：成员 B 尚未开工；在 B 的 workplace 完成阶段二任务五（AI 建议面板），并标注为成员 E 编写。
+- **AI 行动**：
+  - 新建 `member_B/` 工作区（README、docs、frontend 源码副本）。
+  - 实现 `frontend/lib/features/collection_form/`（service / panel / payload / category 映射），文件头标注成员 E。
+  - 在 `add_exhibit_design_page.dart` 最小挂钩 Demo；同步 `Status.md`、本条记录。
+- **重要内容**：
+  - 源码以 `member_B/frontend/...` 为归属说明，与 `frontend/lib/features/collection_form/` 同步以便 Flutter 编译。
+  - Add 页挂钩属临时联调，成员 B 正式开发时应迁入 `Member_2` 文档推荐的 `create_collection_page` 结构。
+
+## 2026-05-21 对话记录 25
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：阶段一已测试；继续完成阶段二任务 2–4（四个 AI HTTP 接口）；遵守成员边界；更新 Status / Prompt_library；不提交 GitHub、不标记测试通过。
+- **AI 行动**：
+  - 新增 `ai.service.js`、`ai.routes.js`（`createAiRouter` + `AI_VALIDATION_ERROR` 校验）。
+  - 根目录最小挂载：`backend/src/routes/ai.routes.js`、`backend/src/app.js` 一行 `/api/ai`。
+  - 新增 `AI_Routes_Integration.md`、`verify_phase2_tasks2_4_api.js`（service 5 + HTTP 9 = 14/14）。
+  - 更新 `member_E/README.md`、`E_Status_Log.md`、`Status.md`、本条记录。
+- **重要内容**：
+  - AI 返回中文 `category`，写入收藏前需 `GET /api/categories` 映射为 slug。
+  - 任务 5（成员 B 联调）仍待进行；环境变量在 `backend` 启动时由 `dotenv` 加载。
+
+## 2026-05-21 对话记录 24
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：检查阶段一是否全部完成；若完成则开始阶段二并完成阶段二任务一（AI Provider 封装）；不越界改其他成员模块；更新 `Status.md` / `Prompt_library.md`；不提交 GitHub、不标记测试通过。
+- **AI 行动**：
+  - **阶段一验收**：确认四类 Prompt 文档、`AI_API_Contract.md`、`ai.prompts.js`、`ai.schemas.js` 满足三项验收标准。
+  - **阶段二·任务一**：新增 `member_E/backend/src/ai/ai.provider.js`（`generateJson`、OpenAI/mock、超时、错误映射）；`AI_Provider_Setup.md`、`.env.example`、`verify_phase2_task1_provider.js`（11/11）。
+  - 更新 `member_E/README.md`、`E_Status_Log.md`、`E_Prompt_Log.md`、根目录 `Status.md`、本条记录。
+- **重要内容**：
+  - `AI_PROVIDER=auto` 时无 Key 自动 mock，便于 Demo；`openai` 无 Key 返回 `AI_PROVIDER_UNAVAILABLE`（与 Contract 一致）。
+  - 阶段二任务 2–4 的 Express 路由尚未实现；合并到根目录 `backend/` 前需与成员 A 确认。
+
+## 2026-05-21 对话记录 23
+
+- **负责人**：成员 E / 成员 5，由该成员的 AI 工具协助更新
+- **用户要求**：以成员 E 身份严格完成 `Member_5_AI_Profile_Test_Detail_Plan.md` 阶段一·任务一（设计标题生成 Prompt），交付后由本人交给测试 AI 验证；不提交 GitHub、不标记测试通过；更新 `Status.md` 与 `Prompt_library.md`。
+- **AI 行动**：
+  - 确认并沿用 `member_E/docs/prompts/prompt_title.md`、`member_E/backend/src/ai/ai.prompts.js`（`buildTitlePrompt`）、`member_E/backend/src/ai/ai.schemas.js`（标题响应校验）作为任务一交付物。
+  - 在 `prompt_title.md` 新增 §6「代码复用与自检」，写明自检命令与阶段二接口对齐说明。
+  - 新增 `member_E/scripts/verify_phase1_task1_title.js`，本地自检 15/15 通过。
+  - 更新根目录 `Status.md`、本条 `Prompt_library.md`；未改 `Test.md`（无测试结论）。
+- **重要内容**：
+  - 任务一范围仅 Prompt 设计与轻量校验代码，**不包含**真实 AI Provider 或 Express 路由（阶段二）。
+  - 标题输出固定为 `{ "suggestions": [string×3] }`，每条 ≤20 中文字符；`description` 为必填输入字段。
+  - 未改动成员 A/B/C/D 模块及根目录 `backend/`。
+
 ## 2026-05-19 对话记录 22
 
 - **负责人**：成员 C / 成员 3，由该成员的 AI 工具协助更新

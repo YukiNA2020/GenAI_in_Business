@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/collectory_theme.dart';
+import '../models/collection_item.dart';
+import '../models/collection_query_state.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
 import '../services/collection_query_service.dart';
+import '../models/collection_query_state.dart';
 import 'category_filter_tabs.dart';
 import 'collectory_handoff_header.dart';
 import 'collection_grid.dart';
@@ -15,6 +18,7 @@ import 'collection_sort_toggle.dart';
 import 'empty_collection_state.dart';
 import 'loading_skeleton.dart';
 import 'tag_filter_sheet.dart';
+import 'wall_date_filter_row.dart';
 
 /// Member 3 收藏墙：搜索 / 筛选 / 分页 / 刷新（嵌入 Gallery Tab）
 class CollectionWallSlivers extends ConsumerStatefulWidget {
@@ -22,10 +26,13 @@ class CollectionWallSlivers extends ConsumerStatefulWidget {
     super.key,
     required this.scrollController,
     this.showWallHeader = true,
+    this.sectionKey,
   });
 
   final ScrollController scrollController;
   final bool showWallHeader;
+  /// 跳转 Gallery 时滚到收藏墙（含分页条）
+  final Key? sectionKey;
 
   @override
   ConsumerState<CollectionWallSlivers> createState() =>
@@ -78,12 +85,33 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
     });
   }
 
+  void _clearAllWallFilters() {
+    _debounce?.cancel();
+    _searchController.clear();
+    ref.read(collectionListProvider.notifier).clearAllWallFilters();
+  }
+
   @override
   Widget build(BuildContext context) {
     final listState = ref.watch(collectionListProvider);
+    ref.listen(
+      collectionListProvider.select((s) => s.query.keyword),
+      (previous, next) {
+        if (_searchController.text != next) {
+          _searchController.text = next;
+        }
+      },
+    );
     final categoriesAsync = ref.watch(categoriesProvider);
     final tagsAsync = ref.watch(allTagsProvider);
     final pad = CollectoryColors.screenPadding;
+
+    const wallPageSize = CollectionQueryState.wallPageSize;
+    final wallTotal = listState.total;
+    final wallTotalPages = listState.totalWallPages;
+    final wallNeedsPagination = listState.needsWallPagination;
+    final wallVisibleItems = listState.wallVisibleItems;
+    final wallHasMore = listState.hasMore;
 
     final categoryNames = categoriesAsync.when(
       data: (cats) => {for (final c in cats) c.id: c.name},
@@ -107,6 +135,7 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
           child: Padding(
             padding: EdgeInsets.fromLTRB(pad, 8, pad, 0),
             child: Column(
+              key: widget.sectionKey,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (widget.showWallHeader) ...[
@@ -138,64 +167,108 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
                 ),
-                CollectionSearchBar(
-                  controller: _searchController,
-                  searching:
-                      listState.loading && listState.query.keyword.isNotEmpty,
-                  onChanged: _onSearchChanged,
-                  onClear: () => ref
+                WallDateFilterRow(
+                  selectedYear: listState.query.filterYear,
+                  selectedMonth: listState.query.filterMonth,
+                  onYearChanged: (year) => ref
                       .read(collectionListProvider.notifier)
-                      .updateFilters(keyword: ''),
+                      .updateFilters(
+                        filterYear: year,
+                        clearYear: year == null,
+                      ),
+                  onMonthChanged: (month) => ref
+                      .read(collectionListProvider.notifier)
+                      .updateFilters(
+                        filterMonth: month,
+                        clearMonth: month == null,
+                      ),
                 ),
-                const SizedBox(height: 16),
-                CategoryFilterTabs(
-                  tabs: categoryTabs,
-                  activeId: listState.query.category,
-                  onSelect: (id) {
-                    ref.read(collectionListProvider.notifier).updateFilters(
-                          category: id,
-                          clearCategory: id == null,
-                        );
-                  },
-                ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 32),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      textStyle: const TextStyle(fontSize: 11),
-                      side: const BorderSide(color: CollectoryColors.borderLight),
-                    ),
-                    onPressed: () {
-                      tagsAsync.whenData((tags) {
-                        showTagFilterSheet(
-                          context: context,
-                          tags: tags,
-                          selectedTag: listState.query.tag,
-                          onSelect: (tag) => ref
-                              .read(collectionListProvider.notifier)
-                              .updateFilters(
-                                tag: tag,
-                                clearTag: tag == null,
-                              ),
-                        );
-                      });
+                const SizedBox(height: 12),
+                CollectionSearchBar(
+                    controller: _searchController,
+                    searching:
+                        listState.loading && listState.query.keyword.isNotEmpty,
+                    onChanged: _onSearchChanged,
+                    onClear: () => ref
+                        .read(collectionListProvider.notifier)
+                        .updateFilters(keyword: ''),
+                  ),
+                  const SizedBox(height: 16),
+                  CategoryFilterTabs(
+                    tabs: categoryTabs,
+                    activeId: listState.query.category,
+                    onSelect: (id) {
+                      ref.read(collectionListProvider.notifier).updateFilters(
+                            category: id,
+                            clearCategory: id == null,
+                          );
                     },
-                    child: Text(
-                      listState.query.tag != null
-                          ? 'Tag: ${listState.query.tag}'
-                          : 'Tags',
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 32),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        textStyle: const TextStyle(fontSize: 11),
+                        side: const BorderSide(color: CollectoryColors.borderLight),
+                      ),
+                      onPressed: () {
+                        tagsAsync.whenData((tags) {
+                          showTagFilterSheet(
+                            context: context,
+                            tags: tags,
+                            selectedTag: listState.query.tag,
+                            onSelect: (tag) => ref
+                                .read(collectionListProvider.notifier)
+                                .updateFilters(
+                                  tag: tag,
+                                  clearTag: tag == null,
+                                ),
+                          );
+                        });
+                      },
+                      child: Text(
+                        listState.query.tag != null
+                            ? 'Tag: ${listState.query.tag}'
+                            : 'Tags',
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                  const SizedBox(height: 10),
                 CollectionSortToggle(
                   value: listState.query.sortBy,
                   onChanged: (v) => ref
                       .read(collectionListProvider.notifier)
                       .updateFilters(sortBy: v),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: listState.loading ||
+                            !listState.query.hasActiveWallFilters
+                        ? null
+                        : _clearAllWallFilters,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(0, 32),
+                      foregroundColor: CollectoryColors.textLabel,
+                    ),
+                    child: Text(
+                      'Clear all filters',
+                      style: CollectoryHandoffHeader.bodySecondary().copyWith(
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                        color: listState.query.hasActiveWallFilters
+                            ? CollectoryColors.textLabel
+                            : CollectoryColors.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
+                      ),
+                    ),
+                  ),
                 ),
                 if (listState.error != null) ...[
                   const SizedBox(height: 16),
@@ -221,7 +294,7 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
                 ],
                 const SizedBox(height: 16),
                 Text(
-                  '${listState.total} exhibits',
+                  '$wallTotal exhibits',
                   style: CollectoryHandoffHeader.bodySecondary(),
                 ),
                 const SizedBox(height: 12),
@@ -229,7 +302,9 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
             ),
           ),
         ),
-        if (listState.loading && listState.items.isEmpty)
+        if (listState.loading &&
+            listState.items.isEmpty &&
+            listState.error == null)
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -244,14 +319,7 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
               padding: EdgeInsets.symmetric(horizontal: pad),
               child: EmptyCollectionState(
                 actionLabel: 'Clear filters',
-                onAction: () {
-                  _searchController.clear();
-                  ref.read(collectionListProvider.notifier).updateFilters(
-                        keyword: '',
-                        clearCategory: true,
-                        clearTag: true,
-                      );
-                },
+                onAction: _clearAllWallFilters,
               ),
             ),
           )
@@ -263,30 +331,33 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   CollectionGrid(
-                    items: listState.wallVisibleItems,
+                    items: wallVisibleItems,
                     categoryNames: categoryNames,
                     onItemTap: (item) => openItemDetail(ref, item.id),
                   ),
-                  if (listState.needsWallPagination) ...[
+                  if (wallNeedsPagination) ...[
                     const SizedBox(height: 14),
                     _WallPaginationBar(
                       currentPage: listState.wallDisplayPage,
-                      totalPages: listState.totalWallPages,
-                      totalItems: listState.total,
-                      pageSize: listState.query.pageSize,
+                      totalPages: wallTotalPages,
+                      totalItems: wallTotal,
+                      pageSize: wallPageSize,
                       loading: listState.loadingMore,
                       onPrev: listState.wallDisplayPage > 1
                           ? () => ref
                               .read(collectionListProvider.notifier)
                               .goToWallPage(listState.wallDisplayPage - 1)
                           : null,
-                      onNext: listState.wallDisplayPage < listState.totalWallPages
+                      onNext: listState.wallDisplayPage < wallTotalPages
                           ? () => ref
                               .read(collectionListProvider.notifier)
                               .goToWallPage(listState.wallDisplayPage + 1)
                           : null,
+                      onGoToPage: (page) => ref
+                          .read(collectionListProvider.notifier)
+                          .goToWallPage(page),
                     ),
-                  ] else if (listState.hasMore && listState.items.isNotEmpty) ...[
+                  ] else if (wallHasMore && listState.items.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(
                       'Showing ${listState.items.length} of ${listState.total}',
@@ -344,7 +415,7 @@ class _CollectionWallSliversState extends ConsumerState<CollectionWallSlivers> {
   }
 }
 
-class _WallPaginationBar extends StatelessWidget {
+class _WallPaginationBar extends StatefulWidget {
   const _WallPaginationBar({
     required this.currentPage,
     required this.totalPages,
@@ -353,6 +424,7 @@ class _WallPaginationBar extends StatelessWidget {
     required this.loading,
     required this.onPrev,
     required this.onNext,
+    required this.onGoToPage,
   });
 
   final int currentPage;
@@ -362,16 +434,60 @@ class _WallPaginationBar extends StatelessWidget {
   final bool loading;
   final VoidCallback? onPrev;
   final VoidCallback? onNext;
+  final ValueChanged<int> onGoToPage;
+
+  @override
+  State<_WallPaginationBar> createState() => _WallPaginationBarState();
+}
+
+class _WallPaginationBarState extends State<_WallPaginationBar> {
+  late final TextEditingController _pageController;
+  String? _jumpError;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = TextEditingController(text: '${widget.currentPage}');
+  }
+
+  @override
+  void didUpdateWidget(_WallPaginationBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentPage != widget.currentPage &&
+        _pageController.text != '${widget.currentPage}') {
+      _pageController.text = '${widget.currentPage}';
+      _jumpError = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _jumpToPage() {
+    final raw = _pageController.text.trim();
+    final page = int.tryParse(raw);
+    if (page == null || page < 1 || page > widget.totalPages) {
+      setState(() {
+        _jumpError = 'Enter 1–${widget.totalPages}';
+      });
+      return;
+    }
+    setState(() => _jumpError = null);
+    widget.onGoToPage(page);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final start = (currentPage - 1) * pageSize + 1;
-    final end = (currentPage * pageSize).clamp(0, totalItems);
+    final start = (widget.currentPage - 1) * widget.pageSize + 1;
+    final end = (widget.currentPage * widget.pageSize).clamp(0, widget.totalItems);
 
     return Column(
       children: [
         Text(
-          'Page $currentPage of $totalPages · $start–$end of $totalItems',
+          'Page ${widget.currentPage} of ${widget.totalPages} · $start–$end of ${widget.totalItems}',
           textAlign: TextAlign.center,
           style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 12),
         ),
@@ -380,15 +496,58 @@ class _WallPaginationBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton(
-              onPressed: loading ? null : onPrev,
+              onPressed: widget.loading ? null : widget.onPrev,
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(88, 36),
+                minimumSize: const Size(80, 36),
                 side: const BorderSide(color: CollectoryColors.borderLight),
               ),
               child: const Text('Previous'),
             ),
-            const SizedBox(width: 12),
-            if (loading)
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 44,
+              height: 36,
+              child: TextField(
+                controller: _pageController,
+                enabled: !widget.loading,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: '#',
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 8,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                      color: CollectoryColors.borderLight,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                      color: CollectoryColors.borderLight,
+                    ),
+                  ),
+                ),
+                onSubmitted: (_) => _jumpToPage(),
+              ),
+            ),
+            const SizedBox(width: 6),
+            OutlinedButton(
+              onPressed: widget.loading ? null : _jumpToPage,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(44, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                side: const BorderSide(color: CollectoryColors.borderLight),
+              ),
+              child: const Text('Go'),
+            ),
+            const SizedBox(width: 8),
+            if (widget.loading)
               const SizedBox(
                 width: 24,
                 height: 24,
@@ -396,15 +555,25 @@ class _WallPaginationBar extends StatelessWidget {
               )
             else
               OutlinedButton(
-                onPressed: onNext,
+                onPressed: widget.onNext,
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(88, 36),
+                  minimumSize: const Size(80, 36),
                   side: const BorderSide(color: CollectoryColors.borderLight),
                 ),
                 child: const Text('Next'),
               ),
           ],
         ),
+        if (_jumpError != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            _jumpError!,
+            style: CollectoryHandoffHeader.bodySecondary().copyWith(
+              fontSize: 11,
+              color: const Color(0xFF8B3A2A),
+            ),
+          ),
+        ],
       ],
     );
   }

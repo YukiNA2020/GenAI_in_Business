@@ -20,6 +20,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/collections', require('./routes/collections.routes'));
 app.use('/api/categories', require('./routes/categories.routes'));
 app.use('/api/users', require('./routes/users.routes'));
+// 成员 E：AI 建议接口（阶段二任务 2–4）
+app.use('/api/ai', require('./routes/ai.routes'));
 
 // 404 handler
 app.use((_req, res) => {

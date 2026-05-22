@@ -124,7 +124,10 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
     if (ok != true || !mounted) return;
     try {
       await ref.read(collectionQueryServiceProvider).deleteById(item.id);
-      ref.read(collectionListProvider.notifier).refresh();
+      refreshCollectionCatalog(
+        archive: ref.read(collectionArchiveProvider.notifier),
+        wall: ref.read(collectionListProvider.notifier),
+      );
       ref.invalidate(userStatsProvider);
       if (mounted) _handleBack();
     } catch (e) {

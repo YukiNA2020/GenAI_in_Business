@@ -205,7 +205,10 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
             tags: [_activeTag],
           );
       ref.invalidate(userStatsProvider);
-      await ref.read(collectionListProvider.notifier).refresh();
+      await refreshCollectionCatalog(
+        archive: ref.read(collectionArchiveProvider.notifier),
+        wall: ref.read(collectionListProvider.notifier),
+      );
       if (!mounted) return;
       setState(() {
         _item = updated;

@@ -67,18 +67,19 @@ class CollectionListState {
 
   int get totalWallPages {
     if (total <= 0) return 1;
-    final pages = (total / query.pageSize).ceil();
+    final pages = (total / CollectionQueryState.wallPageSize).ceil();
     return pages < 1 ? 1 : pages;
   }
 
-  bool get needsWallPagination => total > query.pageSize;
+  bool get needsWallPagination => total > CollectionQueryState.wallPageSize;
 
-  /// At most [query.pageSize] items for the current wall page.
+  /// At most [CollectionQueryState.wallPageSize] items for the current wall page.
   List<CollectionItem> get wallVisibleItems {
     if (!needsWallPagination) return items;
-    final start = (wallDisplayPage - 1) * query.pageSize;
+    final pageSize = CollectionQueryState.wallPageSize;
+    final start = (wallDisplayPage - 1) * pageSize;
     if (start >= items.length) return const [];
-    final end = start + query.pageSize;
+    final end = start + pageSize;
     return items.sublist(start, end > items.length ? items.length : end);
   }
 }
@@ -89,8 +90,18 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
   final CollectionQueryService _service;
   bool _busy = false;
 
+  Future<void> _waitForIdle() async {
+    for (var i = 0; _busy && i < 200; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+    }
+  }
+
   Future<void> _load({required bool append}) async {
-    if (_busy) return;
+    await _waitForIdle();
+    if (_busy) {
+      state = state.copyWith(loading: false, loadingMore: false, refreshing: false);
+      return;
+    }
     if (append && (!state.hasMore || state.loadingMore)) return;
     _busy = true;
     state = state.copyWith(
@@ -135,6 +146,8 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
         query.category != state.query.category ||
         query.tag != state.query.tag ||
         query.visibility != state.query.visibility ||
+        query.filterYear != state.query.filterYear ||
+        query.filterMonth != state.query.filterMonth ||
         query.sortBy != state.query.sortBy;
     final next = filtersChanged && query.page == state.query.page
         ? query.copyWith(page: 1)
@@ -149,6 +162,10 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
     bool clearCategory = false,
     String? tag,
     bool clearTag = false,
+    int? filterYear,
+    int? filterMonth,
+    bool clearYear = false,
+    bool clearMonth = false,
     SortOption? sortBy,
   }) {
     final next = state.query.copyWith(
@@ -157,16 +174,37 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
       clearCategory: clearCategory,
       tag: tag,
       clearTag: clearTag,
+      filterYear: filterYear,
+      filterMonth: filterMonth,
+      clearYear: clearYear,
+      clearMonth: clearMonth,
       sortBy: sortBy,
       page: 1,
+      pageSize: CollectionQueryState.wallPageSize,
     );
-    state = state.copyWith(query: next);
+    state = state.copyWith(query: next, wallDisplayPage: 1);
     _load(append: false);
+  }
+
+  /// Room Open wall → Gallery wall 并预选年月
+  Future<void> applyWallDateFilter({
+    required int year,
+    required int month,
+  }) async {
+    state = state.copyWith(
+      query: CollectionQueryState.initial.copyWith(
+        filterYear: year,
+        filterMonth: month,
+      ),
+      wallDisplayPage: 1,
+      clearError: true,
+    );
+    await _load(append: false);
   }
 
   Future<void> goToWallPage(int page) async {
     if (page < 1 || page > state.totalWallPages) return;
-    final needed = page * state.query.pageSize;
+    final needed = page * CollectionQueryState.wallPageSize;
     var guard = 0;
     while (state.items.length < needed && state.hasMore && guard < 20) {
       guard++;
@@ -189,15 +227,55 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
     await _load(append: true);
   }
 
+  /// Collection wall — 清空年月 / 搜索 / 分类 / 标签等筛选
+  Future<void> clearAllWallFilters() => resetWallFilters();
+
+  /// Leave Gallery tab: reset wall filters (Home/Profile use [collectionArchiveProvider]).
+  Future<void> resetWallFilters() async {
+    state = state.copyWith(
+      query: CollectionQueryState.initial,
+      wallDisplayPage: 1,
+      clearError: true,
+    );
+    await _load(append: false);
+  }
+
+  /// Home/Profile room → Open wall：先批量拉取，再在 wall 上以每页 6 条分页展示。
+  Future<void> loadRoomArchiveWall() async {
+    state = state.copyWith(
+      query: CollectionQueryState.initial.copyWith(pageSize: 100, page: 1),
+      wallDisplayPage: 1,
+      clearError: true,
+    );
+    await _load(append: false);
+    var guard = 0;
+    while (state.hasMore && guard < 15) {
+      guard++;
+      state = state.copyWith(
+        query: state.query.copyWith(page: state.query.page + 1),
+      );
+      await _load(append: true);
+    }
+    state = state.copyWith(
+      query: CollectionQueryState.initial.copyWith(page: 1),
+      wallDisplayPage: 1,
+    );
+  }
+
   /// 下拉刷新：保留 keyword / category / tag / sort，从第 1 页重载。
   Future<void> refresh() async {
-    if (state.refreshing) return;
     state = state.copyWith(
       refreshing: true,
       query: state.query.copyWith(page: 1),
       clearError: true,
     );
-    await _load(append: false);
+    try {
+      await _load(append: false);
+    } finally {
+      if (state.refreshing) {
+        state = state.copyWith(refreshing: false, loading: false);
+      }
+    }
   }
 }
 
@@ -228,8 +306,97 @@ extension _Copy on CollectionListState {
 
 final collectionListProvider =
     StateNotifierProvider<CollectionListNotifier, CollectionListState>((ref) {
-  final notifier =
-      CollectionListNotifier(ref.watch(collectionQueryServiceProvider));
-  Future.microtask(() => notifier.setQuery(CollectionQueryState.initial));
-  return notifier;
+  return CollectionListNotifier(ref.watch(collectionQueryServiceProvider));
 });
+
+/// Unfiltered catalog for Home / Profile / Room / Gallery header (not wall filters).
+class CollectionArchiveNotifier extends StateNotifier<CollectionListState> {
+  CollectionArchiveNotifier(this._service) : super(const CollectionListState());
+
+  final CollectionQueryService _service;
+  bool _busy = false;
+
+  static const _archiveQuery = CollectionQueryState(
+    page: 1,
+    pageSize: 100,
+  );
+
+  Future<void> _waitForIdle() async {
+    for (var i = 0; _busy && i < 200; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+    }
+  }
+
+  Future<void> _load() async {
+    await _waitForIdle();
+    if (_busy) {
+      state = state.copyWith(loading: false, refreshing: false);
+      return;
+    }
+    _busy = true;
+    state = state.copyWith(
+      loading: !state.refreshing && state.items.isEmpty,
+      clearError: true,
+    );
+    try {
+      final result = await _service.fetchCollections(_archiveQuery);
+      state = state.copyWith(
+        query: _archiveQuery,
+        items: result.items,
+        total: result.total,
+        loading: false,
+        refreshing: false,
+        error: null,
+        wallDisplayPage: 1,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        loading: false,
+        refreshing: false,
+        error: e.message,
+        items: [],
+      );
+    } catch (e) {
+      state = state.copyWith(
+        loading: false,
+        refreshing: false,
+        error: e.toString(),
+        items: [],
+      );
+    } finally {
+      _busy = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    state = state.copyWith(refreshing: true, clearError: true);
+    try {
+      await _load();
+    } finally {
+      if (state.refreshing) {
+        state = state.copyWith(refreshing: false, loading: false);
+      }
+    }
+  }
+}
+
+final collectionArchiveProvider =
+    StateNotifierProvider<CollectionArchiveNotifier, CollectionListState>((ref) {
+  return CollectionArchiveNotifier(ref.watch(collectionQueryServiceProvider));
+});
+
+/// Home + Profile exhibit source — always unfiltered; never [collectionListProvider].
+final collectionMuseumCatalogProvider = Provider<CollectionListState>((ref) {
+  return ref.watch(collectionArchiveProvider);
+});
+
+/// Reload wall + archive after create / update / delete.
+Future<void> refreshCollectionCatalog({
+  required CollectionArchiveNotifier archive,
+  required CollectionListNotifier wall,
+}) async {
+  await Future.wait([
+    archive.refresh(),
+    wall.refresh(),
+  ]);
+}

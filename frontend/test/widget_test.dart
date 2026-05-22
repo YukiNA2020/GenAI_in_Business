@@ -27,6 +27,11 @@ void main() {
               ref.watch(collectionQueryServiceProvider),
             );
           }),
+          collectionArchiveProvider.overrideWith((ref) {
+            return CollectionArchiveNotifier(
+              ref.watch(collectionQueryServiceProvider),
+            );
+          }),
         ],
         child: const CollectoryApp(),
       ),

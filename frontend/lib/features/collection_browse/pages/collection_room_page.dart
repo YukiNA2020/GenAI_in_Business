@@ -6,7 +6,6 @@ import '../../../core/theme/collectory_theme.dart';
 import '../models/collection_item.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
-import '../services/collection_query_service.dart';
 import '../utils/collectory_room_catalog.dart';
 import '../utils/gallery_layers.dart';
 import '../widgets/collectory_handoff_header.dart';
@@ -28,43 +27,34 @@ class CollectionRoomPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pad = CollectoryColors.screenPadding;
     final room = CollectoryRoomCatalog.forIndex(roomIndex);
-    final statsAsync = ref.watch(userStatsProvider);
-    final list = ref.watch(collectionListProvider);
+    final list = ref.watch(collectionMuseumCatalogProvider);
     final roomItems = CollectoryRoomCatalog.itemsInRoom(list.items, room);
+    final originTab = ref.watch(collectionRoomOriginTabProvider);
+    final fromHomeOrProfile = originTab == 0 || originTab == 3;
+
+    if ((list.loading || list.refreshing) && list.items.isEmpty && list.error == null) {
+      return const ColoredBox(
+        color: CollectoryColors.bgApp,
+        child: SafeArea(
+          child: Center(
+            child: CircularProgressIndicator(color: CollectoryColors.textLabel),
+          ),
+        ),
+      );
+    }
 
     return ColoredBox(
       color: CollectoryColors.bgApp,
       child: SafeArea(
-        child: statsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: CollectoryColors.textLabel),
-          ),
-          error: (_, __) => _roomBody(
-            ref: ref,
-            pad: pad,
-            room: room,
-            roomItems: roomItems,
-            allItems: list.items,
-            exhibitCount: roomItems.isNotEmpty
-                ? roomItems.length
-                : (room.isPreview ? 0 : demoUserStatsFallback.totalCollections),
-          ),
-          data: (stats) {
-            final pool = roomItems.isNotEmpty
-                ? roomItems
-                : CollectoryRoomCatalog.itemsInRoom(stats.recentCollections, room);
-            final count = pool.isNotEmpty
-                ? pool.length
-                : (room.isPreview ? 0 : (stats.totalCollections > 0 ? stats.totalCollections : 24));
-            return _roomBody(
-              ref: ref,
-              pad: pad,
-              room: room,
-              roomItems: pool,
-              allItems: list.items,
-              exhibitCount: count,
-            );
-          },
+        child: _roomBody(
+          ref: ref,
+          pad: pad,
+          room: room,
+          roomIndex: roomIndex,
+          roomItems: roomItems,
+          allItems: list.items,
+          exhibitCount: roomItems.length,
+          fromHomeOrProfile: fromHomeOrProfile,
         ),
       ),
     );
@@ -74,9 +64,11 @@ class CollectionRoomPage extends ConsumerWidget {
     required WidgetRef ref,
     required double pad,
     required CollectoryRoomSpec room,
+    required int roomIndex,
     required List<CollectionItem> roomItems,
     required List<CollectionItem> allItems,
     required int exhibitCount,
+    required bool fromHomeOrProfile,
   }) {
     final highlights = _resolveHighlights(room, roomItems);
     final timeline = _resolveTimeline(room, roomItems);
@@ -87,77 +79,29 @@ class CollectionRoomPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CollectoryBackBar(
-              backLabel: 'Rooms',
-              centerTitle: 'Collection room',
-              onBack: () => closeCollectionRoom(ref),
-              trailing: Material(
-                color: CollectoryColors.btnPrimaryBg,
-                borderRadius: BorderRadius.circular(10),
-                child: InkWell(
-                  onTap: () => openShareRoom(ref),
-                  borderRadius: BorderRadius.circular(10),
-                  child: const SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Icon(
-                      Icons.north_east,
-                      color: CollectoryColors.btnPrimaryText,
-                      size: 20,
+            _roomHeader(ref: ref, room: room),
+            if (room.isPreview) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: CollectoryColors.bgApp,
+                    border: Border.all(color: CollectoryColors.textLabel),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Preview',
+                    style: CollectoryHandoffHeader.metaLabel().copyWith(
+                      fontSize: 9,
+                      height: 1,
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(room.roomCode, style: CollectoryHandoffHeader.metaLabel()),
-                      const SizedBox(height: 4),
-                      Text(
-                        room.archiveTitle,
-                        style: CollectoryHandoffHeader.pageTitle().copyWith(
-                          fontSize: 28,
-                          height: 1.05,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (room.isPreview)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: CollectoryColors.bgApp,
-                      border: Border.all(color: CollectoryColors.textLabel),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'Preview',
-                      style: CollectoryHandoffHeader.metaLabel().copyWith(
-                        fontSize: 9,
-                        height: 1,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              room.roomBlurb,
-              style: CollectoryHandoffHeader.bodySecondary().copyWith(
-                fontSize: 13,
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+            ],
             const SizedBox(height: 10),
             _StatsCard(
               exhibitCount: exhibitCount,
@@ -188,6 +132,7 @@ class CollectionRoomPage extends ConsumerWidget {
                             allItems,
                             highlights[i].categorySlug,
                             highlights[i].itemId,
+                            allowCategoryNavigation: true,
                           ),
                         ),
                       ),
@@ -210,11 +155,8 @@ class CollectionRoomPage extends ConsumerWidget {
               children: [
                 Expanded(
                   child: FilledButton(
-                    onPressed: () {
-                      ref.read(collectionRoomIndexProvider.notifier).state =
-                          roomIndex;
-                      goToGalleryTab(ref);
-                    },
+                    onPressed: () =>
+                        openCollectionWallForRoom(ref, roomIndex: roomIndex),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 44),
                       shape: RoundedRectangleBorder(
@@ -247,6 +189,57 @@ class CollectionRoomPage extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _roomHeader({
+    required WidgetRef ref,
+    required CollectoryRoomSpec room,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CollectoryBackBar(
+          backLabel: 'Rooms',
+          centerTitle: 'Collection room',
+          onBack: () => closeCollectionRoom(ref),
+          trailing: Material(
+            color: CollectoryColors.btnPrimaryBg,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: () => openShareRoom(ref),
+              borderRadius: BorderRadius.circular(10),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.north_east,
+                  color: CollectoryColors.btnPrimaryText,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(room.roomCode, style: CollectoryHandoffHeader.metaLabel()),
+        const SizedBox(height: 4),
+        Text(
+          room.archiveTitle,
+          style: CollectoryHandoffHeader.pageTitle().copyWith(
+            fontSize: 22,
+            height: 1.15,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          room.roomBlurb,
+          style: CollectoryHandoffHeader.bodySecondary().copyWith(
+            fontSize: 12,
+            height: 1.35,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -391,10 +384,14 @@ void _openRoomHighlight(
   WidgetRef ref,
   List<CollectionItem> items,
   String categorySlug,
-  int? itemId,
-) {
+  int? itemId, {
+  required bool allowCategoryNavigation,
+}) {
   if (itemId != null) {
     openItemDetail(ref, itemId);
+    return;
+  }
+  if (!allowCategoryNavigation) {
     return;
   }
   GalleryLayerSpec? spec;

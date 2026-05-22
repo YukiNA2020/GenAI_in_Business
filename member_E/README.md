@@ -2,7 +2,7 @@
 
 本文件夹是成员 E / 成员 5 的独立工作区，用于存放 AI 功能、用户主页、测试支持相关的任务文档和阶段交付物。
 
-当前已完成：阶段一「V1.1 AI Prompt 模板和接口方案」。
+当前已完成：阶段一；阶段二（含任务五 AI 面板预交付）；阶段三·任务 1–4「用户主页与资料」。
 
 ---
 
@@ -15,8 +15,15 @@ member_E/
 ├── E_Status_Log.md
 ├── E_Prompt_Log.md
 ├── E_Test_Log.md
+├── scripts/
+│   ├── verify_phase1_task1_title.js
+│   ├── verify_phase2_task1_provider.js
+│   └── verify_phase2_tasks2_4_api.js
+├── .env.example
 ├── docs/
 │   ├── AI_API_Contract.md
+│   ├── AI_Provider_Setup.md
+│   ├── AI_Routes_Integration.md
 │   ├── Phase_1_Completion_Report.md
 │   └── prompts/
 │       ├── prompt_title.md
@@ -27,8 +34,33 @@ member_E/
     └── src/
         └── ai/
             ├── ai.prompts.js
-            └── ai.schemas.js
+            ├── ai.schemas.js
+            ├── ai.provider.js
+            ├── ai.service.js
+            └── ai.routes.js
 ```
+
+---
+
+## 2.1 阶段二·任务一交付物
+
+| 任务 | 交付物 |
+|---|---|
+| 任务 1：实现 AI Provider 封装 | `backend/src/ai/ai.provider.js`、`docs/AI_Provider_Setup.md`、`.env.example`、`scripts/verify_phase2_task1_provider.js` |
+| 任务 2–4：四个 AI HTTP 接口 | `ai.service.js`、`ai.routes.js`、`docs/AI_Routes_Integration.md`、`scripts/verify_phase2_tasks2_4_api.js`；根目录 `backend/src/routes/ai.routes.js` + `app.js` 挂载 |
+| 任务 5：AI 建议面板（成员 B 工作区） | `../member_B/` + `frontend/lib/features/collection_form/`（成员 E 编写）；见 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` |
+
+### 阶段三·任务 1–4 交付物
+
+| 任务 | 交付物 |
+|---|---|
+| 任务 1–2 | `frontend/lib/features/profile/pages/profile_page.dart` 等 |
+| 任务 3 | `edit_profile_page.dart` |
+| 任务 4 | `login_placeholder_page.dart`、`register_placeholder_page.dart` |
+| 说明 | `docs/Phase_3_Profile_Completion.md` |
+| 任务 5：与成员 3 联调 | `docs/Phase_3_Task5_Member3_Integration.md` + `profile_exhibit_utils.dart` |
+| 阶段四 V2.3 | `docs/Phase_4_Tasks1_5_Completion.md` + `verify_phase4_tasks1_5_api.js` |
+| 阶段五 测试/Demo | `docs/Phase_5_Tasks1_5_Completion.md` + `verify_phase5_demo_e2e.js` + `Member6_Demo_Handoff.md` |
 
 ---
 
@@ -36,7 +68,7 @@ member_E/
 
 | 阶段一任务 | 交付物 |
 |---|---|
-| 任务 1：设计标题生成 Prompt | `docs/prompts/prompt_title.md`、`backend/src/ai/ai.prompts.js` |
+| 任务 1：设计标题生成 Prompt | `docs/prompts/prompt_title.md`、`backend/src/ai/ai.prompts.js`、`scripts/verify_phase1_task1_title.js` |
 | 任务 2：设计分类建议 Prompt | `docs/prompts/prompt_category.md`、`backend/src/ai/ai.prompts.js` |
 | 任务 3：设计标签推荐 Prompt | `docs/prompts/prompt_tags.md`、`backend/src/ai/ai.prompts.js` |
 | 任务 4：设计故事生成 Prompt | `docs/prompts/prompt_story.md`、`backend/src/ai/ai.prompts.js` |

@@ -18,8 +18,8 @@
 
 # Collection Journey App - 项目状态
 
-> 上次更新：2026-05-19  
-> 最近更新负责人：成员 C / 成员 3，由该成员的 AI 工具协助更新（月度 Room 统一 Gallery/Profile；`edit_collection_page` PUT/换图；`collectory_room_catalog`；`Browse_Flow_Test_Notes.md` / `frontend/README.md` / 本条 Status / `Prompt_library.md` 文档同步）
+> 上次更新：2026-05-21  
+> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（阶段五·任务 1–5：Test.md / Bug 表 / Demo E2E / 成员 6 交接）
 
 ---
 
@@ -37,7 +37,13 @@ GENAI_Group/
 ├── Member_2_Create_Upload_Integration_Detail_Plan.md # 成员 2 开发任务详细文档
 ├── Member_3_Collection_Wall_Search_Detail_Plan.md # 成员 3 开发任务详细文档
 ├── Member_4_UI_Visual_Design_Detail_Plan.md # 成员 4 设计与开发支持详细文档
+├── member_B/
+│   ├── README.md                 # 成员 B 工作区说明
+│   ├── docs/Phase2_Task5_AI_Panel_by_Member_E.md  # 成员 E 代写 AI 面板说明
+│   └── frontend/lib/features/collection_form/  # 成员 E 编写的 AI 面板源码副本
+├── frontend/lib/features/profile/  # 成员 E：用户主页、统计、编辑、登录占位（阶段三）
 ├── member_E/
+│   └── frontend/lib/features/profile/  # 成员 E 阶段三源码副本
 │   ├── README.md                 # 成员 E 工作区说明
 │   ├── Member_5_AI_Profile_Test_Detail_Plan.md # 成员 5 开发任务详细文档
 ├── backend/                      # 后端项目（成员 1 负责）
@@ -60,7 +66,12 @@ GENAI_Group/
 │   │   ├── AI_API_Contract.md    # 阶段一 AI API Contract
 │   │   ├── Phase_1_Completion_Report.md # 成员 E 阶段一完成说明
 │   │   └── prompts/              # 阶段一四类 AI Prompt 文档
-│   └── backend/src/ai/           # 阶段一轻量 Prompt 和 Schema 代码
+│   ├── scripts/
+│   │   ├── verify_phase1_task1_title.js  # 阶段一·任务一标题 Prompt 自检
+│   │   └── verify_phase2_task1_provider.js # 阶段二·任务一 Provider 自检
+│   ├── .env.example              # AI Provider 环境变量示例
+│   └── backend/src/ai/           # Prompt、Schema、Provider（成员 E）
+│       └── ai.provider.js        # 阶段二·任务一
 ├── design-export/                # 成员 4 UI 交付（Collectory 视觉 handoff）
 │   └── collectory-ui-handoff.md
 ├── frontend/                     # 成员 3 收藏浏览（Flutter，见 lib/features/collection_browse/）
@@ -102,13 +113,43 @@ GENAI_Group/
 | `member_E/E_Status_Log.md` | 成员 E 局部状态记录，用于阶段结束后同步根目录 Status | ✅ 完成 |
 | `member_E/E_Prompt_Log.md` | 成员 E 局部 Prompt 和决策记录，用于阶段结束后同步根目录 Prompt_library | ✅ 完成 |
 | `member_E/E_Test_Log.md` | 成员 E 局部测试记录，用于阶段结束后同步根目录 Test | ✅ 完成 |
-| `member_E/docs/prompts/prompt_title.md` | 成员 E 阶段一标题生成 Prompt | ✅ 完成，待独立测试 |
+| `member_E/docs/prompts/prompt_title.md` | 成员 E 阶段一标题生成 Prompt | ✅ 完成（成员 E，2026-05-21），待独立测试 |
+| `member_E/scripts/verify_phase1_task1_title.js` | 成员 E 阶段一·任务一标题 Prompt 自检脚本 | ✅ 完成（成员 E，2026-05-21），开发自检 15/15 通过 |
 | `member_E/docs/prompts/prompt_category.md` | 成员 E 阶段一分类建议 Prompt | ✅ 完成，待独立测试 |
 | `member_E/docs/prompts/prompt_tags.md` | 成员 E 阶段一标签推荐 Prompt | ✅ 完成，待独立测试 |
 | `member_E/docs/prompts/prompt_story.md` | 成员 E 阶段一故事生成 Prompt | ✅ 完成，待独立测试 |
 | `member_E/docs/AI_API_Contract.md` | 成员 E 阶段一 AI API 输入输出和错误合同 | ✅ 完成，待独立测试 |
 | `member_E/backend/src/ai/ai.prompts.js` | 成员 E 阶段一 Prompt builder | ✅ 完成，待独立测试 |
 | `member_E/backend/src/ai/ai.schemas.js` | 成员 E 阶段一 Schema、类别、错误码和校验函数 | ✅ 完成，待独立测试 |
+| `member_E/backend/src/ai/ai.provider.js` | 成员 E 阶段二·任务一 AI Provider（`generateJson`、OpenAI/mock、超时与错误映射） | ✅ 完成（成员 E，2026-05-21），待独立测试 |
+| `member_E/docs/AI_Provider_Setup.md` | 成员 E 阶段二 Provider 环境变量与运行说明 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/.env.example` | 成员 E AI 环境变量示例（无密钥） | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/scripts/verify_phase2_task1_provider.js` | 成员 E 阶段二·任务一 Provider 自检 | ✅ 完成（成员 E，2026-05-21），11/11 通过 |
+| `member_E/backend/src/ai/ai.service.js` | 成员 E 阶段二·任务 2–4 AI 业务层 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/backend/src/ai/ai.routes.js` | 成员 E AI 路由工厂 `createAiRouter` | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/AI_Routes_Integration.md` | 成员 E AI HTTP 接口与挂载说明 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/scripts/verify_phase2_tasks2_4_api.js` | 成员 E 阶段二·任务 2–4 自检 | ✅ 完成（成员 E，2026-05-21），14/14 通过 |
+| `backend/src/routes/ai.routes.js` | 成员 E AI 路由挂载适配层 | ✅ 完成（成员 E，2026-05-21） |
+| `backend/src/app.js` | 挂载 `/api/ai`（成员 E 阶段二，一行） | ✅ 已更新（成员 E，2026-05-21） |
+| `member_B/README.md` | 成员 B 工作区说明 | ✅ 完成（成员 E 代建，2026-05-21） |
+| `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` | 成员 E 为成员 B 编写的 AI 面板交接 | ✅ 完成（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_form/` | 成员 B 表单模块 — AI 部分由成员 E 编写 | ✅ 完成（成员 E，2026-05-21），待成员 B 扩展 |
+| `frontend/lib/features/collection_browse/pages/add_exhibit_design_page.dart` | Add 页接入 `AiSuggestionPanel`（成员 E 挂钩） | ✅ 已更新（成员 E，2026-05-21） |
+| `frontend/lib/features/profile/` | 成员 E 阶段三：ProfilePage、统计、编辑、登录占位 | ✅ 完成（成员 E，2026-05-21），待独立测试 |
+| `frontend/lib/features/collection_browse/pages/profile_design_page.dart` | Profile Tab 挂载成员 E `ProfilePage` | ✅ 已更新（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_browse/utils/profile_exhibit_utils.dart` | 成员 E 任务五：Profile 统计/最近展品共享逻辑 | ✅ 完成（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_browse/widgets/profile_collection_preview.dart` | 成员 C + 成员 E 嵌入模式 `embeddedInMemberEProfile` | ✅ 已更新（成员 E 联调，2026-05-21） |
+| `member_E/docs/Phase_3_Task5_Member3_Integration.md` | 阶段三·任务五联调说明 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/prompts/prompt_image.md` | 成员 E 阶段四·任务一图片识别 Prompt | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/prompts/prompt_story_styles.md` | 成员 E 阶段四·任务三多风格故事 Prompt | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/Phase_4_Tasks1_5_Completion.md` | 阶段四·任务 1–5 完成说明 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/scripts/verify_phase4_tasks1_5_api.js` | 成员 E 阶段四自检 | ✅ 完成（成员 E，2026-05-21），服务层 12/12 |
+| `member_E/scripts/verify_phase5_demo_e2e.js` | 成员 E 阶段五 Demo 全链路 API 自检 | ✅ 完成（成员 E，2026-05-21），11/11×2 |
+| `member_E/docs/Phase5_Demo_Checklist.md` | 阶段五 Flutter Demo 手测清单 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/Member6_Demo_Handoff.md` | 成员 6 PPT / Demo 交接材料 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/Phase_5_Tasks1_5_Completion.md` | 阶段五·任务 1–5 完成说明 | ✅ 完成（成员 E，2026-05-21） |
+| `frontend/lib/features/collection_form/models/ai_image_analysis.dart` | 图片识别响应 + 故事风格枚举 | ✅ 完成（成员 E，2026-05-21） |
+| `member_E/docs/Phase_3_Profile_Completion.md` | 成员 E 阶段三完成说明 | ✅ 完成（成员 E，2026-05-21） |
 | `Prompt_library.md` | Prompt 记录库 | ✅ 完成 |
 | `Status.md` | 项目状态文档 | ✅ 完成 |
 | `Test.md` | 测试记录、Bug 跟踪和测试报告文档 | ✅ 完成 |
@@ -198,15 +239,45 @@ GENAI_Group/
 - [x] 阶段三·任务六：图片删除接口 DELETE /api/collections/:id/image（成员 1，2026-05-15）
 
 ### 成员 E 阶段一：V1.1 AI Prompt 模板和接口方案
-- [x] 任务 1：设计标题生成 Prompt
+- [x] 任务 1：设计标题生成 Prompt（成员 E，2026-05-21：补充自检脚本与文档 §6；`verify_phase1_task1_title.js` 15/15 通过）
 - [x] 任务 2：设计分类建议 Prompt
 - [x] 任务 3：设计标签推荐 Prompt
 - [x] 任务 4：设计故事生成 Prompt
 - [x] 任务 5：确定 AI API Contract
-- [x] 独立测试 AI 验证阶段一交付物（开发自检 6/6 通过；待独立测试 AI 进一步验证）
+- [x] 阶段一验收（2026-05-21）：四类 Prompt 文档齐全；`AI_API_Contract.md` 固定输入输出与错误码；成员 B 可据此接入 AI 建议面板（待独立测试 AI 正式验收）
+
+### 成员 E 阶段二：V1.2 AI 接口开发
+- [x] 任务 1：实现 AI Provider 封装（成员 E，2026-05-21：`ai.provider.js` + mock/openai；`verify_phase2_task1_provider.js` 11/11）
+- [x] 任务 2：实现标题建议接口 `POST /api/ai/suggest-title`（成员 E，2026-05-21）
+- [x] 任务 3：实现分类和标签建议接口（成员 E，2026-05-21）
+- [x] 任务 4：实现故事生成接口 `POST /api/ai/generate-story`（成员 E，2026-05-21）
+- [x] 任务 5：AI 建议面板预交付（成员 E 代写至 `member_B/` + `frontend/lib/features/collection_form/`；Add 页最小挂钩，待成员 B 正式表单与独立测试）
+- [x] 阶段二·任务 2–4 开发自检：`verify_phase2_tasks2_4_api.js` 14/14（待独立测试 AI）
+
+### 成员 E 阶段三：V2.1 用户主页与资料
+- [x] 任务 1：ProfilePage（成员 E，2026-05-21）
+- [x] 任务 2：收藏统计 `GET /api/users/:id/stats`（成员 E，2026-05-21）
+- [x] 任务 3：EditProfilePage 本地 mock 保存（成员 E，2026-05-21）
+- [x] 任务 4：登录 / 注册占位 + mock 会话（成员 E，2026-05-21）
+- [x] 任务 5：与成员 3 联调主页收藏展示（成员 E，2026-05-21：`ProfileCollectionPreview(embeddedInMemberEProfile: true)` 单页嵌入；`profile_exhibit_utils.dart`；待独立测试）
+
+### 成员 E 阶段四：V2.3 AI 图片识别和多风格故事
+- [x] 任务 1：设计图片识别 Prompt（成员 E，2026-05-21：`prompt_image.md`）
+- [x] 任务 2：实现 `POST /api/ai/analyze-image`（成员 E，2026-05-21，mock/Vision 方案）
+- [x] 任务 3：设计多风格故事 Prompt（成员 E，2026-05-21：`prompt_story_styles.md`）
+- [x] 任务 4：扩展 `POST /api/ai/generate-story` + `style`（成员 E，2026-05-21）
+- [x] 任务 5：与成员 2 联调图片识别填表（成员 E，2026-05-21：Add 页 Upload→Recognize→自动填表；待独立测试）
+- [x] 阶段四开发自检：`verify_phase4_tasks1_5_api.js` 服务层 12/12（HTTP 需重启 backend 后探测）
+
+### 成员 E 阶段五：V2.3 测试用例、Bug 跟踪和 Demo 校验
+- [x] 任务 1：编写测试计划（成员 E，2026-05-21：`Test.md` § 成员 E 阶段五·测试计划）
+- [x] 任务 2：编写核心测试用例（成员 E，2026-05-21：TC-ME-P5-01～15）
+- [x] 任务 3：建立 Bug 跟踪表（成员 E，2026-05-21：`Test.md` BUG-ME-001～005）
+- [x] 任务 4：执行全链路 Demo 测试（成员 E，2026-05-21：`verify_phase5_demo_e2e.js` 11/11×2 + `Phase5_Demo_Checklist.md`）
+- [x] 任务 5：成员 6 测试结论与 Demo 亮点（成员 E，2026-05-21：`Member6_Demo_Handoff.md`）
 
 ### V1.2 AI 辅助记录
-- [ ] 待开发
+- [x] 成员 E 阶段二 AI 接口与面板预交付
 
 ### V1.3 美观收藏卡片墙
 - [x] 成员 3 阶段一：收藏墙页面、卡片组件、图片占位、跳转详情（2026-05-17，待测试）
@@ -337,5 +408,23 @@ GENAI_Group/
 2026-05-19（成员 C / 成员 3，月度 Room + 编辑页 + 文档）：**月度 Room**（`collectory_room_catalog.dart`、`collectionRoomIndexProvider`、`openCollectionRoom(ref, roomIndex:)`）：Gallery 三 room 芯片与 Profile 三张 room 卡同月下标进入同一 `CollectionRoomPage` 配置；`app.dart` 的 `AnimatedSwitcher` key 含 `roomIndex` 避免换月不刷新；时间轴与统计卡日期区间随 MAY/JUN/JUL 变化；`closeCollectionRoom` 返回来源 Tab。**编辑页**（`edit_collection_page.dart`）：替换占位；`PUT` 更新字段；`file_picker` + `POST /api/collections/:id/image`；Story 草稿助手。**服务层**：`collection_query_service.dart` 新增 `put`、`updateCollection`、`uploadCollectionImage`。**文档**（成员 C / 成员 3 编写）：`frontend/Browse_Flow_Test_Notes.md`、`frontend/README.md`、本条 `Status.md`、`Prompt_library.md` 对话记录 22。
 
 2026-05-19（成员 C / 成员 3，联调与体验修复）：**Collection wall**（`collection_list_provider.dart`、`collection_wall_slivers.dart`、`design_gallery_page.dart`）：`page=1` 首屏加载；`pageSize=6`；总数 >6 时仅展示当前页 6 张 + Previous/Next（`wallDisplayPage`），自动拉取下一页 API；`CupertinoSliverRefreshControl` 下拉刷新（保留 keyword/category/tag/sort，清 error）；`_busy` 防重复请求。**Share**（`share_room_settings_page.dart`、`share_room_preview_page.dart`）：设置页严格对齐 PNG（无内嵌 Visitor preview）；Preview 按钮进入独立访客预览页，三项开关写入 `shareRoomPreviewOptionsProvider`；Preview 往返不丢开关状态。**Profile**（`profile_collection_preview.dart`）：Last added 年份黑色、与 Exhibits 等灰字对齐；`profilePublicPreviewProvider` 持久化。**Gallery 其它**：ROOM 01 点击 `openCollectionRoom`；Tag 弹层四角 20px 圆角且抬高避开底栏。**Collection Room**（`collection_room_page.dart`）：改回单屏 `Column+Spacer`；展品数来自 `GET /api/users/:id/stats`；Highlights/Timeline 各取 API 最近 3 条（无数据用设计稿占位）。**CollectoryPillToggle**（`collectory_pill_toggle.dart` + `member3_ui_settings_provider.dart`）：拖拽/点击正确提交，跨 Tab 与 Share→Preview 不重置。**状态栏**（`collectory_status_bar.dart`）：实时 `H:mm` + 中间黑色岛。**测试**：阶段四/五专项结果见 `Test.md`；`test_member3_api_contract.js` 32/32（backend 在线时）。**运行**：`flutter run -d web-server --web-port=8086`（Web 常用 8084–8086，端口占用时换端口）；`cd backend && npm run dev`。
+
+2026-05-21（成员 E / 成员 5，阶段二·任务五）：在 **member_B 工作区** 预交付 AI 建议面板（标注成员 E 编写）：`member_B/frontend/lib/features/collection_form/`（`ai_suggestion_service.dart`、`ai_suggestion_panel.dart` 等）与可运行副本 `frontend/lib/features/collection_form/`；说明见 `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md`。**跨成员最小挂钩**：在成员 C 的 `add_exhibit_design_page.dart` 嵌入 `AiSuggestionPanel`（STORY NOTE 作 `description`，标题/分类/故事可写入表单；标签暂 SnackBar）。成员 B 接手后应迁入正式 `CreateCollectionPage` / `TagInputField`。未标记测试通过。
+
+2026-05-21（成员 E / 成员 5，阶段五·任务 1–5）：测试与 Demo 收尾。更新根目录 `Test.md`（测试计划、TC-ME-P5 用例、BUG-ME 表、Demo 报告）；新增 `verify_phase5_demo_e2e.js`（全链路 API **11/11 跑 2 轮**）；`Member6_Demo_Handoff.md`（功能清单、AI 样例、Demo 路径、已知问题、PPT 结论）；`Phase5_Demo_Checklist.md` 供 Flutter 手测。用户已复测阶段四 UI；阶段五 API 结论 **✅ 通过**。
+
+2026-05-21（成员 E / 成员 5，阶段四·任务 1–5）：V2.3 图片识别与多风格故事。**新增** `POST /api/ai/analyze-image`；`generate-story` 支持 `style`（concise/scrapbook/travel/vintage）。**前端**：`AiSuggestionPanel` 增加 Recognize + Story style；Add 页 Upload 模拟图片描述后 Recognize 自动填入标题/分类/标签/Story note。**自检** `verify_phase4_tasks1_5_api.js` 服务层 12/12。待独立测试；重启 backend 后 HTTP 探测。
+
+2026-05-21（成员 E / 成员 5，阶段三·任务五）：与成员 3 联调 Profile。**单页** `ProfilePage`：成员 E 区（Header、四列 Stats、Edit profile）+ 成员 C 区（`ProfileCollectionPreview` 嵌入模式）。新增 `profile_exhibit_utils.dart` 统一 Recent/Last added/分类筛选逻辑；`profile_collection_preview.dart` 增加 `embeddedInMemberEProfile` 省略重复顶栏与统计。移除全屏「Open museum rooms」入口。
+
+2026-05-21（成员 E / 成员 5，阶段三·任务 1–4）：用户主页与资料。**新增** `frontend/lib/features/profile/`（`ProfilePage`、`ProfileHeader`、`ProfileStats`、`RecentCollectionsSection`、`EditProfilePage`、登录/注册占位页、`profile_providers` mock 资料与会话）。**跨成员**：`profile_design_page.dart` 改为挂载 `ProfilePage`；成员 C 的 `ProfileCollectionPreview` 经「Open museum rooms (Member 3)」全屏入口保留。统计复用成员 1 的 `GET /api/users/:id/stats`；无 `PUT /api/users`。待独立测试；任务 5 与成员 3 深度联调留待后续。
+
+2026-05-21（成员 E / 成员 5，阶段二·任务 2–4）：实现四个 AI HTTP 接口。新增 `ai.service.js`、`ai.routes.js`（`createAiRouter`）；`backend/src/routes/ai.routes.js` 适配层；`backend/src/app.js` 增加 `app.use('/api/ai', ...)`（**跨成员最小挂载**，已与成员 A 约定：仅增加路由挂载，不改 collections/users 逻辑）。端点：`POST /api/ai/suggest-title|suggest-category|suggest-tags|generate-story`；参数校验返回 `AI_VALIDATION_ERROR`（400）；Provider 失败 502。自检 `verify_phase2_tasks2_4_api.js` 14/14。待独立测试与成员 B 联调（任务 5）。
+
+2026-05-21（成员 E / 成员 5，阶段二·任务一）：实现 AI Provider 封装。新增 `member_E/backend/src/ai/ai.provider.js`（`generateJson(prompt, { validate, mockKind })`、OpenAI Chat Completions + `json_object` 响应、AbortController 超时、`AI_PROVIDER` auto/openai/mock、错误码映射与 Markdown JSON 解析）；`member_E/docs/AI_Provider_Setup.md`、`member_E/.env.example`、`member_E/scripts/verify_phase2_task1_provider.js`（11/11）。**未**挂载 Express 路由、**未**修改根目录 `backend/`。待独立测试 AI 验证。
+
+2026-05-21（成员 E / 成员 5，阶段一验收）：四类 Prompt 文档（`prompt_title/category/tags/story.md`）、`AI_API_Contract.md`、`ai.prompts.js`、`ai.schemas.js` 满足阶段一验收标准；成员 B 可按 Contract 开发 AI 建议面板。
+
+2026-05-21（成员 E / 成员 5，阶段一·任务一）：设计标题生成 Prompt。交付物为 `member_E/docs/prompts/prompt_title.md`（含输入字段、Prompt 模板、JSON 输出格式、异常处理与代码复用说明）及既有 `member_E/backend/src/ai/ai.prompts.js` 中的 `buildTitlePrompt()`、`ai.schemas.js` 中的 `hasRequiredDescription()` / `validateTitleResponse()`。新增 `member_E/scripts/verify_phase1_task1_title.js` 本地自检脚本，开发自检 15/15 通过；**未**实现真实 `POST /api/ai/suggest-title`（属阶段二）。**未修改**根目录 `backend/` 及其他成员模块。状态：待独立测试 AI 验证，未标记测试通过。
 
 2026-05-16（成员 A / 成员 1，阶段五·任务四+五）：配合成员 5 联调 AI 和测试 + 后端交付说明。**任务四**：从成员 5 四大验证点出发进行全面联调验证：(1) AI 输出能否保存进收藏——测试了 AI 全字段创建（title/category/tags/story/location/dateAcquired/customFields/categoryTemplate）、AI 部分更新、AI 字段 null 清空、tags=[] 空数组、不传 tags 默认空数组、长故事/20 标签/Emoji/特殊字符/复杂 JSON customFields 等边缘场景，全部通过；(2) AI 失败时是否影响主流程——确认收藏 CRUD API 无任何 AI 依赖，纯手动创建/仅标题创建均可正常完成，AI 服务故障完全不影响用户手动保存；(3) 测试用例稳定运行——`ai_usage_logs` 表可正常读写（4 个字段 id/user_id/feature/created_at），categories API 提供完整的英文 slug↔中文名称映射表（8 个分类全部验证），user stats 接口返回字段完整（含 14 个 collection camelCase 字段）；(4) Bug 复现和修复——前期 tags null 修复在 AI 集成场景下验证通过。66 项 AI 集成测试全部通过。**关键发现**：成员 5 的 AI 模块（`ai.schemas.js`）使用的 `COLLECTION_CATEGORIES` 为中文名称（矿石/水晶/黑胶唱片/明信片/票根/旅行纪念品/其他），但 collections 表的 `category` 字段存储的是英文 slug（mineral/crystal/vinyl/postcard/ticket/souvenir/stamp/other）。AI 输出写入前需做名称→slug 转换。`GET /api/categories` 已提供 id↔name 完整映射，成员 5 可直接调用。**任务五**：创建 `Backend_Setup.md`——覆盖环境要求（Node.js 18+）、快速启动三步骤（npm install → npm run seed → npm run dev）、完整项目目录结构及分层调用关系、11 个 API 端点速查表（含查询参数默认值和响应格式）、4 张数据库表字段说明、命名约定（DB snake_case/API camelCase/分类英文 slug）、各成员常用 curl 场景（成员 2 创建上传、成员 3 搜索筛选、成员 5 AI 写入和统计）、7 个常见问题排查（端口占用/数据库重置/500 错误/图片上传失败/CORS/错误码速查）、技术说明（sql.js 持久化/Schema 迁移兼容性/AI 可写入字段清单）。**阶段五全部 5 个任务已完成。成员 1 的后端开发（阶段一～阶段五共 21 个任务）已全部交付。**

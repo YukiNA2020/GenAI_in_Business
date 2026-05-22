@@ -17,7 +17,10 @@ import 'features/collection_browse/pages/share_room_preview_page.dart';
 import 'features/collection_browse/pages/share_room_settings_page.dart';
 import 'features/collection_browse/providers/app_navigation_provider.dart';
 import 'features/collection_browse/providers/collection_list_provider.dart';
+import 'features/collection_browse/utils/collectory_room_catalog.dart';
 import 'features/collection_browse/widgets/collectory_bottom_nav.dart';
+import 'features/profile/models/user_profile.dart';
+import 'features/profile/providers/profile_providers.dart';
 
 /// handoff 四 Tab + 原型叠层 + Member 3 API 功能
 class CollectoryApp extends ConsumerWidget {
@@ -57,15 +60,35 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
 
   Future<void> _bootstrapApi(WidgetRef ref) async {
     final service = ref.read(collectionQueryServiceProvider);
+    await Future.wait([
+      ref.read(collectionArchiveProvider.notifier).refresh(),
+      ref.read(collectionListProvider.notifier).refresh(),
+    ]);
     if (!await service.checkHealth()) return;
+    final demo = UserProfile.demo();
+    ref.read(userProfileProvider.notifier).updateProfile(
+          displayName: demo.displayName,
+          bio: demo.bio,
+        );
     ref.invalidate(userStatsProvider);
     ref.invalidate(categoriesProvider);
     ref.invalidate(allTagsProvider);
-    await ref.read(collectionListProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(member3TabIndexProvider, (previous, next) {
+      if (previous != null && previous != next && (next == 0 || next == 3)) {
+        restoreMuseumCatalogForHomeProfile(ref);
+      } else if (next == 1 && previous != 1) {
+        ref.read(collectionRoomIndexProvider.notifier).state =
+            CollectoryRoomCatalog.currentMonthRoomIndex();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          applyPendingGalleryWallCategory(ref);
+        });
+      }
+    });
+
     final overlay = ref.watch(member3OverlayProvider);
     final detailId = ref.watch(detailCollectionIdProvider);
     final detailPublic = ref.watch(detailIsPublicViewProvider);
