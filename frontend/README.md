@@ -131,3 +131,28 @@ flutter run -d web-server --web-port=8090
 2. 编辑页 Story assistant 为本地草稿，非成员 E 线上 AI。
 3. 公开详情作者 **Tong** 为占位。
 4. Web 改代码后需热重启 + 强制刷新浏览器。
+
+## Flutter 运行模式（重要）
+
+| 模式 | 命令 | 效果 |
+|---|---|---|
+| Debug 模式 | `flutter run -d web-server` | 有黄黑调试条、布局适配差、Bottom overflow 警告 |
+| **Release 模式** | `flutter build web` + HTTP server | **无调试条、布局正常，推荐用于测试和演示** |
+
+**推荐启动方式（用于测试和演示）：**
+
+```bash
+# 终端 1 — 后端
+cd backend
+AI_PROVIDER=mock npm run dev
+
+# 终端 2 — Flutter Release
+cd frontend
+flutter build web
+cd build/web
+python3 -m http.server 8080
+
+# 浏览器打开 http://localhost:8080
+```
+
+**不要用 `flutter run -d web-server`**（那是 Debug 模式，会有黄黑条和布局问题）。
