@@ -20,6 +20,29 @@
 
 # Prompt 记录库
 
+## 2026-05-22 对话记录 16
+
+- **负责人**：成员 A / 成员 1，由该成员的 AI 工具协助更新
+- **用户要求**：以成员A / 成员1的身份，修正数据库结构：每个 room 代表一个月份，每个月份的 room 里只能放对应月份的 items；主页提到的四类展品（矿石mineral/水晶crystal/黑胶vinyl/明信片postcard）都要有 5 月份的 item。要求把 5 月 room 里 item 的日期都改成 5 月，并创建多 15 条 5 月份的 item 放在 5 月份的 room 里。用户选择了方案 A（创建 rooms 表 + room_id 外键）。
+- **AI 行动**：
+  - **Schema 扩展**：在 `schema.sql` 中新增 `rooms` 表（id INTEGER PK, month TEXT UNIQUE YYYY-MM, label TEXT, created_at），collections 表追加 `room_id INTEGER REFERENCES rooms(id)` 外键。
+  - **Seed 完全重构**：定义 13 个 room 从 2023-12 到 2025-03。原有 15 条收藏按 month 字段分配至对应 room。新增 15 条 2024年5月收藏：矿石 4 件（天河石·巴西/黄铜矿·秘鲁/赤铁矿·澳大利亚/石墨片岩·大理）、水晶 4 件（月光石·斯里兰卡/海蓝宝石·巴基斯坦/烟水晶柱·瑞士/玫瑰石英·马达加斯加——后 1 件为原有）、黑胶 4 件（Beatles·Abbey Road/Billie Holiday·Lady in Satin/Bob Dylan·Highway 61 Revisited/Radiohead·OK Computer）、明信片 4 件（巴黎塞纳河/威尼斯水城/布拉格查理大桥/旧金山金门大桥）。visibility 交替设置为 public/private（每 3 条 1 条公开）。
+  - **API 层更新**：collections.repository 的 `allFields` 和 `updatableFields` 加入 `'room_id'`；collections.service 的 FIELD_MAP 新增 `roomId: 'room_id'`；collections.routes 的 createSchema/updateSchema 新增 `roomId: z.number().int().optional()` 校验。
+  - **新增 Rooms API 完整分层**：
+    - `rooms.repository.js`：findAll（按 month DESC）、findById、findByMonth（按月查询）、getCollectionsByRoomId（获取 room 下所有 collection）
+    - `rooms.service.js`：list（camelCase 转换）、getById（嵌套 collections 列表 + 完整字段 camelCase 转换含 tags JSON 解析）
+    - `rooms.controller.js`：listRooms + getRoom（含 404 和非法 ID→400）
+    - `rooms.routes.js`：GET /api/rooms + GET /api/rooms/:id
+  - **app.js** 挂载 `/api/rooms` 路由。
+  - 重新 seed 并验证：13 rooms、30 collections（15 原 + 15 新 May）、May 2024 room 共 16 件（四类各 4 件）、所有 May room 日期均为 2024-05-*、所有 room 内 collection 的 date_acquired 月份与 room.month 一致（0 条不匹配）。
+  - 更新 `Status.md` 和 `Prompt_library.md`。
+- **重要内容**：
+  - **数据库结构变更**：从原来的扁平 collections 表（无 room 概念）改为 rooms（1 月 = 1 room）→ collections（N:1 归属 room）的两层结构。rooms 表以 month 字段（YYYY-MM 格式）作为业务唯一键。
+  - **四类展品五月覆盖**：主页四种核心展品类别（矿石/水晶/黑胶/明信片）在五月 room 中各 4 件，共 16 件，确保五月收藏墙的丰富展示效果。
+  - **数据一致性约束**：每件 collection 的 date_acquired 前 7 位（YYYY-MM）等于其所属 room 的 month 字段。经 SQL 验证 0 条不匹配。
+  - **Rooms API 嵌套结构**：`GET /api/rooms/:id` 返回 room 信息 + 嵌套的 collections 列表（含完整 16 个 camelCase 字段），方便前端一次请求获取某月全部收藏。
+  - **供其他成员使用**：成员 3 可按月浏览收藏墙（先调 rooms 列表再选月份）；成员 4 可设计月份时间轴 UI；成员 5 可按月统计收藏分布。
+
 ## 2026-05-16 对话记录 15
 
 - **负责人**：成员 A / 成员 1，由该成员的 AI 工具协助更新

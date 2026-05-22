@@ -8,6 +8,7 @@ const FIELD_MAP = {
   userId: 'user_id',
   categoryTemplate: 'category_template',
   customFields: 'custom_fields',
+  roomId: 'room_id',
 };
 
 function toSnakeCase(apiData) {

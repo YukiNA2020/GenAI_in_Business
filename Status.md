@@ -18,8 +18,8 @@
 
 # Collection Journey App - 项目状态
 
-> 上次更新：2026-05-16  
-> 最近更新负责人：成员 A / 成员 1，由该成员的 AI 工具协助更新（阶段五·任务四+五：配合成员 5 联调 AI 和测试 + 后端交付说明）
+> 上次更新：2026-05-22  
+> 最近更新负责人：成员 A / 成员 1，由该成员的 AI 工具协助更新（数据库 rooms 重构：每月一个 room，collection 关联 room_id，五月四类展品各 4 件）
 
 ---
 
@@ -107,9 +107,9 @@ GENAI_Group/
 | `backend/package.json` | 后端项目依赖与脚本配置 | ✅ 完成（成员 1） |
 | `backend/src/app.js` | Express 应用配置（CORS、JSON、静态文件、错误处理） | ✅ 完成（成员 1） |
 | `backend/src/server.js` | 服务入口（端口 3000，dotenv 加载） | ✅ 完成（成员 1） |
-| `backend/src/db/schema.sql` | 数据库表结构（collections + users + categories，共 3 表） | ✅ 完成（成员 1） |
+| `backend/src/db/schema.sql` | 数据库表结构（collections + users + categories + ai_usage_logs + rooms，共 5 表） | ✅ 完成（成员 1） |
 | `backend/src/db/connection.js` | 数据库连接模块（sql.js 初始化、建表、持久化） | ✅ 完成（成员 1） |
-| `backend/src/db/seed.js` | Mock 数据脚本（1 用户 + 8 分类 + 15 收藏） | ✅ 完成（成员 1） |
+| `backend/src/db/seed.js` | Mock 数据脚本（1 用户 + 8 分类 + 13 rooms + 30 收藏） | ✅ 完成（成员 1） |
 | `backend/src/utils/response.js` | 统一 API 响应格式（success, created, error） | ✅ 完成（成员 1） |
 | `backend/src/middlewares/validate.middleware.js` | Zod 请求体验证中间件 | ✅ 完成（成员 1） |
 | `backend/src/repositories/collections.repository.js` | 收藏数据访问层（insert, findById） | ✅ 完成（成员 1） |
@@ -124,6 +124,10 @@ GENAI_Group/
 | `backend/src/services/users.service.js` | 用户业务逻辑（stats 数据聚合 + camelCase 转换） | ✅ 完成（成员 1） |
 | `backend/src/controllers/users.controller.js` | 用户控制器（getStats） | ✅ 完成（成员 1） |
 | `backend/src/routes/users.routes.js` | 用户路由（GET /:id/stats） | ✅ 完成（成员 1） |
+| `backend/src/repositories/rooms.repository.js` | Rooms 数据访问层（findAll, findById, findByMonth, getCollectionsByRoomId） | ✅ 完成（成员 1） |
+| `backend/src/services/rooms.service.js` | Rooms 业务逻辑（月份→room 映射，嵌套 collections 列表） | ✅ 完成（成员 1） |
+| `backend/src/controllers/rooms.controller.js` | Rooms 控制器（listRooms + getRoom） | ✅ 完成（成员 1） |
+| `backend/src/routes/rooms.routes.js` | Rooms 路由（GET / + GET /:id） | ✅ 完成（成员 1） |
 | `backend/tests/phase5_task4_test.js` | 阶段五·任务四 AI 集成验证测试脚本（66 项） | ✅ 完成（成员 1） |
 | `Backend_Setup.md` | 后端交付说明（启动/数据库/API/排错） | ✅ 完成（成员 1） |
 
@@ -275,3 +279,5 @@ GENAI_Group/
 2026-05-16（成员 A / 成员 1，阶段五·任务三）：配合成员 3 联调浏览流程。从成员 3 五大场景出发进行审查和验证：(1) 列表分页——默认 page=1/pageSize=20，支持 page+pageSize 任意组合，越界页面返回空数组 + 正确 total；(2) 关键词搜索——覆盖 title/story/location/tags 四个字段 LIKE 匹配；(3) 分类筛选——精确匹配 category slug，可与 keyword 组合；(4) 标签筛选——V1 LIKE 子串匹配，支持 keyword+category+tag 三组合；(5) 详情页数据完整性——14 字段全部返回，tags 确保为数组格式。**发现并修复 bug**：`collections.service.js` 和 `users.service.js` 的 `toCamelCase()` 函数中，当数据库 tags 字段为 null 时（创建时不传 tags 导致），`typeof null === 'object'` 跳过了 JSON.parse 逻辑，导致 API 返回 `tags: null` 而非 `tags: []`。成员 3 前端渲染标签组件时会因 null 报错。修复方案：在 JSON.parse 分支后追加 `if (!Array.isArray(result.tags)) { result.tags = []; }` 兜底。53 项成员 3 流程测试全部通过。
 
 2026-05-16（成员 A / 成员 1，阶段五·任务四+五）：配合成员 5 联调 AI 和测试 + 后端交付说明。**任务四**：从成员 5 四大验证点出发进行全面联调验证：(1) AI 输出能否保存进收藏——测试了 AI 全字段创建（title/category/tags/story/location/dateAcquired/customFields/categoryTemplate）、AI 部分更新、AI 字段 null 清空、tags=[] 空数组、不传 tags 默认空数组、长故事/20 标签/Emoji/特殊字符/复杂 JSON customFields 等边缘场景，全部通过；(2) AI 失败时是否影响主流程——确认收藏 CRUD API 无任何 AI 依赖，纯手动创建/仅标题创建均可正常完成，AI 服务故障完全不影响用户手动保存；(3) 测试用例稳定运行——`ai_usage_logs` 表可正常读写（4 个字段 id/user_id/feature/created_at），categories API 提供完整的英文 slug↔中文名称映射表（8 个分类全部验证），user stats 接口返回字段完整（含 14 个 collection camelCase 字段）；(4) Bug 复现和修复——前期 tags null 修复在 AI 集成场景下验证通过。66 项 AI 集成测试全部通过。**关键发现**：成员 5 的 AI 模块（`ai.schemas.js`）使用的 `COLLECTION_CATEGORIES` 为中文名称（矿石/水晶/黑胶唱片/明信片/票根/旅行纪念品/其他），但 collections 表的 `category` 字段存储的是英文 slug（mineral/crystal/vinyl/postcard/ticket/souvenir/stamp/other）。AI 输出写入前需做名称→slug 转换。`GET /api/categories` 已提供 id↔name 完整映射，成员 5 可直接调用。**任务五**：创建 `Backend_Setup.md`——覆盖环境要求（Node.js 18+）、快速启动三步骤（npm install → npm run seed → npm run dev）、完整项目目录结构及分层调用关系、11 个 API 端点速查表（含查询参数默认值和响应格式）、4 张数据库表字段说明、命名约定（DB snake_case/API camelCase/分类英文 slug）、各成员常用 curl 场景（成员 2 创建上传、成员 3 搜索筛选、成员 5 AI 写入和统计）、7 个常见问题排查（端口占用/数据库重置/500 错误/图片上传失败/CORS/错误码速查）、技术说明（sql.js 持久化/Schema 迁移兼容性/AI 可写入字段清单）。**阶段五全部 5 个任务已完成。成员 1 的后端开发（阶段一～阶段五共 21 个任务）已全部交付。**
+
+2026-05-22（成员 A / 成员 1，数据库 rooms 重构）：按需求将数据库改为 room 月份管理模式。**Schema 扩展**：新增 `rooms` 表（id, month YYYY-MM UNIQUE, label, created_at），collections 表新增 `room_id INTEGER REFERENCES rooms(id)` 外键。**Seed 重构**：定义 13 个 room（2023-12 至 2025-03），原有 15 条收藏按 month 字段分配至各 room，新增 15 条 2024年5月收藏覆盖主页四类展品——矿石 4 件（天河石/黄铜矿/赤铁矿/石墨片岩）、水晶 4 件（月光石/海蓝宝石/烟水晶柱/玫瑰石英）、黑胶 4 件（Beatles/Billie Holiday/Bob Dylan/Radiohead）、明信片 4 件（巴黎/威尼斯/布拉格/旧金山），共 30 条数据。**API 层更新**：collections.repository 的 insert/update 字段列表加入 room_id；collections.service FIELD_MAP 新增 roomId→room_id；collections.routes 的 createSchema/updateSchema 新增 roomId 校验。**新增 Rooms API**：完整分层——`rooms.repository.js`（findAll/findById/findByMonth/getCollectionsByRoomId）、`rooms.service.js`（list/getById 含嵌套 collections 列表 + camelCase 转换）、`rooms.controller.js`（listRooms/getRoom）、`rooms.routes.js`（GET /api/rooms + GET /api/rooms/:id）。app.js 挂载 `/api/rooms`。**验证通过**：13 rooms 创建成功，May 2024 room 共 16 件（四类各 4 件），所有 May room 内 item 日期均为 2024-05-*，所有 room 内 item 的 date_acquired 月份与 room.month 一致（0 条不匹配）。

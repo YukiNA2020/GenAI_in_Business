@@ -18,7 +18,7 @@
 # Collection Journey App - 测试记录
 
 > 上次更新：2026-05-16
-> 最近更新负责人：成员 A / 成员 1，由该成员的测试 AI 协助更新（阶段五·任务四 & 五测试：122/122 全部通过）
+> 最近更新负责人：成员 A / 成员 1，由该成员的测试 AI 协助更新（数据库 Rooms 重构专项测试：97/97 全部通过）
 
 ---
 
@@ -1484,3 +1484,207 @@
 | **全阶段总计** | **18 个任务** | **435/435** | |
 
 > **成员 A / 成员 1 的全部 18 个任务（阶段一至阶段五）合计 435 项测试全部通过，0 失败。**
+
+---
+
+### 数据库 Rooms 重构 专项测试报告
+
+- **测试负责人**：成员 A / 成员 1，由该成员的测试 AI 协助更新
+- **测试时间**：2026-05-16
+- **测试范围**：仅限成员 A / 成员 1 的数据库 Rooms 重构修改，包含 Schema 变更、Seed 数据重构、Collections API roomId 字段支持、新增 Rooms API、以及回归验证。
+
+**修改背景**（依据 Prompt_library.md 对话记录 15 及用户要求）：
+1. 每个 room 代表一个月份，每个月份的 room 里只能放对应月份的 items
+2. 主页提到的四类展品（矿石/水晶/黑胶/明信片）都要有 5 月份的 item
+3. 5 月 room 里的 item 日期都改成 5 月，创建多 15 条 5 月份 item
+
+**涉及文件**：
+- `schema.sql` — 新增 rooms 表 + collections.room_id 外键
+- `seed.js` — 完全重构：13 rooms + 30 collections（15 原 + 15 新 May）
+- `collections.repository.js` — allFields/updatableFields 新增 room_id
+- `collections.service.js` — FIELD_MAP 新增 roomId → room_id
+- `collections.routes.js` — createSchema/updateSchema 新增 roomId 校验
+- `app.js` — 挂载 /api/rooms 路由
+- 新增 4 文件：rooms.repository.js / rooms.service.js / rooms.controller.js / rooms.routes.js
+
+- **测试方法**：
+  1. **Schema 审查**：逐字段验证 rooms 表结构（5 列）和 collections.room_id 外键
+  2. **新增文件审计**：确认 4 个 rooms 分层文件全部存在且完整
+  3. **运行时测试**：编写 `test_rooms_refactor.js` 综合测试脚本（Node.js http 模块），覆盖 10 个验证面共 97 项测试
+  4. **数据库**：执行 `npm run seed` 后启动服务（端口 3000）测试
+
+- **测试结论**：**全部 97 项检查通过，0 失败。** 成员 A / 成员 1 的数据库 Rooms 重构修改已按要求完成。
+
+**10 个验证面测试详情：**
+
+#### Section 1: Schema 验证（S1-01 ~ S1-11，11 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| rooms 表 CREATE TABLE 在 schema.sql 中存在 | ✅ |
+| id 列 (INTEGER PRIMARY KEY) | ✅ |
+| month 列 (TEXT NOT NULL UNIQUE) | ✅ |
+| label 列 (TEXT) | ✅ |
+| created_at 列 (TEXT DEFAULT) | ✅ |
+| collections.room_id 外键 (ALTER TABLE ADD COLUMN) | ✅ |
+| app.js 挂载 /api/rooms 路由 | ✅ |
+| rooms.repository.js 文件存在 | ✅ |
+| rooms.service.js 文件存在 | ✅ |
+| rooms.controller.js 文件存在 | ✅ |
+| rooms.routes.js 文件存在 | ✅ |
+
+#### Section 2: Rooms 种子数据（S2-01 ~ S2-11，11 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| GET /api/rooms → 200 | ✅ |
+| 响应格式 `{ success: true, data: [...] }` | ✅ |
+| data 为数组 | ✅ |
+| 13 个 room | ✅ |
+| 按 month DESC 排序（2025-03 → 2023-12） | ✅ |
+| 全部 13 个预期月份存在 | ✅ |
+| Room 含 id (number) | ✅ |
+| Room 含 month (YYYY-MM 格式) | ✅ |
+| Room 含 label (string) | ✅ |
+| Room 含 createdAt (camelCase) | ✅ |
+| Room 无 snake_case 字段泄漏 | ✅ |
+
+#### Section 3: Collections 种子数据（S3-01 ~ S3-03，3 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| 全部 30 条 collection（15 原 + 15 新） | ✅ |
+| 列表项含 roomId 字段（camelCase） | ✅ |
+
+#### Section 4: 五月 Room 核心需求（S4-01 ~ S4-24，24 项）
+
+| 需求 | 验证方式 | 结果 |
+|------|----------|------|
+| May room 存在 | room.month = "2024-05" | ✅ |
+| GET /api/rooms/:id 返回嵌套 collections | 嵌套数组 | ✅ |
+| May room 共 16 件 | 1 原有（玫瑰石英）+ 15 新增 | ✅ |
+| 矿石 = 4 件 | 天河石 / 黄铜矿 / 赤铁矿 / 石墨片岩 | ✅ |
+| 水晶 = 4 件 | 月光石 / 海蓝宝石 / 烟水晶柱 / 玫瑰石英 | ✅ |
+| 黑胶 = 4 件 | Beatles / Billie Holiday / Bob Dylan / Radiohead | ✅ |
+| 明信片 = 4 件 | 巴黎 / 威尼斯 / 布拉格 / 旧金山 | ✅ |
+
+逐一验证了 16 件 May 藏品的标题匹配（S4-09 ~ S4-24，全部通过）。
+
+#### Section 5: May Room 日期一致性（S5-01 ~ S5-06，6 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| 全部 16 件 May room 藏品 dateAcquired 均以 "2024-05" 开头 | ✅ |
+| 天河石 date = 2024-05-02 | ✅ |
+| Beatles Abbey Road date = 2024-05-04 | ✅ |
+| 巴黎明信片 date = 2024-05-06 | ✅ |
+| 玫瑰石英 date = 2024-05-18 | ✅ |
+
+#### Section 6: 全局 Room-Month 一致性（S6-01，1 项）
+
+遍历全部 13 个 room 下所有 collection，验证每件的 `date_acquired` 前 7 位（YYYY-MM）与其所属 room 的 `month` 字段一致：
+
+| 检查项 | 结果 |
+|--------|------|
+| 0 条 room 与月份不匹配 | ✅（全库 30 条全部一致） |
+
+#### Section 7: Collections API roomId 支持（S7-01 ~ S7-10，10 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| POST 创建时可传 roomId → 201 + 返回 roomId | ✅ |
+| GET 详情返回 roomId (camelCase) | ✅ |
+| PUT 可更新 roomId（将藏品移至不同 room） | ✅ |
+| createSchema 含 `roomId: z.number().int().optional()` | ✅ |
+| updateSchema 含 `roomId: z.number().int().optional().nullable()` | ✅ |
+| FIELD_MAP 含 `roomId: 'room_id'` | ✅ |
+| repository allFields 含 `'room_id'` | ✅ |
+| repository updatableFields 含 `'room_id'` | ✅ |
+
+#### Section 8: Rooms API 边界条件（S8-01 ~ S8-14，14 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| 不存在 room → 404 + NOT_FOUND | ✅ |
+| 非法 ID("abc") → 400 + INVALID_ID | ✅ |
+| 嵌套 collection 字段均为 camelCase（dateAcquired/imageUrl/createdAt/roomId/userId/categoryTemplate/customFields/visibility） | ✅ |
+| 嵌套 collection tags 为数组（非 JSON 字符串） | ✅ |
+| 嵌套 collection 无 snake_case 字段泄漏 | ✅ |
+
+#### Section 9: 已有 API 回归（S9-01 ~ S9-14，14 项）
+
+| 端点/功能 | 结果 |
+|-----------|------|
+| GET /api/health → 200 | ✅ |
+| GET /api/categories → 200 (8 条) | ✅ |
+| GET /api/users/1/stats → 200 | ✅ |
+| POST /api/collections → 201 | ✅ |
+| GET /api/collections/:id → 200 | ✅ |
+| PUT /api/collections/:id → 200 | ✅ |
+| DELETE /api/collections/:id → 200 | ✅ |
+| 列表分页 (pageSize=5) | ✅ |
+| 搜索 (keyword=Beatles) | ✅ |
+| 排序 (sort=date_asc) | ✅ |
+| GET /api/categories/mineral | ✅ |
+
+#### Section 10: 数据完整性检查（S10-01 ~ S10-04，4 项）
+
+| 检查项 | 结果 |
+|--------|------|
+| 全部 30 条 collection roomId 均非空 | ✅ |
+| May room month 精确等于 "2024-05" | ✅ |
+| May room label = "2024年5月" | ✅ |
+| 无 May 日期藏品存在于 May room 之外 | ✅（经遍历全部 13 个 room 验证） |
+
+---
+
+### 总验收结论
+
+| 验收项 | 状态 |
+|--------|------|
+| Schema：rooms 表创建 + collections.room_id FK | ✅ |
+| Seed：13 rooms + 30 collections（15 原 + 15 新 May） | ✅ |
+| May 2024 room = 16 件，四类展品各 4 件 | ✅ |
+| May 全部 16 件日期均为 2024-05-\* | ✅ |
+| 全库 0 条 room 与月份不匹配 | ✅ |
+| Collections API 全面支持 roomId（createSchema/updateSchema/FIELD_MAP/repository） | ✅ |
+| Rooms API 完整可用（list + detail 嵌套 collections） | ✅ |
+| Rooms API 错误处理（404 + 400） | ✅ |
+| 嵌套 collections 全部 camelCase + tags 数组 | ✅ |
+| 已有 API 零回归（health/categories/users/collections CRUD/search/sort） | ✅ |
+
+**数据库 Rooms 重构修改测试：97/97 测试通过，0 失败。成员 A / 成员 1 的修改已按要求完成：**
+- 每个 room 代表一个月份，collections 通过 room_id 外键归属 room
+- 每个月份的 room 里只放对应月份的 items（全局 0 条不匹配）
+- 主页四类展品（矿石/水晶/黑胶/明信片）在五月 room 中各 4 件，共 16 件
+- 五月 room 全部 item 日期改为 5 月（2024-05-\*）
+- May room 标签 = "2024年5月"
+
+---
+
+### 阶段一至五 + Rooms 重构全任务测试总览（更新）
+
+| 阶段 | 任务 | 通过率 | 测试日期 |
+|------|------|--------|----------|
+| 阶段一 | 任务二：设计 collections 表 | 13/13 | 2026-05-15 |
+| 阶段一 | 任务三：预留 users/categories 表 | 18/18 | 2026-05-15 |
+| 阶段一 | 任务四：数据库连接模块 | 13/13 | 2026-05-15 |
+| 阶段二 | 任务一：收藏创建 API | 26/26 | 2026-05-15 |
+| 阶段二 | 任务二：收藏列表 API | 18/18 | 2026-05-15 |
+| 阶段二 | 任务三：收藏详情 API | 20/20 | 2026-05-15 |
+| 阶段三 | 任务一：收藏更新 API | 17/17 | 2026-05-15 |
+| 阶段三 | 任务二：图片上传 API | 14/14 | 2026-05-15 |
+| 阶段三 | 任务三：标签筛选 | 22/22 | 2026-05-15 |
+| 阶段四 | 任务一：扩展 collections 表 | 11/11 | 2026-05-15 |
+| 阶段四 | 任务二：categories 接口 | 19/19 | 2026-05-15 |
+| 阶段四 | 任务三：用户主页统计 | 17/17 | 2026-05-15 |
+| 阶段四 | 任务四：ai_usage_logs 表 | 12/12 | 2026-05-15 |
+| 阶段五 | 任务一：API Contract 冻结 | 24/24 | 2026-05-15 |
+| 阶段五 | 任务二：配合成员 2 联调 | 39/39 | 2026-05-15 |
+| 阶段五 | 任务三：配合成员 3 联调 | 30/30 | 2026-05-16 |
+| 阶段五 | 任务四：配合成员 5 AI 联调 | 67/67 | 2026-05-16 |
+| 阶段五 | 任务五：后端交付说明 | 55/55 | 2026-05-16 |
+| 🔧 修改 | 数据库 Rooms 重构 | 97/97 | 2026-05-16 |
+| **总计** | **19 个任务** | **532/532** | |
+
+> **成员 A / 成员 1 的全部 19 个任务（阶段一至五 + Rooms 重构修改）合计 532 项测试全部通过，0 失败。**

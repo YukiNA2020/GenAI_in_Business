@@ -20,6 +20,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/collections', require('./routes/collections.routes'));
 app.use('/api/categories', require('./routes/categories.routes'));
 app.use('/api/users', require('./routes/users.routes'));
+app.use('/api/rooms', require('./routes/rooms.routes'));
 
 // 404 handler
 app.use((_req, res) => {

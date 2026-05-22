@@ -40,6 +40,7 @@ const createSchema = z.object({
   visibility: z.string().optional(),
   categoryTemplate: z.string().optional(),
   customFields: z.string().optional(),
+  roomId: z.number().int().optional(),
 });
 
 const updateSchema = z.object({
@@ -54,6 +55,7 @@ const updateSchema = z.object({
   visibility: z.string().optional().nullable(),
   categoryTemplate: z.string().optional().nullable(),
   customFields: z.string().optional().nullable(),
+  roomId: z.number().int().optional().nullable(),
 });
 
 router.post('/', validate(createSchema), controller.createCollection);
