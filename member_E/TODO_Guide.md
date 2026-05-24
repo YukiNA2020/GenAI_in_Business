@@ -15,7 +15,7 @@
 | 当前本地分支 | `feature/ai-profile-test` |
 | 当前本地分支来源 | 协作分支；成员 E 主要实现和本轮测试文档均同步到此分支 |
 | 当前远端跟踪 | `origin/feature/ai-profile-test` |
-| 参考远端分支 | `origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/Member-C` |
+| 参考远端分支 | `origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/20260522-version` |
 | `origin/feature/ai-profile-test` 状态 | 已包含成员 E 阶段二到阶段五的大量代码和文档；本轮 DeepSeek 测试文档也同步到该分支 |
 | `origin/feature/member-1-task` 状态 | 最新提交包含房间 API / rooms 数据结构更新，但尚未合入当前 `feature/ai-profile-test` |
 | 成员 E 当前工作建议 | 小范围文档和测试结果可同步到 `feature/ai-profile-test`；大范围实验再单独开分支 |
@@ -57,7 +57,7 @@
 
 | 事项 | 原因 |
 |---|---|
-| 继续在 `feature/ai-profile-test` 上提交成员 E 新内容 | 该分支不是成员 E 后续独立工作分支 |
+| 在 `feature/ai-profile-test` 上直接做大范围成员 E 功能重构 | 该分支是协作分支；小范围文档/测试同步可以继续，大范围功能实验应单独开分支 |
 | 直接把成员 E 内容推到 `main` | 应通过成员分支和 Pull Request / 团队合并流程进入主分支 |
 | 在未重新拉取远端状态时修改技术路线 | 团队成员可能继续更新分支，过期路线会导致合并冲突或重复开发 |
 
@@ -71,7 +71,7 @@
 
 1. 执行 `git status --short --branch`，确认当前是否在 `feature/ai-profile-test` 或用户指定的隔离分支。
 2. 执行 `git fetch --all --prune`，获取所有远端分支最新状态。
-3. 查看 `origin/main`、`origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/Member-C` 是否有新提交。
+3. 查看 `origin/main`、`origin/feature/ai-profile-test`、`origin/feature/member-1-task`、`origin/20260522-version` 是否有新提交。
 4. 如果当前在 `main` 或无关成员分支，先提醒用户，不要直接继续写成员 E 内容。
 
 ### 步骤 2：读取核心状态文档
@@ -163,12 +163,12 @@
 | 任务编号 | 任务名称 | 前置依赖 | 当前状态 |
 |---|---|---|---|
 | E4-1 | 设计图片识别 Prompt | 无 | ✅ 已完成 |
-| E4-2 | 实现图片识别接口方案 | 图片上传/存储链路 | ✅ 已完成当前文本推断方案；真实 Vision 另评估 |
+| E4-2 | 实现图片识别接口方案 | 图片上传/存储链路 | ✅ 已升级为 GLM Vision 主路径；保留文本 fallback |
 | E4-3 | 设计多风格故事 Prompt | 无 | ✅ 已完成 |
 | E4-4 | 扩展故事生成接口 | 阶段二 AI 接口 | ✅ 已完成开发；🟡 待独立测试 |
 | E4-5 | 与成员 B 联调图片识别填表 | 成员 B 创建表单 | ✅ 已完成当前分支接入；🟡 待成员 B 最终页面确认 |
 
-**阶段四当前判断**：Prompt、接口方案和页面联动已完成，DeepSeek 文本推断已通过。下一步重点是成员 B 页面最终合并后的回归；若产品必须“AI 真正看图”，再接 Vision API。
+**阶段四当前判断**：Prompt、接口方案和页面联动已完成，DeepSeek 文本 fallback 和 GLM Vision 真实图片理解均已通过测试。下一步重点是成员 B 页面最终合并后的回归，以及 Flutter 正式表单手测。
 
 ### 阶段五：V2.3 测试用例、Bug 跟踪和 Demo 校验
 

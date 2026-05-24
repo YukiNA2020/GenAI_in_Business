@@ -1048,7 +1048,8 @@
 | **成员 E 阶段二·任务 5 测试报告** | **2026-05-21** | AI 面板 + `ai_suggestion_service` + Add 页挂钩 | **⚠️ 有条件通过 (18/20)** | 代码审查通过；标签未写入表单；Flutter 手测未执行 |
 | **成员 E 阶段四·任务 1–5 测试报告** | **2026-05-21** | `analyze-image` + 四风格 `generate-story` + Add Recognize | **✅ 通过 (15/15 脚本 + 12/12 静态)** | HTTP 需最新 backend；UI 手测 2 项未执行 |
 | **成员 E 阶段五·任务 1–5 测试报告** | **2026-05-21** | 测试计划 / 用例 / Bug 表 / Demo e2e / 成员 6 交接 | **✅ 通过 (API 22/22 + 用例 15/15)** | 测试 AI 独立复测：`verify_phase5_demo_e2e.js` 11/11×2（id=28/30）；UI Checklist 2 项待演示勾选 |
-| **成员 E DeepSeek 真实 LLM 测试报告** | **2026-05-22** | DeepSeek service live、HTTP live、阶段 1/2/4/5 回归、Flutter 单测 | **✅ 通过 (DeepSeek 10/10 + 回归 66/66 + Flutter 1/1)** | 模型 `deepseek-v4-flash`；`analyze-image` 是文本描述推断，不是真实 Vision |
+| **成员 E DeepSeek 真实 LLM 测试报告** | **2026-05-22** | DeepSeek service live、HTTP live、阶段 1/2/4/5 回归、Flutter 单测 | **✅ 通过 (DeepSeek 10/10 + 回归 66/66 + Flutter 1/1)** | 模型 `deepseek-v4-flash`；文字生成链路可用 |
+| **成员 E GLM Vision 接入测试报告** | **2026-05-24** | GLM 图片理解 live、`analyze-image` 真实图片路径、DeepSeek fallback、成员 E 回归、Flutter 单测 | **✅ 通过 (GLM live + HTTP 40/40 + Flutter 1/1)** | `glm-4v-flash` 已选为默认 Vision 模型 |
 
 ### 成员 E DeepSeek 真实 LLM 测试报告详情
 
@@ -1069,7 +1070,7 @@
 | Flutter 单测 | `flutter test` | ✅ 1/1 |
 
 - **测试结论**：DeepSeek 真实 API 已可用，现有 provider 无需重写；标题、分类、标签、故事、`analyze-image` 都能返回可解析 JSON。
-- **边界说明**：`analyze-image` 当前输入是 `imageDescription` 或 `imageUrl` 文本，模型并没有接收真实图片二进制/多模态消息，因此它不是完整 Vision 能力。
+- **边界说明**：该报告发生在 GLM Vision 接入前；2026-05-24 起，`analyze-image` 的真实图片路径由 GLM Vision provider 接管，并继续保留 `imageDescription` 文本 fallback。
 - **安全说明**：`backend/.gitignore` 已保护 `backend/.env`；提交时不要加入真实 key，也不要提交本轮 E2E 改动后的 `backend/data/collections.db`。
 
 ### 成员 E 阶段五·任务 1–5 测试报告详情
@@ -2337,7 +2338,7 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 | BUG-ME-002 | Add / AI 面板 | AI 标签仅 SnackBar + 行内文案，未写入正式 Tag 多选 | Recognize 或 Tags 成功 | 低 | 成员 B | 待成员 B | 成员 E 预交付范围；正式表单接 `TagInputField` |
 | BUG-ME-003 | AI HTTP | 旧 backend 进程无 `/analyze-image` → 404 | 未重启即调 analyze-image | 中 | 成员 E | 已规避 | 重启 backend；真实 DeepSeek 测试需从 `backend/` 目录读 `.env` |
 | BUG-ME-004 | Profile UI | 展示名硬编码「Group I」（`UserProfile.demo()`），非后端用户资料 | 打开 Profile Tab | 低 | 成员 E | 待联调 | 无 `GET /api/users/:id` 资料接口；`Member6_Demo_Handoff.md` 仍写「Tong」为文档滞后 |
-| BUG-ME-005 | AI Vision | 无真实 Vision，仅 `imageDescription` / `imageUrl` 文本描述 + LLM 推断 | Upload 后 Recognize | 低 | 成员 E | 已知限制 | DeepSeek 文本 API 已可用；若要真实看图需另接 Vision API |
+| BUG-ME-005 | AI Vision | 旧限制：无真实 Vision，仅 `imageDescription` / `imageUrl` 文本描述 + LLM 推断 | Upload 后 Recognize | 低 | 成员 E | 已关闭 | 2026-05-24 已切到 GLM Vision 主路径；GLM live、HTTP 回归和 Flutter 单测均通过 |
 
 ---
 
@@ -2613,4 +2614,6 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段五·任务 1–5**：测试计划七模块、核心用例 TC-ME-P5-01～15、Bug 表 BUG-ME-001～005、Demo API `verify_phase5_demo_e2e.js` **11/11 连续 2 轮**、成员 6 材料 `Member6_Demo_Handoff.md`。结论：**✅ 通过**（Flutter Demo Checklist 2 项留演示前勾选）。
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：**阶段五·任务 1–5 独立复测**：交付物齐全；`verify_phase5_demo_e2e.js` 再跑 2 轮 **11/11**（collection id=28、30）；BUG-ME-004 更正为硬编码「Group I」。结论维持 **✅ 通过**。
 - **2026-05-21**（成员 E / 成员 5，测试 AI）：完成**阶段四·任务 1–5**（脚本 15/15，TC-ME-P4T1～P4T5）。结论：**✅ 通过**；`analyze-image` 与四风格 story 可用（mock）；Add 页 Recognize 填表代码就绪；测试 backend 须为最新代码以免 404。
-- **2026-05-22**（成员 E / 成员 5，Codex）：完成 **DeepSeek 真实 LLM 接入测试**。`verify_deepseek_provider_live.js` **5/5**，HTTP live **5/5**（含 `analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：`deepseek-v4-flash` 可用；当前仍无真实 Vision，`analyze-image` 是文本描述推断。
+- **2026-05-22**（成员 E / 成员 5，Codex）：完成 **DeepSeek 真实 LLM 接入测试**。`verify_deepseek_provider_live.js` **5/5**，HTTP live **5/5**（含 `analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：`deepseek-v4-flash` 可用；当时 `analyze-image` 仍是文本描述推断。
+- **2026-05-24**（成员 E / 成员 5，Codex）：根据真实图片 live test，正式把真实图片理解路线切到 **GLM Vision `glm-4v-flash`**。`glm-4.6v-flash` 实测返回 429；`glm-4v-flash` 可识别同一张本地 PNG。
+- **2026-05-24**（成员 E / 成员 5，Codex）：完成 **GLM Vision 正式接入回归**。`verify_glm_vision_live.js` **通过**，HTTP `analyze-image + imageDataUrl` **200 success**，HTTP `analyze-image + imageDescription` fallback **200 success**，阶段二 HTTP **14/14**，阶段四 **15/15**，阶段五 Demo E2E **11/11**，`flutter test` **1/1**。

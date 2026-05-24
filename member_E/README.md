@@ -2,7 +2,7 @@
 
 本文件夹是成员 E / 成员 5 的独立工作区，用于存放 AI 功能、用户主页、测试支持相关的任务文档和阶段交付物。
 
-当前 `memberE` 分支已包含成员 E 阶段一至阶段五的大部分实现：AI Prompt / Contract、AI Provider 与 HTTP 接口、AI 面板预交付、Profile、图片识别、多风格故事、测试和 Demo handoff。后续重点不是从零开发，而是接管确认、复测、适配成员 A rooms API、等待成员 B 正式表单联调。
+当前协作分支 `feature/ai-profile-test` 已包含成员 E 阶段一至阶段五的大部分实现：AI Prompt / Contract、AI Provider 与 HTTP 接口、AI 面板预交付、Profile、图片识别、多风格故事、测试和 Demo handoff。后续重点不是从零开发，而是接管确认、复测、适配成员 A rooms API、等待成员 B 正式表单联调。`memberE` 仅保留为历史本地分支或后续高风险实验的参考，不作为当前默认工作分支。
 
 ---
 
@@ -61,6 +61,7 @@ member_E/
 | `docs/DeepSeek_API_Integration_Test_Plan.md` | DeepSeek API 接入和真实 LLM 测试步骤 |
 | `TODO_Guide.md` | 快速判断下一步可做什么 |
 | `E_Status_Log.md` / `E_Prompt_Log.md` / `E_Test_Log.md` | 成员 E 局部状态、决策和测试记录 |
+| `../DOCUMENTATION_STATUS.md` | 全项目 Markdown 文档状态索引 |
 
 已删除过时的 `docs/E_Fresh_AI_Workflow.md`。后续不要再按旧的 E3-4 单任务模板启动开发。
 

@@ -59,7 +59,7 @@
 | `analyze-image` 404 | 重启 backend，确保加载最新 `/api/ai` 路由 |
 | AI 分类为中文名 | 写入 API 前用 `GET /api/categories` 映射 slug（Add 页已映射 Favorite tag） |
 | AI 标签未进正式 Tag 字段 | Demo 用 SnackBar + 行内 `AI tags:` 展示；成员 B 正式页接 `TagInputField` |
-| 无真实 Vision | Demo 用 Upload 写入 `imageDescription` 模拟 |
+| Vision API 临时不可用 | Demo 可退回 `imageDescription` 文本 fallback，用户仍能手动保存 |
 | Profile 用户名 Tong | 硬编码展示名；统计与 Recent 已接 API |
 
 ---

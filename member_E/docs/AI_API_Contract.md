@@ -226,13 +226,23 @@ HTTP 状态：`502`
 POST /api/ai/analyze-image
 ```
 
-请求（`imageDescription` 与 `imageUrl` 至少一项）：
+请求（`imageDataUrl`、`imageDescription` 与 `imageUrl` 至少一项）：
 
 ```json
 {
-  "imageDescription": "一张泛黄的展览票根，边缘略有磨损"
+  "imageDataUrl": "data:image/png;base64,...",
+  "imageDescription": "可选：一张泛黄的展览票根，边缘略有磨损",
+  "language": "zh-CN"
 }
 ```
+
+说明：
+
+| 字段 | 用途 |
+|---|---|
+| `imageDataUrl` | GLM Vision 主路径；前端本地选图后转成 data URL |
+| `imageUrl` | 公网 HTTP/HTTPS 图片 URL；不要传 `localhost` |
+| `imageDescription` | 用户补充说明；无真实图片或 GLM 失败时可继续走 DeepSeek 文本 fallback |
 
 成功响应：
 

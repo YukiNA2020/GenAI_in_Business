@@ -60,10 +60,10 @@ GenAI_in_Business/
 | 阶段二：文字 AI 接口 | 已完成并通过真实 DeepSeek 测试 | `suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`；Provider 支持 mock/OpenAI-compatible DeepSeek |
 | 阶段二：AI 面板联调 | 有 Demo 级接入 | `AiSuggestionPanel` 已挂 Add 页；正式创建页仍等成员 B 整合 |
 | 阶段三：Profile | 已有实现 | Profile、stats、Edit profile、login/register mock、成员 C 展示嵌入 |
-| 阶段四：图片识别 + 多风格故事 | 已有实现 | `analyze-image`、`style`、Recognize 填表；真实 Vision 尚未接入 |
+| 阶段四：图片识别 + 多风格故事 | 已有实现 | `analyze-image`、`style`、Recognize 填表；真实图片理解已切到 GLM Vision |
 | 阶段五：测试和 Demo | 已有文档和脚本 | `verify_phase5_demo_e2e.js`、`Phase5_Demo_Checklist.md`、`Member6_Demo_Handoff.md` |
 
-这些状态表示“当前分支已有可用实现”，不等于最终团队整合完成。DeepSeek 文字生成已通过真实 API 测试；下一步重点是接成员 A rooms API、接成员 B 正式表单、判断是否需要真实 Vision，以及最终 Demo 回归。
+这些状态表示“当前分支已有可用实现”，不等于最终团队整合完成。DeepSeek 文字生成已通过真实 API 测试，图片理解已切到 GLM Vision；下一步重点是接成员 A rooms API、接成员 B 正式表单，以及最终 Demo 回归。
 
 ---
 
@@ -176,7 +176,7 @@ frontend/lib/features/profile/pages/profile_page.dart
 1. `AiSuggestionPanel` 可触发标题、分类、标签、故事和图片识别。
 2. 标题 / 分类 / 故事可写入现有 Add 页字段。
 3. 标签目前不是正式多选字段，需要等成员 B 表单接入。
-4. 图片识别没有真实 Vision，Demo 用 `imageDescription` 模拟。
+4. 图片识别已接 GLM Vision 主路径；Demo 仍保留 `imageDescription` 文本 fallback，避免外部 API 临时不可用时阻塞手动保存。
 
 ### Rooms 适配
 

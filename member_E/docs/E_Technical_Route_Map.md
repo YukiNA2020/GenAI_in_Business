@@ -99,12 +99,12 @@
 
 ## 6. 阶段四：图片识别和多风格故事
 
-阶段四在远端最新分支中已有实现，并已通过 DeepSeek 文本推断测试。注意：当前 `analyze-image` 不是直接看图的 Vision API，而是基于 `imageDescription` / `imageUrl` 文本生成建议。
+阶段四在远端最新分支中已有实现，并已通过 DeepSeek 文本推断测试。2026-05-24 起，`analyze-image` 正式切到 GLM Vision 主路径：有 `imageDataUrl` / 公网 `imageUrl` 时真实看图；只有 `imageDescription` 时保留 DeepSeek 文本 fallback。
 
 | 任务 | 当前状态 | 推荐文件 / 动作 | 技术路线 | 验收口径 |
 |---|---|---|---|---|
 | E4-1 图片识别 Prompt | 远端已有实现，待成员 E 确认/独立测试 | `docs/prompts/prompt_image.md`、`ai.prompts.js` | 输入图片描述 / imageUrl / 用户补充描述；输出 title、category、tags、description | 输出结构固定，分类仍为中文集合 |
-| E4-2 图片识别接口方案 | 已完成当前文本推断方案 | `ai.schemas.js`、`ai.service.js`、`ai.routes.js`、`verify_phase4_tasks1_5_api.js` | 新增 `POST /api/ai/analyze-image`；无 Vision 时可用 mock / imageDescription，DeepSeek 文本推断已通过 | 无图片能力时仍可演示；AI 失败不影响用户手动填表 |
+| E4-2 图片识别接口方案 | 已升级为 GLM Vision 主路径 | `ai.schemas.js`、`ai.service.js`、`ai.routes.js`、`vision.provider.js`、`verify_glm_vision_live.js` | `POST /api/ai/analyze-image` 支持 `imageDataUrl`；GLM 失败时可用 `imageDescription` fallback | AI 失败不影响用户手动填表 |
 | E4-3 多风格故事 Prompt | 远端已有实现，待成员 E 确认/独立测试 | `docs/prompts/prompt_story_styles.md`、`ai.prompts.js` | 支持 `concise`、`scrapbook`、`travel`、`vintage` 四种 style | 每种 style 有明确语气说明和 JSON 输出样例 |
 | E4-4 扩展故事生成接口 | 远端已有实现，待成员 E 确认/独立测试 | `buildStoryPrompt()`、`generateStory()`、`validateStoryResponse()` | 沿用 `POST /api/ai/generate-story`，新增可选 `style` 参数；不新增重复故事接口 | 不传 style 保持旧行为；传 style 后输出符合风格 |
 | E4-5 图片识别填表联调 | 远端已有接入，待成员 E / 成员 B 确认 | `AiSuggestionPanel`、`ai_image_analysis.dart`、Add 页 Recognize | 用户上传 / 模拟图片描述后点击 Recognize，建议写入标题/分类/标签/描述 | 能从 Add 页触发，失败时只提示，不阻塞保存 |
@@ -112,7 +112,7 @@
 阶段四重要边界：
 
 1. 图片上传、图片保存、collections 图片字段主要是成员 A / B 范围，成员 E 只消费图片 URL / 描述做 AI 建议。
-2. 当前已接入 DeepSeek 文本 LLM；如果产品要求真正识别上传图片，再评估 Vision API。
+2. 当前已接入 DeepSeek 文本 LLM 与 GLM Vision；最终 Demo 前仍需做 HTTP live 与 Flutter 手测。
 3. 新增接口必须同步 `AI_Routes_Integration.md` 或新增阶段四接口说明文档。
 
 ---
@@ -138,7 +138,7 @@
 | 阶段一 | 已明确 | 已有 Prompt 文档、Contract、JS builder、schema、自检 |
 | 阶段二 | 已明确并通过真实 API 测试 | 已有 Provider、service、routes、根目录挂载、联调说明、自检；DeepSeek service/HTTP live 已通过 |
 | 阶段三 | 已明确，远端已有实现 | 当前实现位于 `frontend/lib/features/profile/`，并通过 Profile Tab 接入；待成员 E 确认 |
-| 阶段四 | 已明确并通过文本 LLM 测试 | 图片描述文本推断、多风格故事和 Add 页联调已实现；真实 Vision 是否接入另评估 |
+| 阶段四 | 已明确并切到 GLM Vision | 图片描述 fallback、多风格故事和 Add 页联调已实现；真实图片理解由 GLM provider 负责 |
 | 阶段五 | 已明确，远端已有文档/脚本 | 测试计划、Bug 表、Demo e2e 和成员 6 handoff 已出现；待成员 E 确认 |
 
 如果新的 AI 发现实际代码与本文件冲突，应先停止并说明冲突，不要自行选择一条路线硬写。

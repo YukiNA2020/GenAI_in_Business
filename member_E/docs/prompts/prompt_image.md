@@ -2,13 +2,13 @@
 
 负责人：成员 E / 成员 5  
 阶段：阶段四 - 任务 1  
-用途：根据图片（或图片描述）识别收藏品类型，输出标题、分类、标签与描述建议。
+用途：根据 GLM Vision 看到的图片（或 fallback 图片描述）识别收藏品类型，输出标题、分类、标签与描述建议。
 
 ---
 
 ## 1. 目标
 
-根据用户上传的收藏品图片（V2.3 Demo 可用 `imageDescription` 模拟 Vision 输入），生成可填入创建表单的结构化建议。
+根据用户上传的收藏品图片生成可填入创建表单的结构化建议。当前主路径是前端传 `imageDataUrl` 给后端，由 GLM Vision 真实看图；没有真实图片时仍可用 `imageDescription` 作为文本 fallback。
 
 要求：
 
@@ -24,6 +24,7 @@
 
 ```json
 {
+  "imageDataUrl": "data:image/png;base64,...",
   "imageDescription": "一张泛黄的展览票根，边缘略有磨损",
   "imageUrl": "/uploads/collections/collection-12-1715600000.jpg",
   "language": "zh-CN"
@@ -32,8 +33,9 @@
 
 | 字段 | 类型 | 是否必填 | 说明 |
 |---|---|---|---|
-| `imageDescription` | string | 二选一 | 图片内容描述；无 Vision 时由前端在上传后写入 |
-| `imageUrl` | string | 二选一 | 已上传图片 URL，供后续 Vision 接入 |
+| `imageDataUrl` | string | 三选一 | GLM Vision 主路径；本地选图后由前端转成 data URL |
+| `imageDescription` | string | 三选一 / 可选补充 | 图片内容描述；可作为 Vision 补充，也可在无图片时 fallback |
+| `imageUrl` | string | 三选一 | 公网 HTTP/HTTPS 图片 URL |
 | `language` | string | 否 | 默认 `zh-CN` |
 
 ---
@@ -54,6 +56,7 @@
 固定类别：["矿石","水晶","黑胶唱片","明信片","票根","旅行纪念品","其他"]
 
 图片信息：
+- 图片 data URL：{{imageDataUrl}}
 - 图片描述：{{imageDescription}}
 - 图片地址：{{imageUrl}}
 
@@ -81,4 +84,9 @@
 
 ## 6. 自检
 
-运行：`node member_E/scripts/verify_phase4_tasks1_5_api.js`（含 analyze-image mock 校验）
+运行：
+
+```bash
+node member_E/scripts/verify_phase4_tasks1_5_api.js
+node member_E/scripts/verify_glm_vision_live.js frontend/assets/screens/add_exhibit.png
+```

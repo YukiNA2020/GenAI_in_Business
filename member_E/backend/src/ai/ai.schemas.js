@@ -39,7 +39,9 @@ function hasImageAnalysisInput(payload) {
   const desc =
     typeof payload.imageDescription === 'string' && payload.imageDescription.trim().length > 0;
   const url = typeof payload.imageUrl === 'string' && payload.imageUrl.trim().length > 0;
-  return desc || url;
+  const dataUrl =
+    typeof payload.imageDataUrl === 'string' && payload.imageDataUrl.trim().length > 0;
+  return desc || url || dataUrl;
 }
 
 function normalizeStoryStyle(style) {

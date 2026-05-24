@@ -46,17 +46,28 @@ function createAiRouter({ Router, z, response }) {
     .object({
       imageDescription: z.string().optional(),
       imageUrl: z.string().optional(),
+      imageDataUrl: z.string().optional(),
       language: z.string().optional(),
     })
     .superRefine((body, ctx) => {
       const hasDesc =
         typeof body.imageDescription === 'string' && body.imageDescription.trim().length > 0;
       const hasUrl = typeof body.imageUrl === 'string' && body.imageUrl.trim().length > 0;
-      if (!hasDesc && !hasUrl) {
+      const hasDataUrl =
+        typeof body.imageDataUrl === 'string' && body.imageDataUrl.trim().length > 0;
+      if (!hasDesc && !hasUrl && !hasDataUrl) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'imageDescription or imageUrl is required',
+          message: 'imageDescription, imageUrl or imageDataUrl is required',
           path: ['imageDescription'],
+        });
+      }
+      // Validate imageDataUrl format before the provider checks MIME and size.
+      if (hasDataUrl && !body.imageDataUrl.startsWith('data:image/')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'imageDataUrl must be a data URL (data:image/...)',
+          path: ['imageDataUrl'],
         });
       }
     });

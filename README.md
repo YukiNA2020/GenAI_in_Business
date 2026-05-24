@@ -14,7 +14,8 @@
 
 1. 实际开发以 `Final_Team_Work_Division.md`、根目录成员任务文档和各成员文件夹中的任务文档为准。
 2. `Project_intro.md` 仍然是产品方向和产品价值的核心指导文件。
-3. `past_doc/` 里的五份 `Product_v*_detail_plan.md` 暂时不用来直接安排实际任务开发，仅作为项目立项时的一种参考方案。
+3. `DOCUMENTATION_STATUS.md` 是当前文档索引，用来判断哪些文档是当前依据、哪些是完成记录、哪些只是历史参考。
+4. `past_doc/` 里的五份 `Product_v*_detail_plan.md` 暂时不用来直接安排实际任务开发，仅作为项目立项时的一种参考方案。
 
 ---
 
@@ -25,19 +26,22 @@
 1. `README.md`  
    了解团队协作方式、GitHub 流程、文档规则和当前真实执行口径。
 
-2. `Project_intro.md`  
+2. `DOCUMENTATION_STATUS.md`
+   先确认每份 Markdown 文档的当前状态，避免把历史计划、完成报告或旧分支记录当成新任务。
+
+3. `Project_intro.md`
    了解产品定位、目标用户、MVP 价值和长期路线。
 
-3. `Status.md`  
+4. `Status.md`
    了解项目当前状态、文件结构、待办事项和最近进展。
 
-4. `Prompt_library.md`  
-   了解过去和用户/AI 的关键对话记录、重要决策和规则变化。
+5. `Test.md`
+   了解哪些功能已经测试通过、哪些仍是有条件通过或待回归。
 
-5. `Final_Team_Work_Division.md`  
+6. `Final_Team_Work_Division.md`
    了解六人总分工、每个模块边界、协作原则和最终验收标准。
 
-6. 自己负责的成员文档：
+7. 自己负责的成员文档：
 
 | 成员标识 | 对应文件 | 主要职责 |
 |---|---|---|
@@ -48,10 +52,10 @@
 | 成员 E / 成员 5 | `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` | AI 功能、用户主页、测试和 Bug 跟踪 |
 | 成员 6 | `Final_Team_Work_Division.md` 中成员 6 部分 | PPT、报告、视频、Demo 展示材料 |
 
-7. `Test.md`  
-   开发完成或联调时记录测试结果、Bug 和验证情况。
+8. `Prompt_library.md`
+   了解过去和用户/AI 的关键对话记录、重要决策和规则变化。它是历史记录，不是当前任务清单。
 
-8. `past_doc/`  
+9. `past_doc/`
    仅在需要理解早期产品设想时阅读。暂时不用这些文档进行实际任务开发，仅为项目立项时的一种参考方案。
 
 ---
@@ -286,6 +290,7 @@ git push -u origin memberE
 1. `Status.md`：记录当前进展、文件变化、待办事项和重要问题。
 2. `Prompt_library.md`：记录用户要求、AI 行动和重要决策。
 3. `Test.md`：如果执行了测试、发现 Bug 或修复 Bug，需要记录测试结果。
+4. `DOCUMENTATION_STATUS.md`：如果新增、移动、删除或重新定位 Markdown 文档，需要更新文档索引。
 
 更新这些状态文档时，必须写明操作者身份：
 
@@ -327,7 +332,8 @@ git push -u origin memberE
 如果出现文档冲突，以优先级判断：
 
 1. `Project_intro.md` 决定产品方向。
-2. `Final_Team_Work_Division.md` 决定团队分工。
-3. `Member_*.md` 决定个人任务执行。
-4. `Status.md` 决定当前状态。
-5. `past_doc/` 只作为参考。
+2. `DOCUMENTATION_STATUS.md` 决定文档该如何阅读和是否仍是当前依据。
+3. `Final_Team_Work_Division.md` 决定团队分工。
+4. `Member_*.md` 决定个人任务执行。
+5. `Status.md` 和 `Test.md` 决定当前完成与验证状态。
+6. `past_doc/` 只作为参考。

@@ -14,7 +14,7 @@
 | POST | `/api/ai/generate-story` | 故事草稿（可选 `style`） |
 | POST | `/api/ai/analyze-image` | 图片识别建议（阶段四） |
 
-请求体字段见 `AI_API_Contract.md` §2、§7；文字类接口 **`description` 必填**；图片识别需 **`imageDescription` 或 `imageUrl`**。
+请求体字段见 `AI_API_Contract.md` §2、§7；文字类接口 **`description` 必填**；图片识别需 **`imageDataUrl`、`imageDescription` 或 `imageUrl`**。有 `imageDataUrl` / 公网 `imageUrl` 时会优先走 GLM Vision；只有 `imageDescription` 时走 DeepSeek/mock 文本 fallback。
 
 ---
 
@@ -51,7 +51,15 @@ curl -s -X POST http://localhost:3000/api/ai/suggest-title \
 curl -s -X POST http://localhost:3000/api/ai/analyze-image \
   -H "Content-Type: application/json" \
   -d '{"imageDescription":"一张泛黄的展览票根"}'
+```
 
+真实图片理解 live 测试可使用本地图片转 data URL：
+
+```bash
+node member_E/scripts/verify_glm_vision_live.js frontend/assets/screens/add_exhibit.png
+```
+
+```bash
 curl -s -X POST http://localhost:3000/api/ai/generate-story \
   -H "Content-Type: application/json" \
   -d '{"description":"在小书店买的蓝色明信片","style":"travel"}'

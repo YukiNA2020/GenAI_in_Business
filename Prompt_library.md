@@ -20,6 +20,42 @@
 
 # Prompt 记录库
 
+## 2026-05-22 对话记录 37
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助更新
+- **用户要求**：根据当前最重要任务，写一份具体实施路径；要求暂时不要先完全整合所有分支，因为 `feature/member-1-task` 可能无法直接合并；可以先整合部分有效内容，列出未完成内容，最后再完全合并。同时图片理解是最主要任务之一，后续已确定为 GLM Vision 路线。
+- **AI 行动**：
+  - 新增 `INTEGRATION_IMPLEMENTATION_PATH.md`，用中文写清分阶段整合路线。
+  - 明确当前基线建议使用 `feature/ai-profile-test`，先开准备分支，不第一步完整 merge `feature/member-1-task`。
+  - 将路线拆为：文档/基线冻结、局部吸收 `20260522-version`、局部迁移成员 A rooms API、前端接入真实 `/api/rooms`、成员 B 正式 Create flow 整合、GLM 图片理解、更新冻结新版 API Contract、完整回归、最终完全整合。
+  - 同步更新 `DOCUMENTATION_STATUS.md` 和 `Status.md`，把新路线文档加入当前文档入口和项目文件表。
+- **重要内容**：`feature/member-1-task` 当前更适合作为 rooms API 的局部来源分支，不能直接全合并；最终整合必须放在 rooms、正式表单、GLM 图片理解、API Contract 和回归都稳定之后。
+
+## 2026-05-22 对话记录 36
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助更新
+- **用户要求**：将新增的 `DOCUMENTATION_STATUS.md` 改成中文，避免英文文档阅读过慢。
+- **AI 行动**：
+  - 将 `DOCUMENTATION_STATUS.md` 从英文整体改写为中文。
+  - 保留原有分类逻辑：当前权威、活跃任务说明、活跃模块说明、完成记录、历史参考、已替代或过时、低优先级内部文件。
+  - 同步更新 `Status.md` 的最近更新说明。
+- **重要内容**：文档索引现在与项目主文档语言一致，后续做任务前可以直接按中文索引判断文档用途和新旧状态。
+
+## 2026-05-22 对话记录 35
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助更新
+- **用户要求**：在继续做具体功能任务前，先整理整个项目中的 Markdown 文档状态，区分当前依据、历史计划、已完成但保留的任务文档、测试记录和交接文档，避免后续误把旧计划当作新任务。
+- **AI 行动**：
+  - 盘点根目录、`frontend/`、`member_B/`、`member_E/`、`design-export/` 和 `past_doc/` 下的项目 Markdown 文档，排除 `backend/node_modules/` 第三方 README。
+  - 新增 `DOCUMENTATION_STATUS.md`，定义 `CURRENT_AUTHORITY`、`ACTIVE_TASK_SPEC`、`ACTIVE_MODULE_DOC`、`COMPLETED_RECORD`、`REFERENCE_ONLY`、`STALE_OR_REPLACED`、`LOW_PRIORITY_INTERNAL` 等文档状态，并逐类列出当前文档用途。
+  - 更新 `README.md` 的阅读顺序和状态同步规则，要求先读 `DOCUMENTATION_STATUS.md` 来判断文档新旧。
+  - 更新 `Status.md`，把 `DOCUMENTATION_STATUS.md` 加入项目结构和项目文件表。
+  - 修正 `member_E/README.md` 和 `member_E/TODO_Guide.md` 中过时或易误导的分支表述：当前协作基线是 `feature/ai-profile-test`；`origin/Member-C` 已删除，参考分支改为 `origin/20260522-version`。
+- **重要内容**：
+  - 不删除已完成的成员任务文档，因为它们仍是责任边界和验收标准；实际完成情况以 `Status.md` 和 `Test.md` 为准。
+  - `past_doc/` 下五份早期产品版本规划继续保留为历史参考，不作为当前任务依据。
+  - 根目录 `API_Contract.md` 当前仍缺 rooms API，待 `feature/member-1-task` 合并后需要更新。
+
 ## 2026-05-22 对话记录 34
 
 - **负责人**：成员 E / 成员 5，由 Codex 协助更新
@@ -31,7 +67,7 @@
   - 新增并保留 `backend/.gitignore`，用于保护 `backend/.env` 不被提交。
 - **重要内容**：
   - `deepseek-v4-flash` 真实调用通过：service live 5/5，HTTP live 5/5，阶段 1/2/4/5 回归 66/66，Flutter 单测 1/1。
-  - 当前不需要再加第二个文字生成大模型 API；真正仍缺的是 Vision/图片理解能力，因为 `analyze-image` 现在是“图片描述文本 + LLM 推断”，不是直接看图。
+  - 当前不需要再加第二个文字生成大模型 API；图片理解已选择 GLM Vision 路线。
   - 本轮 E2E 写入 `backend/data/collections.db` 的测试数据不应提交；真实 key 只留在本地 `backend/.env`。
 
 ## 2026-05-22 对话记录 33
@@ -97,7 +133,7 @@
   - 任务 5：扩展 `AiSuggestionPanel` 与 Add 页 Upload→Recognize 填表联调。
   - 自检 `verify_phase4_tasks1_5_api.js`（12/12 服务层）；更新 Status / E_Status_Log / AI_API_Contract。
 - **重要内容**：
-  - Demo 无 Vision 时用 `imageDescription` 模拟图片输入；后续可接真实 Vision。
+  - Demo 现在优先用 GLM Vision 真实识别图片；外部 API 临时不可用时仍可用 `imageDescription` fallback。
   - 多风格故事供成员 6 Demo 展示；默认 `concise`。
 
 ## 2026-05-21 对话记录 28

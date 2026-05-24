@@ -12,6 +12,8 @@
 >
 > 当前实际开发以 `Final_Team_Work_Division.md`、根目录成员任务文档和各成员文件夹中的任务文档为准；成员 E 的任务文档位于 `member_E/Member_5_AI_Profile_Test_Detail_Plan.md`。`past_doc/` 文件夹中的五份 `Product_v*_detail_plan.md` 暂时不用来进行实际任务开发，仅作为项目立项时的一种参考方案。
 >
+> 全项目 Markdown 文档状态请先看 `DOCUMENTATION_STATUS.md`。该文件用于区分当前依据、活跃任务说明、完成记录和历史参考，避免把早期计划或旧分支记录误当成新任务。
+>
 > 保持 Status.md 是最新状态，让未来的 AI 和开发者能快速了解项目当前情况。
 
 ---
@@ -19,7 +21,7 @@
 # Collection Journey App - 项目状态
 
 > 上次更新：2026-05-22
-> 最近更新负责人：成员 E / 成员 5，由该成员的 AI 工具协助更新（解决成员 E 文档冲突 + 删除过时工作流模板 + 新增当前状态与计划文档）
+> 最近更新负责人：成员 E / 成员 5，由 Codex 协助更新（新增统一整合实施路径）
 
 ---
 
@@ -28,6 +30,8 @@
 ```
 GENAI_Group/
 ├── README.md                    # 团队协作入口、GitHub 流程和 AI 工具使用说明
+├── DOCUMENTATION_STATUS.md       # 全项目 Markdown 文档索引和新旧状态说明
+├── INTEGRATION_IMPLEMENTATION_PATH.md # 分阶段整合实施路径（rooms / 正式表单 / API Contract / 回归）
 ├── Project_intro.md              # 产品介绍与开发路线（核心指导文件）
 ├── Status.md                     # 项目状态（本文档）
 ├── Prompt_library.md             # Prompt 记录库
@@ -97,6 +101,8 @@ GENAI_Group/
 | 文件 | 说明 | 状态 |
 |------|------|------|
 | `README.md` | 团队协作入口、GitHub 流程、AI 工具使用说明 | ✅ 完成 |
+| `DOCUMENTATION_STATUS.md` | 全项目 Markdown 文档索引，区分当前依据、活跃任务说明、完成记录和历史参考 | ✅ 完成（2026-05-22，文档整理入口） |
+| `INTEGRATION_IMPLEMENTATION_PATH.md` | 本轮统一整合前的分阶段实施路径，明确先局部迁移 rooms / 正式表单 / GLM 图片理解 / API Contract，最后再完全合并 | ✅ 完成（2026-05-24，成员 E，GLM 图片理解章节已更新） |
 | `Project_intro.md` | 产品介绍与开发路线规划 | ✅ 完成 |
 | `business-model-canvas+Grp_I.pdf` | 商业模式画布（原始资料） | ✅ 完成 |
 | `past_doc/Product_v1_detail_plan.md` | V1.0 早期技术规划，立项参考方案 | 🟡 参考，不直接用于实际开发 |
@@ -268,7 +274,7 @@ GENAI_Group/
 
 ### 成员 E 阶段四：V2.3 AI 图片识别和多风格故事
 - [x] 任务 1：设计图片识别 Prompt（成员 E，2026-05-21：`prompt_image.md`）
-- [x] 任务 2：实现 `POST /api/ai/analyze-image`（成员 E，2026-05-21；2026-05-22 DeepSeek 文本推断通过，真实 Vision 未接入）
+- [x] 任务 2：实现 `POST /api/ai/analyze-image`（成员 E，2026-05-21；2026-05-22 DeepSeek 文本推断通过；2026-05-24 切换为 GLM Vision 真实图片理解）
 - [x] 任务 3：设计多风格故事 Prompt（成员 E，2026-05-21：`prompt_story_styles.md`）
 - [x] 任务 4：扩展 `POST /api/ai/generate-story` + `style`（成员 E，2026-05-21）
 - [x] 任务 5：与成员 2 联调图片识别填表（成员 E，2026-05-21：Add 页 Upload→Recognize→自动填表；待独立测试）
@@ -352,6 +358,7 @@ GENAI_Group/
 - [x] 解决成员 E 文档合并冲突，删除过时的 `E_Fresh_AI_Workflow.md`，新增 `E_Current_Status_and_Plan.md`
 - [x] 完成成员 E 阶段一 AI Prompt 模板和 API Contract
 - [x] 由独立测试 AI 测试成员 E 阶段一交付物并更新 `Test.md`
+- [x] 写清统一整合实施路径：先局部迁移 `20260522-version` / rooms API / 正式 Create flow，再把完全整合作为最后一步
 - [x] 在核心状态同步文档中增加成员 A-E / 成员 6 身份标记规则
 - [x] 将 `past_doc/` 中旧版本规划标记为立项参考方案，不直接用于实际开发
 - [ ] 确定技术选型（前端框架、是否需要后端等）
@@ -365,7 +372,9 @@ GENAI_Group/
 
 ## 备注
 
-2026-05-22（成员 E / 成员 5，DeepSeek 真实 LLM 测试）：用户已在本地提供 DeepSeek API。使用 `deepseek-v4-flash` 完成真实调用验证：`verify_deepseek_provider_live.js` service live **5/5**，HTTP live **5/5**（`suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：文字生成大模型已可用，现有 provider 无需重写；`analyze-image` 当前仍是图片描述文本 + LLM 推断，不是真实 Vision。
+2026-05-22 / 2026-05-24（成员 E / 成员 5，统一整合实施路径）：新增并更新 `INTEGRATION_IMPLEMENTATION_PATH.md`，将后续最重要任务拆成分阶段路线：先从 `feature/ai-profile-test` 开准备分支，局部吸收 `20260522-version` 的有效前端内容；不要第一步完整合并 `feature/member-1-task`，而是手动迁移 rooms API、`roomId`、seed 和相关后端字段；随后改造 Flutter 模型、Gallery/Profile/Room/Add/Edit；再把成员 B AI 面板迁入正式 Create flow，确保 AI tags 写入正式 Tag input；图片理解正式采用 GLM Vision；最后更新冻结新版 `API_Contract.md` 并做完整回归。
+
+2026-05-22（成员 E / 成员 5，DeepSeek 真实 LLM 测试）：用户已在本地提供 DeepSeek API。使用 `deepseek-v4-flash` 完成真实调用验证：`verify_deepseek_provider_live.js` service live **5/5**，HTTP live **5/5**（`suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：文字生成大模型已可用，现有 provider 无需重写；`analyze-image` 的真实图片理解后续由 GLM Vision 独立 provider 接管。
 
 2026-05-22（成员 E / 成员 5，文档冲突整理）：根据当前线上仓库状态重新整理成员 E 文档。删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`，新增 `member_E/docs/E_Current_Status_and_Plan.md`，将成员 E 口径从“按昨晚旧任务文档继续逐项开发”改为“以当前已有实现为主，接管、复测、适配成员 A rooms API、等待成员 B 正式表单联调”。`memberE` 后续仅在高风险实验或大范围重构时再使用；当前协作文档和测试结果同步到 `feature/ai-profile-test`。
 

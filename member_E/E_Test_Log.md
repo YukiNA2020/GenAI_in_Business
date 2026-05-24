@@ -21,6 +21,34 @@
 | 阶段五：测试 / Bug / Demo | ✅ 已完成 | API e2e 11/11×2；Test.md 已更新 |
 | **本次独立测试** | ✅ **全部通过** | 2026-05-22，测试 AI 独立复测 |
 | **本次用户测试** | ✅ **通过** | 2026-05-22，用户体验测试（Add/Gallery/Profile 路径） |
+| **GLM Vision 接入测试** | ✅ **通过** | 2026-05-24，GLM live、HTTP 回归、Flutter 单测均通过 |
+
+---
+
+## GLM Vision 接入测试记录（2026-05-24）
+
+> 负责人：成员 E / 成员 5，由 Codex 协助执行与更新
+> 目标：把 `POST /api/ai/analyze-image` 切到 GLM Vision 真实图片理解，并保留 DeepSeek 文本 fallback。
+
+### 当前技术结论
+
+| 项 | 结果 |
+|---|---|
+| GLM `glm-4.6v-flash` | 接口可达，但实测返回 429“访问量过大” |
+| GLM `glm-4v-flash` | 实测可识别 `frontend/assets/screens/add_exhibit.png`，作为默认 Vision 模型 |
+| 当前代码路线 | `VISION_PROVIDER=glm` + `ZHIPU_VISION_MODEL=glm-4v-flash` |
+
+### 测试结果
+
+| 测试项 | 命令 / 范围 | 状态 |
+|---|---|---|
+| GLM service live | `node member_E/scripts/verify_glm_vision_live.js frontend/assets/screens/add_exhibit.png` | ✅ 通过；schema validation passed |
+| HTTP live | `/api/ai/analyze-image` + `imageDataUrl` | ✅ 200 success；返回合法 `AiImageAnalysis` |
+| Fallback | `/api/ai/analyze-image` + `imageDescription` only | ✅ 200 success；文本 fallback 正常 |
+| 阶段二 HTTP 回归 | `verify_phase2_tasks2_4_api.js` | ✅ 14/14 |
+| 阶段四回归 | `verify_phase4_tasks1_5_api.js` | ✅ 15/15 |
+| 阶段五 Demo E2E | `verify_phase5_demo_e2e.js` | ✅ 11/11，写入 collection id=34 |
+| Flutter | `flutter test` | ✅ 1/1 |
 
 ---
 

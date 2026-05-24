@@ -79,7 +79,34 @@ node member_E/scripts/verify_deepseek_provider_live.js
 | 阶段五 Demo E2E | ✅ 11/11 | 真实 DeepSeek 后端下写入 collection id=32 |
 | Flutter 单测 | ✅ 1/1 | `flutter test` |
 
-结论：当前 DeepSeek 配置可用，现有 provider 不需要额外改代码。`analyze-image` 目前仍是“图片描述文本 + LLM 推断”，不是直接上传图片给 Vision 模型。
+结论：当前 DeepSeek 配置可用，现有文字 provider 不需要额外改代码。`analyze-image` 的真实图片理解由独立的 GLM Vision provider 负责，见下方配置。
+
+### GLM Vision 配置示例
+
+GLM Vision 只用于 `POST /api/ai/analyze-image` 的真实图片理解；标题、分类、标签、故事生成仍走 DeepSeek 文字链路。不要提交真实 key。
+
+```env
+VISION_PROVIDER=glm
+ZHIPU_API_KEY=YOUR_ZHIPU_API_KEY_HERE
+ZHIPU_API_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+ZHIPU_VISION_MODEL=glm-4v-flash
+ZHIPU_VISION_TIMEOUT_MS=45000
+ZHIPU_VISION_MAX_IMAGE_BYTES=20971520
+```
+
+**2026-05-24 实测判断：**
+
+| 范围 | 结果 | 备注 |
+|---|---|---|
+| GLM `glm-4v-flash` imageDataUrl | ✅ 可用 | 同一张本地 PNG 截图可被正确识别 |
+| GLM `glm-4.6v-flash` | ⚠️ 暂不默认使用 | 实测返回 429“访问量过大” |
+| `verify_glm_vision_live.js` | ✅ 可执行 | 使用本地图片转 data URL，不打印 key / base64 |
+
+运行：
+
+```bash
+node member_E/scripts/verify_glm_vision_live.js frontend/assets/screens/add_exhibit.png
+```
 
 ### 模式说明
 
