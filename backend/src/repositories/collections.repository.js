@@ -7,7 +7,7 @@ async function insert(record) {
   const placeholders = [];
   const values = [];
 
-  const allFields = ['title', 'category', 'date_acquired', 'location', 'story', 'image_url', 'tags', 'user_id', 'visibility', 'category_template', 'custom_fields'];
+  const allFields = ['title', 'category', 'date_acquired', 'location', 'story', 'image_url', 'tags', 'user_id', 'visibility', 'category_template', 'custom_fields', 'room_id'];
   for (const f of allFields) {
     if (record[f] !== undefined) {
       fields.push(f);
@@ -131,7 +131,7 @@ async function update(id, changes) {
   const setClauses = [];
   const values = [];
 
-  const updatableFields = ['title', 'category', 'date_acquired', 'location', 'story', 'image_url', 'tags', 'user_id', 'visibility', 'category_template', 'custom_fields'];
+  const updatableFields = ['title', 'category', 'date_acquired', 'location', 'story', 'image_url', 'tags', 'user_id', 'visibility', 'category_template', 'custom_fields', 'room_id'];
   for (const f of updatableFields) {
     if (changes[f] !== undefined) {
       setClauses.push(`${f} = ?`);

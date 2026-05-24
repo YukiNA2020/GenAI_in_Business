@@ -261,6 +261,12 @@ const seedData = {
       tags: '["mineral","azurite","malachite","Congo","nature"]',
     },
   ],
+
+  rooms: [
+    { month: '2026-03', label: 'March Room' },
+    { month: '2026-04', label: 'April Room' },
+    { month: '2026-05', label: 'May Room' },
+  ],
 };
 
 async function seed() {
@@ -274,9 +280,10 @@ async function seed() {
   db.run('DELETE FROM collections');
   db.run('DELETE FROM categories');
   db.run('DELETE FROM users');
+  db.run('DELETE FROM rooms');
 
   // Reset AUTOINCREMENT counters
-  db.run("DELETE FROM sqlite_sequence WHERE name IN ('collections', 'users')");
+  db.run("DELETE FROM sqlite_sequence WHERE name IN ('collections', 'users', 'rooms')");
 
   // Insert default user
   const insertUser = db.prepare(
@@ -301,16 +308,33 @@ async function seed() {
   insertCategory.free();
   console.log(`  Inserted ${seedData.categories.length} categories`);
 
-  // Insert collections
+  // Insert rooms first to get their IDs
+  const insertRoom = db.prepare(
+    'INSERT INTO rooms (month, label) VALUES (?, ?)'
+  );
+  const roomMonthToId = {};
+  seedData.rooms.forEach((r) => {
+    insertRoom.run([r.month, r.label]);
+    const idResult = db.exec('SELECT last_insert_rowid()');
+    roomMonthToId[r.month] = idResult[0].values[0][0];
+  });
+  insertRoom.free();
+  console.log(`  Inserted ${seedData.rooms.length} rooms`);
+
+  // Insert collections with room assignment
   const insertCollection = db.prepare(
-    `INSERT INTO collections (title, category, date_acquired, location, story, image_url, tags, user_id, visibility)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO collections (title, category, date_acquired, location, story, image_url, tags, user_id, visibility, room_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   seedData.collections.forEach((c, i) => {
     const visibility = i % 3 === 0 ? 'public' : 'private';
+    // Extract YYYY-MM from date_acquired
+    const dateMatch = c.date_acquired.match(/^(\d{4}-\d{2})/);
+    const roomMonth = dateMatch ? dateMatch[1] : null;
+    const roomId = roomMonth ? (roomMonthToId[roomMonth] || null) : null;
     insertCollection.run([
       c.title, c.category, c.date_acquired, c.location,
-      c.story, c.image_url, c.tags, userId, visibility,
+      c.story, c.image_url, c.tags, userId, visibility, roomId,
     ]);
   });
   insertCollection.free();

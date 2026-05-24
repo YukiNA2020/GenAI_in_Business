@@ -55,3 +55,20 @@ CREATE TABLE IF NOT EXISTS ai_usage_logs (
   feature TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- ============================================================
+-- Rooms table: each room represents a calendar month
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  month TEXT NOT NULL UNIQUE,
+  label TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- ============================================================
+-- Phase 5+: collections → room association
+-- ============================================================
+
+ALTER TABLE collections ADD COLUMN room_id INTEGER REFERENCES rooms(id);
