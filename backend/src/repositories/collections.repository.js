@@ -54,7 +54,17 @@ const SORT_MAP = {
   date_asc: 'date_acquired ASC',
 };
 
-async function findAll({ page = 1, pageSize = 20, keyword, category, tag, sort, visibility } = {}) {
+async function findAll({
+  page = 1,
+  pageSize = 20,
+  keyword,
+  category,
+  tag,
+  sort,
+  visibility,
+  year,
+  month,
+} = {}) {
   const db = await getDb();
 
   const offset = (page - 1) * pageSize;
@@ -78,6 +88,18 @@ async function findAll({ page = 1, pageSize = 20, keyword, category, tag, sort, 
 
   if (visibility) {
     conditions.push(`visibility = '${escapeSql(visibility)}'`);
+  }
+
+  const yearNum = year != null && year !== '' ? parseInt(year, 10) : NaN;
+  const monthNum = month != null && month !== '' ? parseInt(month, 10) : NaN;
+  if (!Number.isNaN(yearNum) && !Number.isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+    const mm = String(monthNum).padStart(2, '0');
+    conditions.push(`date_acquired LIKE '${yearNum}-${mm}-%'`);
+  } else if (!Number.isNaN(yearNum)) {
+    conditions.push(`date_acquired LIKE '${yearNum}-%'`);
+  } else if (!Number.isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+    const mm = String(monthNum).padStart(2, '0');
+    conditions.push(`date_acquired LIKE '%-${mm}-%'`);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

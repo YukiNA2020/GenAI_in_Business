@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS collections (
   location TEXT,
   story TEXT,
   image_url TEXT,
-  tags TEXT,  -- JSON array stored as string, e.g. '["旅行","明信片","东京"]'
+  tags TEXT,  -- JSON array stored as string, e.g. '["travel","postcard","Tokyo"]'
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
