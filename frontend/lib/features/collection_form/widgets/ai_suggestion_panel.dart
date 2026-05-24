@@ -182,6 +182,7 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
       final result = await ref.read(aiSuggestionServiceProvider).analyzeImage(
             imageDescription: payload.imageDescription,
             imageUrl: payload.imageUrl,
+            imageDataUrl: payload.imageDataUrl,
           );
       if (!mounted) return;
       widget.onImageAnalysisApplied?.call(result);

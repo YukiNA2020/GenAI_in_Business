@@ -86,12 +86,15 @@ class AiSuggestionService {
   Future<AiImageAnalysis> analyzeImage({
     String? imageDescription,
     String? imageUrl,
+    String? imageDataUrl,
   }) async {
     final body = <String, dynamic>{};
     final desc = imageDescription?.trim();
     final url = imageUrl?.trim();
+    final dataUrl = imageDataUrl?.trim();
     if (desc != null && desc.isNotEmpty) body['imageDescription'] = desc;
     if (url != null && url.isNotEmpty) body['imageUrl'] = url;
+    if (dataUrl != null && dataUrl.isNotEmpty) body['imageDataUrl'] = dataUrl;
 
     final data = await _postRaw('/api/ai/analyze-image', body);
     final result = AiImageAnalysis.fromJson(data);

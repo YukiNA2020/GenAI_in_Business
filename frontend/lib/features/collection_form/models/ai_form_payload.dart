@@ -10,6 +10,7 @@ class AiFormPayload {
     this.dateAcquired,
     this.imageDescription,
     this.imageUrl,
+    this.imageDataUrl,
     this.style,
   });
 
@@ -20,6 +21,7 @@ class AiFormPayload {
   final String? dateAcquired;
   final String? imageDescription;
   final String? imageUrl;
+  final String? imageDataUrl;
   final String? style;
 
   Map<String, dynamic> toJson() {
@@ -37,6 +39,7 @@ class AiFormPayload {
     put('dateAcquired', dateAcquired);
     put('imageDescription', imageDescription);
     put('imageUrl', imageUrl);
+    put('imageDataUrl', imageDataUrl);
     put('style', style);
     return map;
   }
@@ -51,6 +54,7 @@ class AiFormPayload {
 
     put('imageDescription', imageDescription);
     put('imageUrl', imageUrl);
+    put('imageDataUrl', imageDataUrl);
     return map;
   }
 }
