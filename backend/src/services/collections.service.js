@@ -1,4 +1,5 @@
 const repo = require('../repositories/collections.repository');
+const roomsRepo = require('../repositories/rooms.repository');
 
 const FIELD_MAP = {
   dateAcquired: 'date_acquired',
@@ -47,7 +48,19 @@ function toCamelCase(dbRow) {
   return result;
 }
 
+async function assertRoomExists(roomId) {
+  if (roomId === undefined || roomId === null) return;
+  const room = await roomsRepo.findById(roomId);
+  if (!room) {
+    const err = new Error('Room not found');
+    err.code = 'ROOM_NOT_FOUND';
+    err.statusCode = 404;
+    throw err;
+  }
+}
+
 async function create(data) {
+  await assertRoomExists(data.roomId);
   const record = toSnakeCase(data);
   const created = await repo.insert(record);
   return toCamelCase(created);
@@ -81,7 +94,12 @@ async function getById(id) {
 async function update(id, data) {
   const exists = await repo.findById(id);
   if (!exists) return null;
+  await assertRoomExists(data.roomId);
   const changes = toSnakeCase(data);
+  // Per API Contract: roomId=null means "don't change", not "clear"
+  if (changes.room_id === null) {
+    delete changes.room_id;
+  }
   const updated = await repo.update(id, changes);
   return toCamelCase(updated);
 }

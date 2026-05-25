@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/collectory_theme.dart';
 import '../../collection_browse/providers/collection_list_provider.dart';
 import '../../collection_browse/services/collection_query_service.dart';
+import '../../collection_browse/utils/collectory_room_catalog.dart';
 import '../../collection_browse/utils/profile_exhibit_utils.dart';
 import '../../collection_browse/widgets/collectory_handoff_header.dart';
 
@@ -17,6 +18,7 @@ class ProfileStats extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(userStatsProvider);
     final list = ref.watch(collectionListProvider);
+    final roomsAsync = ref.watch(roomsProvider);
 
     return statsAsync.when(
       loading: () => const Center(
@@ -32,13 +34,19 @@ class ProfileStats extends ConsumerWidget {
         return _StatsCard(
           child: Text(
             message,
-            style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 12),
+            style:
+                CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 12),
           ),
         );
       },
       data: (stats) {
         final lastAdded = resolveLastAdded(list.items, stats.recentCollections);
-        final rooms = stats.categoryCount.toString().padLeft(2, '0');
+        final roomCount = roomsAsync.maybeWhen(
+          data: (rooms) => rooms.length,
+          orElse: () =>
+              CollectoryRoomCatalog.fallbackSummaries(items: list.items).length,
+        );
+        final rooms = roomCount.toString().padLeft(2, '0');
         return _StatsCard(
           child: Row(
             children: [
@@ -110,7 +118,8 @@ class _StatCell extends StatelessWidget {
           ),
           Text(
             label,
-            style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
+            style:
+                CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
             textAlign: TextAlign.center,
           ),
         ],
@@ -160,7 +169,8 @@ class _LastAddedCell extends StatelessWidget {
           ),
           Text(
             'Last added',
-            style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
+            style:
+                CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
             textAlign: TextAlign.center,
           ),
         ],

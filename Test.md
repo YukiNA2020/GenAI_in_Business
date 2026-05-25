@@ -17,8 +17,8 @@
 
 # Collection Journey App - 测试记录
 
-> 上次更新：2026-05-22
-> 最近更新负责人：成员 E / 成员 5（用户体验测试 + Flutter Release 模式说明）
+> 上次更新：2026-05-25
+> 最近更新负责人：成员 E / 成员 5，由 Codex 协助更新（统一整合阶段 3/4/6/7 复测）
 
 ---
 
@@ -67,11 +67,14 @@
 | **成员 E - 阶段一（AI Prompt + API Contract）** | ✅ 通过 | **36/36**（脚本 15 + 扩展 21） | **2026-05-21 专项** | 四类 Prompt 文档 + Contract + `ai.prompts.js` / `ai.schemas.js`；**无** HTTP 路由（属阶段二任务 2–4，本阶段不要求） |
 | **成员 E - 阶段二·任务一（AI Provider 封装）** | ✅ 通过 | **11/11** | **2026-05-21 专项** | `ai.provider.js` mock/openai/超时/错误码；未测真实 OpenAI 计费调用 |
 | **成员 E - 阶段二·任务 2–4（四个 AI HTTP 接口）** | ✅ 通过 | **23/23**（脚本 14 + 扩展 9） | **2026-05-21 专项** | `backend` 已挂载 `/api/ai`；mock 下四端点 + 400/502 + E2E 写收藏 |
-| **成员 E - 阶段二·任务 5（AI 面板联调）** | ⚠️ 有条件通过 | **18/20**（代码 18 + UI 未测 2） | **2026-05-21 专项** | 面板/服务已交付并挂 Add 页；标签仅 SnackBar；成员 B 正式创建页待迁入 |
+| **成员 E - 阶段二·任务 5（AI 面板联调）** | ⚠️ 历史有条件通过 | **18/20**（代码 18 + UI 未测 2） | **2026-05-21 专项** | 历史记录：当时标签仅 SnackBar、成员 B 正式页待迁入；2026-05-25 统一整合复测已确认正式 Create flow 写入 Tag input |
 | **成员 E - 阶段四·任务 1–5（图片识别 + 多风格故事）** | ✅ 通过 | **27/29**（脚本 15 + 静态 12 + UI 未测 2） | **2026-05-21 专项** | `analyze-image` + `style`；mock 可按关键词区分票根/黑胶；**需重启 backend** 后 HTTP 才可用 |
 | **成员 E - 阶段五·任务 1–5（测试 / Bug / Demo / 成员 6）** | ✅ 通过 | **35/37**（API 22 + 用例 13 + UI 手测 2 待勾） | **2026-05-21 专项** | `verify_phase5_demo_e2e.js` **11/11×2**；`Member6_Demo_Handoff.md` |
 | **成员 E - DeepSeek 真实 LLM 接入** | ✅ 通过 | **DeepSeek live 10/10 + 回归 66/66** | **2026-05-22 真实 API** | `deepseek-v4-flash`；service 5/5、HTTP 5/5、阶段 1/2/4/5 回归 + Flutter 单测通过；不提交 key |
 | **成员 E - 用户体验测试（Flutter Release 模式）** | ✅ 通过 | — | **2026-05-22 用户测试** | Add/Gallery/Profile 路径正常；Debug 黄黑条和 Bottom overflow 需用 Release 模式消除 |
+| **统一整合 - 阶段三 rooms API 与前端接入复测** | ✅ 通过 | **API + Flutter 回归通过** | **2026-05-25 专项** | `/api/rooms`、`roomId` 创建/更新/详情、Gallery/Profile/Room/Add/Edit 主路径通过 |
+| **统一整合 - 阶段四正式 Create flow 复测** | ✅ 通过 | **API + AI + Flutter 回归通过** | **2026-05-25 专项** | `CreateCollectionPage` 已为 Add Tab 主入口；AI tags 合并进 Tag input；图片上传失败不阻塞文本保存 |
+| **统一整合 - 阶段六 API Contract V2.0 冻结复测** | ✅ 通过 | **Live Contract 18/18 + AI 29/29 + Flutter 1/1 + build OK** | **2026-05-25 专项** | `roomId=null` 保留、无效 room 404 `ROOM_NOT_FOUND`、`categoryTemplate/customFields` 创建 payload 均对齐 |
 
 ---
 
@@ -1050,6 +1053,41 @@
 | **成员 E 阶段五·任务 1–5 测试报告** | **2026-05-21** | 测试计划 / 用例 / Bug 表 / Demo e2e / 成员 6 交接 | **✅ 通过 (API 22/22 + 用例 15/15)** | 测试 AI 独立复测：`verify_phase5_demo_e2e.js` 11/11×2（id=28/30）；UI Checklist 2 项待演示勾选 |
 | **成员 E DeepSeek 真实 LLM 测试报告** | **2026-05-22** | DeepSeek service live、HTTP live、阶段 1/2/4/5 回归、Flutter 单测 | **✅ 通过 (DeepSeek 10/10 + 回归 66/66 + Flutter 1/1)** | 模型 `deepseek-v4-flash`；文字生成链路可用 |
 | **成员 E GLM Vision 接入测试报告** | **2026-05-24** | GLM 图片理解 live、`analyze-image` 真实图片路径、DeepSeek fallback、成员 E 回归、Flutter 单测 | **✅ 通过 (GLM live + HTTP 40/40 + Flutter 1/1)** | `glm-4v-flash` 已选为默认 Vision 模型 |
+| **统一整合阶段 3/4/6 复测报告** | **2026-05-25** | rooms API、正式 Create flow、API Contract V2.0、AI API、Flutter 回归 | **✅ 通过 (Contract 18/18 + AI 29/29 + Flutter 1/1 + build OK)** | 可进入下一阶段；最终 Demo 前仍建议补浏览器手测与截图复核 |
+| **统一整合阶段 7 完整 Demo 回归报告** | **2026-05-25** | 后端/API/AI/Flutter 自动化 + 浏览器主路径手测 | **✅ 通过 (成员 E 脚本 66/66 + Flutter 1/1 + build OK + 浏览器主路径通过)** | 可以进入下一阶段；成员 6 展示素材仍需整理最终截图说明 |
+
+### 统一整合阶段 7 完整 Demo 回归详情
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助执行与更新测试文档
+- **测试范围**：`INTEGRATION_IMPLEMENTATION_PATH.md` 阶段 7；后端基础 API、成员 E 阶段 1/2/4/5 脚本、Flutter Web no-CDN 构建、浏览器 Demo 主路径
+- **自动化结果**：阶段一标题 15/15、阶段二 provider 11/11、阶段二 HTTP 14/14、阶段四 HTTP 15/15、阶段五 Demo E2E 11/11；`flutter test --no-pub` 1/1；`flutter analyze --no-pub --no-fatal-infos` 通过（27 info）；Flutter Web release no-CDN build 成功
+- **浏览器结果**：Home、Gallery、Room、Create 保存、Edit 改 room、Profile rooms 统计、Share Settings / Preview 均通过；测试写入收藏已清理，数据库回到 15 条 seed collection
+- **本轮修复**：Web 离线字体/CDN loading、详情页 room label 硬编码、Profile rooms 统计误用 `categoryCount`、Share Settings 底部按钮 hit-test、stats recent `roomId` 映射
+
+### 统一整合阶段 3/4/6 复测报告详情
+
+- **负责人**：成员 E / 成员 5，由 Codex 协助执行与更新测试文档
+- **测试范围**：`INTEGRATION_IMPLEMENTATION_PATH.md` 阶段 3、阶段 4、阶段 6；根目录 `API_Contract.md` V2.0；后端 rooms / collections API；成员 E AI API；Flutter 前端正式创建入口
+- **执行环境**：本地 `backend` 3000 端口；测试前执行 `npm run seed`
+- **执行结果**：
+
+| 检查项 | 状态 | 结果 |
+|---|---|---|
+| `GET /api/health` | ✅ 通过 | 返回 `success: true` |
+| `GET /api/rooms` | ✅ 通过 | 返回 `id/month/label/createdAt/collectionCount` |
+| `GET /api/rooms/:id` | ✅ 通过 | 返回 room detail + collections，collection 含 `roomId` |
+| `POST /api/collections` 全字段创建 | ✅ 通过 | `categoryTemplate`、`customFields`、`roomId`、`dateAcquired`、`location` 均可保存并读回 |
+| `GET /api/collections` / `:id` | ✅ 通过 | list/detail 均返回 `roomId` 和 V2 扩展字段 |
+| `PUT /api/collections/:id` 移动 room | ✅ 通过 | `roomId` 可从一个 room 更新到另一个 room |
+| `PUT roomId=null` | ✅ 通过 | 按 V2.0 合同保留原 room，不清空 |
+| 无效 `roomId` | ✅ 通过 | POST / PUT 均返回 404 + `ROOM_NOT_FOUND` |
+| 成员 E 阶段二 AI HTTP 回归 | ✅ 通过 | `verify_phase2_tasks2_4_api.js` 14/14 |
+| 成员 E 阶段四 AI HTTP 回归 | ✅ 通过 | `verify_phase4_tasks1_5_api.js` 15/15 |
+| Flutter 单测 | ✅ 通过 | `flutter test` 1/1 |
+| Flutter 静态检查 | ✅ 通过 | `flutter analyze --no-fatal-infos` 0 error/warning；仍有 29 个 info |
+| Flutter Web Release build | ✅ 通过 | `flutter build web --release --dart-define=API_BASE_URL=http://localhost:3000` 成功 |
+
+- **结论**：统一整合阶段 3、阶段 4、阶段 6 的自动化与 live API 主路径通过。可以进入下一阶段；最终 Demo / 成员 6 截图前建议补一轮浏览器手测。
 
 ### 成员 E DeepSeek 真实 LLM 测试报告详情
 
@@ -2335,7 +2373,7 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 | Bug ID | 模块 | 描述 | 复现步骤 | 严重程度 | 负责人 | 状态 | 备注 |
 |--------|------|------|----------|----------|--------|------|------|
 | BUG-ME-001 | AI → API | AI 返回中文 `category`，collections 表存英文 slug | AI suggest-category 后直接 POST 中文 category | 中 | 成员 E / B | 已规避 | Add 页经 `tagLabelForAiCategory` + slug；写入前需 `GET /api/categories` |
-| BUG-ME-002 | Add / AI 面板 | AI 标签仅 SnackBar + 行内文案，未写入正式 Tag 多选 | Recognize 或 Tags 成功 | 低 | 成员 B | 待成员 B | 成员 E 预交付范围；正式表单接 `TagInputField` |
+| BUG-ME-002 | Add / AI 面板 | 历史限制：AI 标签仅 SnackBar + 行内文案，未写入正式 Tag 多选 | Recognize 或 Tags 成功 | 低 | 成员 B | 已关闭 | 2026-05-25 统一整合复测：正式 Create flow 已接 `TagInputField`，`onTagsSuggested` 合并进表单状态 |
 | BUG-ME-003 | AI HTTP | 旧 backend 进程无 `/analyze-image` → 404 | 未重启即调 analyze-image | 中 | 成员 E | 已规避 | 重启 backend；真实 DeepSeek 测试需从 `backend/` 目录读 `.env` |
 | BUG-ME-004 | Profile UI | 展示名硬编码「Group I」（`UserProfile.demo()`），非后端用户资料 | 打开 Profile Tab | 低 | 成员 E | 待联调 | 无 `GET /api/users/:id` 资料接口；`Member6_Demo_Handoff.md` 仍写「Tong」为文档滞后 |
 | BUG-ME-005 | AI Vision | 旧限制：无真实 Vision，仅 `imageDescription` / `imageUrl` 文本描述 + LLM 推断 | Upload 后 Recognize | 低 | 成员 E | 已关闭 | 2026-05-24 已切到 GLM Vision 主路径；GLM live、HTTP 回归和 Flutter 单测均通过 |
@@ -2617,3 +2655,5 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 - **2026-05-22**（成员 E / 成员 5，Codex）：完成 **DeepSeek 真实 LLM 接入测试**。`verify_deepseek_provider_live.js` **5/5**，HTTP live **5/5**（含 `analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：`deepseek-v4-flash` 可用；当时 `analyze-image` 仍是文本描述推断。
 - **2026-05-24**（成员 E / 成员 5，Codex）：根据真实图片 live test，正式把真实图片理解路线切到 **GLM Vision `glm-4v-flash`**。`glm-4.6v-flash` 实测返回 429；`glm-4v-flash` 可识别同一张本地 PNG。
 - **2026-05-24**（成员 E / 成员 5，Codex）：完成 **GLM Vision 正式接入回归**。`verify_glm_vision_live.js` **通过**，HTTP `analyze-image + imageDataUrl` **200 success**，HTTP `analyze-image + imageDescription` fallback **200 success**，阶段二 HTTP **14/14**，阶段四 **15/15**，阶段五 Demo E2E **11/11**，`flutter test` **1/1**。
+- **2026-05-25**（成员 E / 成员 5，Codex）：完成统一整合 **阶段 3 / 阶段 4 / 阶段 6** 复测和文档同步。`npm run seed` 通过；V2.0 live API Contract **18/18**；阶段二 AI HTTP **14/14**；阶段四 AI HTTP **15/15**；`flutter test` **1/1**；`flutter analyze --no-fatal-infos` 通过（29 info）；Flutter Web release build 成功。结论：rooms API、正式 Create flow、API Contract V2.0 可进入下一阶段。
+- **2026-05-25**（成员 E / 成员 5，Codex）：完成统一整合 **阶段 7 完整 Demo 回归**。`npm run seed` 通过；基础 API（health/categories/stats/rooms/room detail）通过；阶段一标题 **15/15**、阶段二 provider **11/11**、阶段二 HTTP **14/14**、阶段四 HTTP **15/15**、阶段五 Demo E2E **11/11**；`flutter test --no-pub` **1/1**、`flutter analyze --no-pub --no-fatal-infos` 通过（27 info）、`flutter build web --release --no-pub --no-web-resources-cdn --dart-define=API_BASE_URL=http://localhost:3000` 成功。浏览器手测覆盖 Home/Gallery/Room/Create/Edit/Profile/Share Preview，并清理测试写入收藏。结论：**✅ 阶段 7 通过，可以进入下一阶段**。

@@ -23,6 +23,7 @@ class CollectionItem {
     this.visibility,
     this.categoryTemplate,
     this.customFields,
+    this.roomId,
   });
 
   final int id;
@@ -39,6 +40,7 @@ class CollectionItem {
   final String? visibility;
   final String? categoryTemplate;
   final String? customFields;
+  final int? roomId;
 
   factory CollectionItem.fromJson(Map<String, dynamic> json) {
     final rawTags = json['tags'];
@@ -62,6 +64,8 @@ class CollectionItem {
       visibility: json['visibility'] as String?,
       categoryTemplate: json['categoryTemplate'] as String?,
       customFields: json['customFields'] as String?,
+      roomId: (json['roomId'] as num?)?.toInt() ??
+          (json['room_id'] as num?)?.toInt(),
     );
   }
 }

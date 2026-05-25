@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../utils/collectory_room_catalog.dart';
 import 'collection_list_provider.dart';
 
 /// 叠层 — 对齐 collectory-ui-handoff.md 原型逻辑
@@ -29,8 +28,8 @@ final detailFromSharePreviewProvider = StateProvider<bool>((ref) => false);
 /// 0=Home 1=Gallery 2=Add 3=Profile
 final member3TabIndexProvider = StateProvider<int>((ref) => 0);
 
-/// Gallery / Profile 选中的月度 room：0=May 1=Jun 2=Jul
-final collectionRoomIndexProvider = StateProvider<int>((ref) => 0);
+/// Gallery / Profile 选中的 room ID（来自 /api/rooms）
+final selectedRoomIdProvider = StateProvider<int?>((ref) => null);
 
 /// 打开 Collection room 前的 Tab，用于返回
 final collectionRoomOriginTabProvider = StateProvider<int>((ref) => 0);
@@ -57,7 +56,8 @@ void openSharePreviewItemDetail(WidgetRef ref, int collectionId) {
 
 void openEditCollection(WidgetRef ref, int collectionId) {
   ref.read(detailCollectionIdProvider.notifier).state = collectionId;
-  ref.read(member3OverlayProvider.notifier).state = Member3Overlay.editCollection;
+  ref.read(member3OverlayProvider.notifier).state =
+      Member3Overlay.editCollection;
 }
 
 void openPublicBrowse(WidgetRef ref) {
@@ -102,19 +102,18 @@ void goToProfileTab(WidgetRef ref) {
   ref.read(member3TabIndexProvider.notifier).state = 3;
 }
 
-/// Gallery / Profile 同月 room（同 [roomIndex]）进入同一 Collection room 页
-void openCollectionRoom(WidgetRef ref, {required int roomIndex}) {
-  final i = roomIndex.clamp(0, CollectoryRoomCatalog.rooms.length - 1);
-  ref.read(collectionRoomIndexProvider.notifier).state = i;
+/// Gallery / Profile 同月 room（同 [roomId]）进入同一 Collection room 页
+void openCollectionRoom(WidgetRef ref, {required int roomId}) {
+  ref.read(selectedRoomIdProvider.notifier).state = roomId;
   ref.read(collectionRoomOriginTabProvider.notifier).state =
       ref.read(member3TabIndexProvider);
-  ref.read(member3OverlayProvider.notifier).state = Member3Overlay.collectionRoom;
+  ref.read(member3OverlayProvider.notifier).state =
+      Member3Overlay.collectionRoom;
 }
 
 /// 仅切换 Gallery 顶部 room 选中态（不打开叠层）
-void selectCollectionRoomMonth(WidgetRef ref, int roomIndex) {
-  ref.read(collectionRoomIndexProvider.notifier).state =
-      roomIndex.clamp(0, CollectoryRoomCatalog.rooms.length - 1);
+void selectCollectionRoomMonth(WidgetRef ref, int roomId) {
+  ref.read(selectedRoomIdProvider.notifier).state = roomId;
 }
 
 void openShareRoom(WidgetRef ref) {
@@ -150,7 +149,8 @@ void closeDetailToSharePreview(WidgetRef ref) {
   ref.read(detailIsPublicViewProvider.notifier).state = false;
   ref.read(detailFromSharePreviewProvider.notifier).state = false;
   ref.read(detailCollectionIdProvider.notifier).state = null;
-  ref.read(member3OverlayProvider.notifier).state = Member3Overlay.shareRoomPreview;
+  ref.read(member3OverlayProvider.notifier).state =
+      Member3Overlay.shareRoomPreview;
 }
 
 /// Collection Room: Back → 进入 room 前的 Tab（Home / Gallery / Profile）
@@ -172,7 +172,8 @@ void closeShareToProfile(WidgetRef ref) {
 /// Add: Draft/Cancel → Collection Room
 void cancelAddToRoom(WidgetRef ref) {
   ref.read(member3TabIndexProvider.notifier).state = 2;
-  ref.read(member3OverlayProvider.notifier).state = Member3Overlay.collectionRoom;
+  ref.read(member3OverlayProvider.notifier).state =
+      Member3Overlay.collectionRoom;
 }
 
 void closeMember3Overlay(WidgetRef ref) {

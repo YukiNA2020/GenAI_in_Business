@@ -46,6 +46,10 @@ class MuseumHomePage extends ConsumerWidget {
           data: (s) => s.totalCollections,
           orElse: () => null,
         );
+    final firstRoomId = ref.watch(roomsProvider).maybeWhen(
+          data: (rooms) => rooms.firstOrNull?.id,
+          orElse: () => null,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,15 +85,21 @@ class MuseumHomePage extends ConsumerWidget {
                           height: MuseumHomeLayoutSpec.topBarHeight,
                           child: CollectoryTopBar(contextTitle: 'Museum hall'),
                         ),
-                        const SizedBox(height: MuseumHomeLayoutSpec.afterTopBarGap),
+                        const SizedBox(
+                            height: MuseumHomeLayoutSpec.afterTopBarGap),
                         Text('PERSONAL MUSEUM', style: _personalMuseumLabel),
-                        const SizedBox(height: MuseumHomeLayoutSpec.labelToTitleGap),
-                        Text('Enter your collection hall.', style: _homeHeadline),
-                        const SizedBox(height: MuseumHomeLayoutSpec.titleLineGap),
+                        const SizedBox(
+                            height: MuseumHomeLayoutSpec.labelToTitleGap),
+                        Text('Enter your collection hall.',
+                            style: _homeHeadline),
+                        const SizedBox(
+                            height: MuseumHomeLayoutSpec.titleLineGap),
                         Text('Start with one object.', style: _homeHeadline),
-                        const SizedBox(height: MuseumHomeLayoutSpec.titleToSubtitleGap),
+                        const SizedBox(
+                            height: MuseumHomeLayoutSpec.titleToSubtitleGap),
                         Text('Tap a collection type.', style: _homeSubcopy),
-                        const SizedBox(height: MuseumHomeLayoutSpec.subtitleLineGap),
+                        const SizedBox(
+                            height: MuseumHomeLayoutSpec.subtitleLineGap),
                         Text(
                           'View that filter in your gallery.',
                           style: _homeSubcopy,
@@ -113,7 +123,11 @@ class MuseumHomePage extends ConsumerWidget {
             ),
             child: _HomeRoomCard(
               exhibitCount: exhibitCount,
-              onOpenRoom: () => openCollectionRoom(ref, roomIndex: 0),
+              onOpenRoom: () {
+                if (firstRoomId != null) {
+                  openCollectionRoom(ref, roomId: firstRoomId);
+                }
+              },
             ),
           ),
         ),

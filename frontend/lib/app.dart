@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/layout/collectory_mobile_shell.dart';
 import 'core/motion/collectory_motion.dart';
 import 'core/theme/collectory_theme.dart';
-import 'features/collection_browse/pages/add_exhibit_design_page.dart';
 import 'features/collection_browse/pages/collection_detail_page.dart';
 import 'features/collection_browse/pages/collection_room_page.dart';
 import 'features/collection_browse/pages/design_gallery_page.dart';
@@ -18,6 +17,7 @@ import 'features/collection_browse/pages/share_room_settings_page.dart';
 import 'features/collection_browse/providers/app_navigation_provider.dart';
 import 'features/collection_browse/providers/collection_list_provider.dart';
 import 'features/collection_browse/widgets/collectory_bottom_nav.dart';
+import 'features/collection_form/pages/create_collection_page.dart';
 
 /// handoff 四 Tab + 原型叠层 + Member 3 API 功能
 class CollectoryApp extends ConsumerWidget {
@@ -57,7 +57,10 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
 
   Future<void> _bootstrapApi(WidgetRef ref) async {
     final service = ref.read(collectionQueryServiceProvider);
-    if (!await service.checkHealth()) return;
+    if (!await service.checkHealth()) {
+      ref.invalidate(backendReachableProvider);
+      return;
+    }
     ref.invalidate(userStatsProvider);
     ref.invalidate(categoriesProvider);
     ref.invalidate(allTagsProvider);
@@ -71,7 +74,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
     final detailPublic = ref.watch(detailIsPublicViewProvider);
     final detailFromSharePreview = ref.watch(detailFromSharePreviewProvider);
     final tab = ref.watch(member3TabIndexProvider);
-    final roomIndex = ref.watch(collectionRoomIndexProvider);
+    final selectedRoomId = ref.watch(selectedRoomIdProvider);
 
     final hideNav = overlay == Member3Overlay.layerMotion ||
         overlay == Member3Overlay.collectionRoom ||
@@ -102,7 +105,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
           child: KeyedSubtree(
             key: ValueKey<String>(
               overlay == Member3Overlay.collectionRoom
-                  ? 'collectionRoom_$roomIndex'
+                  ? 'collectionRoom_$selectedRoomId'
                   : '${overlay.name}_${detailId ?? 0}_$tab',
             ),
             child: _body(
@@ -111,7 +114,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
               detailPublic,
               detailFromSharePreview,
               tab,
-              roomIndex,
+              selectedRoomId,
             ),
           ),
         ),
@@ -140,7 +143,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
     bool detailPublic,
     bool detailFromSharePreview,
     int tab,
-    int roomIndex,
+    int? selectedRoomId,
   ) {
     switch (overlay) {
       case Member3Overlay.itemDetail:
@@ -160,9 +163,10 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
       case Member3Overlay.publicBrowse:
         return PublicCollectionsPage(onClose: () => closeMember3Overlay(ref));
       case Member3Overlay.collectionRoom:
+        if (selectedRoomId == null) return const DesignGalleryPage();
         return CollectionRoomPage(
-          key: ValueKey('collection-room-$roomIndex'),
-          roomIndex: roomIndex,
+          key: ValueKey('collection-room-$selectedRoomId'),
+          roomId: selectedRoomId,
         );
       case Member3Overlay.shareRoom:
         return const ShareRoomSettingsPage();
@@ -177,7 +181,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
           case 1:
             return const DesignGalleryPage();
           case 2:
-            return const AddExhibitDesignPage();
+            return const CreateCollectionPage();
           default:
             return const ProfileDesignPage();
         }

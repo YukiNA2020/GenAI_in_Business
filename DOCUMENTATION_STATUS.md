@@ -1,10 +1,12 @@
 # Collection Journey App 文档状态索引
 
-> 上次更新：2026-05-22
-> 负责人：成员 E / 成员 5，由 Codex 协助整理
+> 上次更新：2026-05-25
+> 负责人：成员 E / 成员 5，由 Codex 协助整理；2026-05-25 由 Codex 同步统一整合完成状态和后 MVP 计划
 > 范围：本仓库中的项目 Markdown 文档；不包含 `backend/node_modules/` 下的第三方依赖文档。
 
 本文件是全项目的 Markdown 文档索引。开始任何任务前，先看这里，确认哪些文档是当前依据，哪些只是历史计划、完成记录、测试记录或模块交接文档，避免把旧计划误当成新任务。
+
+当前口径：核心 MVP 已经整合完成并集中在 `codex/integration-prep`。不要求一定合并到 `main` 才算完成；旧分支和旧路线文档保留为开发过程记录。
 
 ---
 
@@ -16,6 +18,7 @@
 | `活跃任务说明` | 仍然有用的成员任务定义、职责边界或验收标准 | 任务完成后也不要删除；实际完成情况以 `Status.md` / `Test.md` 为准 |
 | `活跃模块说明` | 当前模块的运行说明、接口说明、交接说明或实现指南 | 保留在对应代码附近，方便联调和测试 |
 | `完成记录` | 阶段完成报告、测试记录、Prompt 记录、Demo 交接材料 | 作为审计和汇报依据，不要当成未完成任务列表 |
+| `已完成路线` | 曾经用于推进阶段整合或技术路线决策，现在已执行完毕 | 只用于追溯过程；新任务应迁移到当前计划文档 |
 | `历史参考` | 早期规划、旧版本路线、立项参考资料 | 只用于理解背景，不作为当前开发依据 |
 | `已替代或过时` | 已被新文档或新分支状态替代 | 需要团队确认后再归档或删除 |
 | `低优先级内部文件` | Flutter / 平台生成的说明文件或资源说明 | 除非正在改对应平台资源，否则忽略 |
@@ -28,14 +31,16 @@
 
 1. `README.md`
 2. `DOCUMENTATION_STATUS.md`
-3. `Project_intro.md`
-4. `Status.md`
-5. 如果涉及当前分支整合，再读 `INTEGRATION_IMPLEMENTATION_PATH.md`
+3. `next_detail_plan.md`
+4. `Project_intro.md`
+5. `Status.md`
 6. 如果涉及测试或判断完成度，再读 `Test.md`
-7. `Final_Team_Work_Division.md`
-8. 对应成员的任务文档
-9. 对应模块的 README / handoff / integration 文档
-10. 只有需要追溯历史决策时，再读 `Prompt_library.md`
+7. `API_Contract.md`
+8. `Final_Team_Work_Division.md`
+9. 对应成员的任务文档
+10. 对应模块的 README / handoff / integration 文档
+11. 只有需要追溯整合过程时，再读 `INTEGRATION_IMPLEMENTATION_PATH.md`
+12. 只有需要追溯历史决策时，再读 `Prompt_library.md`
 
 不要用 `past_doc/` 直接安排当前任务。那些文件是早期“按产品版本拆开发”的规划；当前项目已经改为“按成员分工 + 分支整合”推进。
 
@@ -45,27 +50,30 @@
 
 | 文件 | 状态 | 当前用途 | 备注 |
 |---|---|---|---|
-| `README.md` | 当前权威 | 团队协作流程、阅读顺序、Git 流程、状态同步规则 | 所有成员和 AI 的第一入口 |
+| `README.md` | 当前权威 | 项目入口、启动说明、项目构成、测试命令、当前分支口径 | 所有成员和 AI 的第一入口 |
+| `next_detail_plan.md` | 当前权威 | MVP 完成后的下一步行动计划 | 旧整合路线中的遗留优化已迁移到这里 |
 | `DOCUMENTATION_STATUS.md` | 当前权威 | 全项目 Markdown 文档索引和清理规则 | 新增、移动、删除或重新定位文档时要更新 |
-| `INTEGRATION_IMPLEMENTATION_PATH.md` | 当前权威 | 本轮统一整合前的分阶段实施路径 | 先局部迁移有效内容，最后再做完全整合；GLM 图片理解方案已写入阶段 5 |
+| `INTEGRATION_IMPLEMENTATION_PATH.md` | 已完成路线 | 本轮统一整合的分阶段实施路径和技术审计记录 | 核心 MVP 已按此路线完成；后续不要把其中旧阶段当成新任务 |
 | `Project_intro.md` | 当前权威 | 产品方向、目标用户、价值主张、长期路线 | 只决定产品方向；开发中不要随意改写 |
 | `Final_Team_Work_Division.md` | 当前权威 | 六人分工、职责边界、合并原则、Demo 验收标准 | 当前团队分工的主要依据 |
-| `Status.md` | 当前权威 | 当前项目状态 + 历史进展记录 | 顶部和“项目文件 / 开发阶段进度”更接近当前状态；旧日期备注可能带历史口径 |
+| `Status.md` | 当前权威 | 当前项目状态 + 历史进展记录 | 顶部为当前 MVP 完成状态；旧日期备注保留为完成记录 |
 | `Test.md` | 当前权威 | 测试结果、Bug、验证状态 | 判断功能是否真的通过测试时优先看这里 |
 | `Prompt_library.md` | 完成记录 | 用户要求、AI 行动、关键决策的历史日志 | 不是当前任务清单 |
-| `API_Contract.md` | 当前权威 | 当前 `feature/ai-profile-test` 基线下的冻结 API 合同 | 合并 rooms API 后需要补充 `roomId` 和 `/api/rooms` |
-| `Backend_Setup.md` | 活跃模块说明 | 后端启动、接口使用、排错说明 | 当前适用于基础后端；rooms 细节暂在 `feature/member-1-task` 分支 |
+| `API_Contract.md` | 当前权威 | 当前统一整合基线下的冻结 API 合同 | V2.0 已包含 `roomId`、`/api/rooms`、`/api/ai/*`；2026-05-25 live contract 18/18 |
+| `Backend_Setup.md` | 活跃模块说明 | 后端启动、接口使用、排错说明 | 基础启动说明仍可用；rooms / `roomId` 细节以 `API_Contract.md` V2.0 为准 |
+| `PictureofProduct/README.md` | 完成记录 | 当前 MVP 产品截图目录说明 | 用于课程展示、产品介绍和成员 6 演示材料 |
+| `PictureofProduct/使用指南.md` | 完成记录 | 当前 MVP 中文使用指南 | 和截图一起用于向非开发者介绍产品流程 |
 
 ---
 
 ## 4. 成员任务文档
 
-这些文档定义成员职责和验收标准。即使任务已经完成，也不要因为“完成了”就删除，因为后续回归、汇报和合并时仍需要它们判断边界。
+这些文档定义成员职责和验收标准。核心 MVP 范围内的成员任务已经完成整合；这些文件现在主要用于追溯分工、验收边界和历史实现依据，不再作为新的待办队列。后续任务以 `next_detail_plan.md` 为准。
 
 | 文件 | 状态 | 当前用途 | 备注 |
 |---|---|---|---|
 | `Member_1_Core_API_Data_Detail_Plan.md` | 活跃任务说明 | 成员 A / 成员 1：后端、数据、核心 API 任务定义 | 很多任务已完成；实际完成情况看 `Status.md` 和 `Test.md` |
-| `Member_2_Create_Upload_Integration_Detail_Plan.md` | 活跃任务说明 | 成员 B / 成员 2：创建、编辑、上传、最终整合任务定义 | 正式创建表单仍待最终整合；不要和成员 E 预交付 AI 面板混淆 |
+| `Member_2_Create_Upload_Integration_Detail_Plan.md` | 活跃任务说明 | 成员 B / 成员 2：创建、编辑、上传、最终整合任务定义 | 当前正式 Create flow 主路径已接入并复测；历史任务边界仍以本文档为准 |
 | `Member_3_Collection_Wall_Search_Detail_Plan.md` | 活跃任务说明 | 成员 C / 成员 3：收藏墙、详情、搜索、浏览任务定义 | 当前实现主要在 `frontend/`；运行和测试看前端文档 |
 | `Member_4_UI_Visual_Design_Detail_Plan.md` | 活跃任务说明 | 成员 D / 成员 4：UI 视觉和设计支持任务定义 | 实际视觉交付主要在 `design-export/` |
 | `member_E/Member_5_AI_Profile_Test_Detail_Plan.md` | 活跃任务说明 | 成员 E / 成员 5：AI、Profile、测试任务定义 | 需要配合 `member_E/docs/E_Current_Status_and_Plan.md` 阅读，避免重复开发已完成内容 |
@@ -160,9 +168,9 @@
 
 | 缺口 | 影响 | 建议处理时间 |
 |---|---|---|
-| 根目录 `API_Contract.md` 还没有 rooms API | 合并 `feature/member-1-task` 后，前端会用到 `roomId` / `/api/rooms`，但根合同没有写 | rooms 代码合入统一整合分支后立刻补 |
-| `Status.md` 的历史备注里仍有旧的“待测试”表述 | 读者可能把旧日期记录误认为当前状态 | 优先看顶部项目文件表、开发阶段进度和 `Test.md`；以后碰到相关段落再顺手清 |
-| 成员 B 正式创建表单状态还不够明确 | 当前有 AI 面板，但正式创建 flow 是否完成还需整合确认 | 等成员 B 最终表单代码进入统一分支后更新 |
+| 成员 6 Demo 截图说明尚未整理进交付文档 | 阶段 7 浏览器手测已过，但展示材料需要以最后 UI 截图为准 | 最终提交前更新 `member_E/docs/Member6_Demo_Handoff.md` 和截图说明 |
+| `Status.md` 的更早历史备注里仍可能有旧的“待测试”表述 | 读者可能把旧日期记录误认为当前状态 | 优先看顶部项目文件表、统一整合准备分支进展和 `Test.md`；以后碰到相关段落再顺手清 |
+| 成员 B 正式创建表单的历史交接文档未完全改写 | 当前主路径已接入 `CreateCollectionPage`，但 `member_B/` 早期交接文档仍保留阶段二口径 | 保留历史交接属性；最终交付前可补一段“已迁入主入口”的说明 |
 | 成员 E 图片识别文档仍需最终 Demo 复核 | GLM Vision live、HTTP 回归和 Flutter 单测已通过；最终团队 Demo 仍需 Flutter 手测复核 | 演示前按 `Phase5_Demo_Checklist.md` 再跑一轮 |
 | 分支引用容易过期 | 文档可能提到已删除或被替代的远端分支 | 每次清理分支后同步更新本文件、`README.md` 和成员 TODO 文档 |
 

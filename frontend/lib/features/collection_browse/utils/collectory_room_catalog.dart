@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/collectory_theme.dart';
 import '../models/collection_item.dart';
+import '../models/collection_room.dart';
 
 /// 月度 Room 元数据 — Gallery / Profile / Collection room 共用
 class CollectoryRoomSpec {
@@ -71,11 +72,9 @@ abstract final class CollectoryRoomCatalog {
       isPreview: false,
       galleryBlurb:
           'A monthly room for objects, tickets, minerals, and memories collected in May.',
-      roomBlurb:
-          'A monthly room of objects collected around live music, '
+      roomBlurb: 'A monthly room of objects collected around live music, '
           'small discoveries, and memory fragments.',
-      reflection:
-          'This room captures a month of live music, saved tickets, '
+      reflection: 'This room captures a month of live music, saved tickets, '
           'and small discoveries with a warm nostalgic mood.',
       designTimeline: [
         RoomTimelineEntry('MAY 03', 'First ticket saved', Color(0xFF171512)),
@@ -95,11 +94,9 @@ abstract final class CollectoryRoomCatalog {
       isPreview: true,
       galleryBlurb:
           'A monthly room for summer tickets, travel memories, and objects collected in June.',
-      roomBlurb:
-          'A quieter June archive for travel tickets, postcards, '
+      roomBlurb: 'A quieter June archive for travel tickets, postcards, '
           'and objects waiting to be catalogued.',
-      reflection:
-          'June leans toward travel fragments and softer greens — '
+      reflection: 'June leans toward travel fragments and softer greens — '
           'a room still taking shape before the month ends.',
       designTimeline: [
         RoomTimelineEntry('JUN 05', 'Postcard from trip', Color(0xFF171512)),
@@ -119,8 +116,7 @@ abstract final class CollectoryRoomCatalog {
       isPreview: true,
       galleryBlurb:
           'A monthly room for late-summer minerals, vinyl finds, and memories collected in July.',
-      roomBlurb:
-          'A July preview room for minerals, vinyl, and memory objects '
+      roomBlurb: 'A July preview room for minerals, vinyl, and memory objects '
           'you plan to add as the month unfolds.',
       reflection:
           'July is reserved for deeper mineral stories and late-summer vinyl — '
@@ -136,6 +132,44 @@ abstract final class CollectoryRoomCatalog {
   static CollectoryRoomSpec forIndex(int index) {
     if (index < 0 || index >= rooms.length) return rooms.first;
     return rooms[index];
+  }
+
+  static int fallbackRoomIdForIndex(int index) => -(index + 1);
+
+  static int? fallbackIndexFromRoomId(int roomId) {
+    if (roomId >= 0) return null;
+    final index = -roomId - 1;
+    if (index < 0 || index >= rooms.length) return null;
+    return index;
+  }
+
+  static List<CollectionRoomSummary> fallbackSummaries({
+    List<CollectionItem> items = const [],
+  }) {
+    return [
+      for (final spec in rooms)
+        CollectionRoomSummary(
+          id: fallbackRoomIdForIndex(spec.index),
+          month: spec.monthYear,
+          label: spec.archiveTitle,
+          collectionCount: itemsInRoom(items, spec).length,
+        ),
+    ];
+  }
+
+  static CollectionRoomDetail? fallbackDetailForRoomId(
+    int roomId,
+    List<CollectionItem> items,
+  ) {
+    final index = fallbackIndexFromRoomId(roomId);
+    if (index == null) return null;
+    final spec = forIndex(index);
+    return CollectionRoomDetail(
+      id: roomId,
+      month: spec.monthYear,
+      label: spec.archiveTitle,
+      collections: itemsInRoom(items, spec),
+    );
   }
 
   static int? _monthOf(CollectionItem item) {

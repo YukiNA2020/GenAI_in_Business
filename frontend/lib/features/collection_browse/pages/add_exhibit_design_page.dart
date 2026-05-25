@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/collectory_theme.dart';
+import '../models/collection_room.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
 import '../providers/member3_ui_settings_provider.dart';
 import '../services/collection_query_service.dart';
+import '../utils/collectory_room_catalog.dart';
 import '../widgets/collectory_handoff_header.dart';
 import '../../collection_form/models/ai_form_payload.dart';
 import '../../collection_form/models/ai_image_analysis.dart';
@@ -52,16 +54,23 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
     }
     setState(() => _saving = true);
     try {
+      final selectedRoomId = ref.read(selectedRoomIdProvider);
+      final apiRoomId =
+          selectedRoomId != null && selectedRoomId > 0 ? selectedRoomId : null;
       await ref.read(collectionQueryServiceProvider).createCollection(
             title: title,
             story: _storyController.text,
             category: CollectoryFavoriteTags.categorySlugForTag(_activeTag),
-            visibility: ref.read(addPrivateMuseumProvider)
-                ? 'private'
-                : 'public',
+            visibility:
+                ref.read(addPrivateMuseumProvider) ? 'private' : 'public',
             userId: demoUserId,
+            roomId: apiRoomId,
           );
       ref.invalidate(userStatsProvider);
+      ref.invalidate(roomsProvider);
+      if (apiRoomId != null) {
+        ref.invalidate(roomDetailProvider(apiRoomId));
+      }
       await ref.read(collectionListProvider.notifier).refresh();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +117,26 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
   @override
   Widget build(BuildContext context) {
     final privateMuseum = ref.watch(addPrivateMuseumProvider);
+    final list = ref.watch(collectionListProvider);
+    final roomsAsync = ref.watch(roomsProvider);
+    final fallbackRooms =
+        CollectoryRoomCatalog.fallbackSummaries(items: list.items);
+    final roomOptions = roomsAsync.maybeWhen(
+      data: (rooms) => rooms.isNotEmpty ? rooms : fallbackRooms,
+      error: (_, __) => fallbackRooms,
+      orElse: () => roomsAsync.valueOrNull ?? fallbackRooms,
+    );
+    final selectedRoomId = ref.watch(selectedRoomIdProvider);
+    final activeRoomId = selectedRoomId != null &&
+            roomOptions.any((room) => room.id == selectedRoomId)
+        ? selectedRoomId
+        : roomOptions.firstOrNull?.id;
+    if (activeRoomId != null && activeRoomId != selectedRoomId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(selectedRoomIdProvider.notifier).state = activeRoomId;
+      });
+    }
     final pad = CollectoryColors.screenPadding;
     return SizedBox.expand(
       child: Padding(
@@ -219,7 +248,8 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                           child: FilledButton(
                             onPressed: () {
                               setState(() {
-                                _imageDescription = _mockImageDescriptionForKind(
+                                _imageDescription =
+                                    _mockImageDescriptionForKind(
                                   _demoPhotoKind,
                                 );
                               });
@@ -272,21 +302,14 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
             const SizedBox(height: 8),
             _FieldBlock(
               label: 'ROOM',
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAF8F5),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: CollectoryColors.borderLight),
-                ),
-                child: Text(
-                  'ROOM 01 · May 2026 Archive',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: CollectoryColors.textPrimary,
-                  ),
-                ),
+              child: _RoomDropdown(
+                rooms: roomOptions,
+                selectedRoomId: activeRoomId,
+                decoration: _inputDecoration(hint: 'Choose a room'),
+                onChanged: (roomId) {
+                  if (roomId == null) return;
+                  ref.read(selectedRoomIdProvider.notifier).state = roomId;
+                },
               ),
             ),
             const SizedBox(height: 8),
@@ -311,15 +334,13 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                     CollectoryFavoriteTags.categorySlugForTag(_activeTag);
                 final note = _storyController.text.trim();
                 return AiFormPayload(
-                  description: note.isEmpty
-                      ? (_imageDescription ?? '收藏品图片')
-                      : note,
+                  description:
+                      note.isEmpty ? (_imageDescription ?? '收藏品图片') : note,
                   title: _titleController.text.trim().isEmpty
                       ? null
                       : _titleController.text.trim(),
-                  category: slug == null
-                      ? null
-                      : apiSlugToChineseCategory[slug],
+                  category:
+                      slug == null ? null : apiSlugToChineseCategory[slug],
                   imageDescription: _imageDescription,
                 );
               },
@@ -404,12 +425,9 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
 
   static String _mockImageDescriptionForKind(ExhibitIconKind kind) {
     return switch (kind) {
-      ExhibitIconKind.ticket =>
-        '一张泛黄的展览票根照片，边缘略有磨损，印刷字体清晰',
-      ExhibitIconKind.vinyl =>
-        '黑胶唱片封面照片，色彩饱和，中央圆形标签可见',
-      ExhibitIconKind.mineral =>
-        '天然矿石标本特写，表面有晶体反光',
+      ExhibitIconKind.ticket => '一张泛黄的展览票根照片，边缘略有磨损，印刷字体清晰',
+      ExhibitIconKind.vinyl => '黑胶唱片封面照片，色彩饱和，中央圆形标签可见',
+      ExhibitIconKind.mineral => '天然矿石标本特写，表面有晶体反光',
       _ => '收藏品物件照片，光线柔和，适合识别类别',
     };
   }
@@ -444,5 +462,53 @@ class _FieldBlock extends StatelessWidget {
         child,
       ],
     );
+  }
+}
+
+class _RoomDropdown extends StatelessWidget {
+  const _RoomDropdown({
+    required this.rooms,
+    required this.selectedRoomId,
+    required this.decoration,
+    required this.onChanged,
+  });
+
+  final List<CollectionRoomSummary> rooms;
+  final int? selectedRoomId;
+  final InputDecoration decoration;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final value =
+        rooms.any((room) => room.id == selectedRoomId) ? selectedRoomId : null;
+    return DropdownButtonFormField<int>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: decoration,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+      items: [
+        for (final room in rooms)
+          DropdownMenuItem<int>(
+            value: room.id,
+            child: Text(
+              _labelFor(room),
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: CollectoryColors.textPrimary,
+              ),
+            ),
+          ),
+      ],
+      onChanged: rooms.isEmpty ? null : onChanged,
+    );
+  }
+
+  String _labelFor(CollectionRoomSummary room) {
+    final label = room.label ?? room.month;
+    final count = room.collectionCount;
+    if (count == null) return '$label · ${room.month}';
+    return '$label · ${room.month} · $count exhibits';
   }
 }

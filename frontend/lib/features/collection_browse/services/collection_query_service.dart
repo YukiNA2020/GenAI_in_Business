@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../models/collection_item.dart';
 import '../models/collection_query_state.dart';
+import '../models/collection_room.dart';
 
 // ---------------------------------------------------------------------------
 // 数据流（成员 3 必须通过 backend 访问 SQLite，禁止前端直连数据库）：
@@ -356,6 +357,20 @@ class CollectionQueryService {
     return data.map((e) => e.toString()).toList();
   }
 
+  /// GET /api/rooms
+  Future<List<CollectionRoomSummary>> fetchRooms() async {
+    final data = await _api.get<List<dynamic>>('/api/rooms');
+    return data
+        .map((e) => CollectionRoomSummary.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// GET /api/rooms/:id
+  Future<CollectionRoomDetail> fetchRoomById(int id) async {
+    final data = await _api.get<Map<String, dynamic>>('/api/rooms/$id');
+    return CollectionRoomDetail.fromJson(data);
+  }
+
   /// POST /api/collections — create exhibit (Member 2 contract; wired for Add draft)
   Future<CollectionItem> createCollection({
     required String title,
@@ -364,6 +379,11 @@ class CollectionQueryService {
     String? visibility,
     List<String>? tags,
     int? userId,
+    int? roomId,
+    String? dateAcquired,
+    String? location,
+    String? categoryTemplate,
+    String? customFields,
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -372,6 +392,11 @@ class CollectionQueryService {
       if (visibility != null) 'visibility': visibility,
       if (tags != null && tags.isNotEmpty) 'tags': tags,
       if (userId != null) 'userId': userId,
+      if (roomId != null) 'roomId': roomId,
+      if (dateAcquired != null && dateAcquired.isNotEmpty) 'dateAcquired': dateAcquired,
+      if (location != null && location.isNotEmpty) 'location': location,
+      if (categoryTemplate != null && categoryTemplate.isNotEmpty) 'categoryTemplate': categoryTemplate,
+      if (customFields != null && customFields.isNotEmpty) 'customFields': customFields,
     };
     final data = await _api.post(
       '/api/collections',
@@ -390,6 +415,7 @@ class CollectionQueryService {
     String? dateAcquired,
     String? visibility,
     List<String>? tags,
+    int? roomId,
   }) async {
     final body = <String, dynamic>{
       if (title != null) 'title': title,
@@ -399,6 +425,7 @@ class CollectionQueryService {
       if (dateAcquired != null) 'dateAcquired': dateAcquired,
       if (visibility != null) 'visibility': visibility,
       if (tags != null) 'tags': tags,
+      if (roomId != null) 'roomId': roomId,
     };
     final data = await _api.put('/api/collections/$id', body: body);
     return CollectionItem.fromJson(data);

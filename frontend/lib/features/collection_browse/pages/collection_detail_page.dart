@@ -5,6 +5,7 @@ import '../../../core/theme/collectory_theme.dart';
 import '../../../core/theme/collectory_tokens.dart';
 import '../models/collection_item.dart'
     show CollectionItem, orderedCustomFieldEntries, parseCustomFields;
+import '../models/collection_room.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
 import '../services/collection_query_service.dart';
@@ -171,8 +172,18 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
       final parts = raw.substring(0, 10).split('-');
       if (parts.length == 3) {
         const months = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
         ];
         final m = int.tryParse(parts[1]);
         final d = int.tryParse(parts[2]);
@@ -189,8 +200,18 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
       return 'Collectory Archive';
     }
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final parts = dateAcquired.substring(0, 10).split('-');
     if (parts.length == 3) {
@@ -250,6 +271,15 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
     return '—';
   }
 
+  String _roomLabel(CollectionItem item, List<CollectionRoomSummary>? rooms) {
+    final roomId = item.roomId;
+    if (roomId == null) return 'Unassigned';
+    final room = rooms?.where((r) => r.id == roomId).firstOrNull;
+    if (room == null) return 'Room $roomId';
+    final label = room.label?.trim().isNotEmpty == true ? room.label! : null;
+    return label ?? room.month;
+  }
+
   @override
   Widget build(BuildContext context) {
     final pad = CollectoryColors.screenPadding;
@@ -295,6 +325,8 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
 
     final item = _item!;
     final publicView = widget.isPublicView;
+    final rooms = ref.watch(roomsProvider).valueOrNull;
+    final roomLabel = _roomLabel(item, rooms);
     final categoryName =
         item.category != null ? _categoryNames[item.category!] : null;
     final exhibitId = item.id.toString().padLeft(3, '0');
@@ -302,8 +334,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
     final typeLabel = _typeLabel(item.category, categoryName);
     final caption = _featuredCaption(item);
     final custom = parseCustomFields(item.customFields);
-    final customEntries =
-        orderedCustomFieldEntries(custom, _categoryFieldKeys);
+    final customEntries = orderedCustomFieldEntries(custom, _categoryFieldKeys);
     final storyText = item.story?.isNotEmpty == true
         ? item.story!
         : 'No story saved for this exhibit yet.';
@@ -374,7 +405,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
                 Text(
                   publicView
                       ? 'PUBLIC EXHIBIT · $exhibitId'
-                      : 'EXHIBIT $exhibitId · ROOM 01',
+                      : 'EXHIBIT $exhibitId · ${roomLabel.toUpperCase()}',
                   style: CollectoryHandoffHeader.metaLabel(),
                 ),
                 if (publicView) ...[
@@ -462,7 +493,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: _MetaBlock(label: 'ROOM', value: 'ROOM 01'),
+                        child: _MetaBlock(label: 'ROOM', value: roomLabel),
                       ),
                       const SizedBox(width: 20),
                       Expanded(

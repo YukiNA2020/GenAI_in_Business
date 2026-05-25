@@ -53,8 +53,19 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
     final items = list.items;
     final total = list.total;
     final pad = CollectoryColors.screenPadding;
-    final roomIndex = ref.watch(collectionRoomIndexProvider);
-    final room = CollectoryRoomCatalog.forIndex(roomIndex);
+    final selectedRoomId = ref.watch(selectedRoomIdProvider);
+    final roomsAsync = ref.watch(roomsProvider);
+    final fallbackRooms = CollectoryRoomCatalog.fallbackSummaries(items: items);
+    final loadedRooms = roomsAsync.valueOrNull;
+    final rooms = loadedRooms != null && loadedRooms.isNotEmpty
+        ? loadedRooms
+        : fallbackRooms;
+    final currentRoomId =
+        selectedRoomId != null && rooms.any((room) => room.id == selectedRoomId)
+            ? selectedRoomId
+            : rooms.firstOrNull?.id;
+    final currentRoom = rooms.where((r) => r.id == currentRoomId).firstOrNull;
+    final roomLabel = currentRoom?.label ?? currentRoom?.month ?? 'Rooms';
 
     return CustomScrollView(
       controller: _scrollController,
@@ -63,123 +74,133 @@ class _DesignGalleryPageState extends ConsumerState<DesignGalleryPage> {
       ),
       slivers: [
         CupertinoSliverRefreshControl(
-          onRefresh: () =>
-              ref.read(collectionListProvider.notifier).refresh(),
+          onRefresh: () => ref.read(collectionListProvider.notifier).refresh(),
         ),
         SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(pad, 8, pad, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CollectoryTopBar(contextTitle: 'Room archive'),
-                  const _HairlineDivider(),
-                  const SizedBox(height: 12),
-                  Text(room.roomCode, style: CollectoryHandoffHeader.metaLabel()),
-                  const SizedBox(height: 6),
-                  Text(
-                    room.archiveTitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: CollectoryColors.textPrimary,
-                      height: 1.1,
-                    ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(pad, 8, pad, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CollectoryTopBar(contextTitle: 'Room archive'),
+                const _HairlineDivider(),
+                const SizedBox(height: 12),
+                Text(currentRoom?.month ?? '',
+                    style: CollectoryHandoffHeader.metaLabel()),
+                const SizedBox(height: 6),
+                Text(
+                  roomLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: CollectoryColors.textPrimary,
+                    height: 1.1,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    room.galleryBlurb,
-                    style: CollectoryHandoffHeader.bodySecondary()
-                        .copyWith(fontSize: 13, height: 1.35),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Monthly collection archive',
+                  style: CollectoryHandoffHeader.bodySecondary()
+                      .copyWith(fontSize: 13, height: 1.35),
+                ),
+                const SizedBox(height: 12),
+                roomsAsync.when(
+                  data: (_) => RoomSelectorRow(
+                    rooms: rooms,
+                    selectedRoomId: currentRoomId,
+                    onSelect: (id) => openCollectionRoom(ref, roomId: id),
                   ),
-                  const SizedBox(height: 12),
-                  RoomSelectorRow(
-                    selectedIndex: roomIndex,
-                    onSelect: (i) => openCollectionRoom(ref, roomIndex: i),
+                  loading: () => const SizedBox(height: 60),
+                  error: (_, __) => RoomSelectorRow(
+                    rooms: fallbackRooms,
+                    selectedRoomId: currentRoomId,
+                    onSelect: (id) => openCollectionRoom(ref, roomId: id),
                   ),
-                  const _HairlineDivider(margin: EdgeInsets.symmetric(vertical: 12)),
-                  Text(
-                    'Layered gallery',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: CollectoryColors.textPrimary,
-                    ),
+                ),
+                const _HairlineDivider(
+                    margin: EdgeInsets.symmetric(vertical: 12)),
+                Text(
+                  'Layered gallery',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: CollectoryColors.textPrimary,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Four object types, four layered walls.',
-                    style: CollectoryHandoffHeader.bodySecondary()
-                        .copyWith(fontSize: 13),
-                  ),
-                  const SizedBox(height: 12),
-                  if (list.loading && items.isEmpty)
-                    const SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: CollectoryColors.textLabel,
-                        ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Four object types, four layered walls.',
+                  style: CollectoryHandoffHeader.bodySecondary()
+                      .copyWith(fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                if (list.loading && items.isEmpty)
+                  const SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: CollectoryColors.textLabel,
                       ),
-                    )
-                  else
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 0.88,
-                      children: [
-                        for (final spec in galleryLayerSpecs)
-                          Builder(
-                            builder: (context) {
-                              final item = pickLayerItem(items, spec);
-                              return LayeredExhibitTile(
-                                spec: spec,
-                                item: item,
-                                onTap: () => _openLayerCategory(spec),
-                              );
-                            },
-                          ),
-                      ],
                     ),
-                  const SizedBox(height: 16),
-                  const _HairlineDivider(),
-                  const SizedBox(height: 12),
-                  Row(
-                    key: _collectionWallKey,
+                  )
+                else
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 0.88,
                     children: [
-                      Expanded(
-                        child: Text(
-                          'Collection wall',
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      for (final spec in galleryLayerSpecs)
+                        Builder(
+                          builder: (context) {
+                            final item = pickLayerItem(items, spec);
+                            return LayeredExhibitTile(
+                              spec: spec,
+                              item: item,
+                              onTap: () => _openLayerCategory(spec),
+                            );
+                          },
                         ),
-                      ),
-                      Text(
-                        '$total exhibits',
-                        style: CollectoryHandoffHeader.bodySecondary(),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Search, filter, and browse all exhibits.',
-                    style: CollectoryHandoffHeader.bodySecondary()
-                        .copyWith(fontSize: 13),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
+                const SizedBox(height: 16),
+                const _HairlineDivider(),
+                const SizedBox(height: 12),
+                Row(
+                  key: _collectionWallKey,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Collection wall',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$total exhibits',
+                      style: CollectoryHandoffHeader.bodySecondary(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Search, filter, and browse all exhibits.',
+                  style: CollectoryHandoffHeader.bodySecondary()
+                      .copyWith(fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
           ),
-          CollectionWallSlivers(
-            scrollController: _scrollController,
-            showWallHeader: false,
-          ),
+        ),
+        CollectionWallSlivers(
+          scrollController: _scrollController,
+          showWallHeader: false,
+        ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
     );

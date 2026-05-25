@@ -2,7 +2,15 @@ const { getDb } = require('../db/connection');
 
 async function findAll() {
   const db = await getDb();
-  const result = db.exec('SELECT * FROM rooms ORDER BY month DESC');
+  const result = db.exec(`
+    SELECT
+      rooms.*,
+      COUNT(collections.id) AS collection_count
+    FROM rooms
+    LEFT JOIN collections ON collections.room_id = rooms.id
+    GROUP BY rooms.id
+    ORDER BY rooms.month DESC
+  `);
   if (!result.length || !result[0].values.length) return [];
   const cols = result[0].columns;
   return result[0].values.map((vals) => {

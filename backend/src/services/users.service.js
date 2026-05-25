@@ -8,6 +8,7 @@ const FIELD_MAP = {
   user_id: 'userId',
   category_template: 'categoryTemplate',
   custom_fields: 'customFields',
+  room_id: 'roomId',
 };
 
 function toCamelCase(dbRow) {

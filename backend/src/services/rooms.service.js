@@ -7,6 +7,7 @@ async function list() {
     month: r.month,
     label: r.label,
     createdAt: r.created_at,
+    collectionCount: r.collection_count,
   }));
 }
 

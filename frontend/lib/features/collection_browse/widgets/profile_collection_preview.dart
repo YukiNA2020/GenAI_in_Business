@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/collectory_theme.dart';
 import '../models/collection_item.dart';
+import '../models/collection_room.dart';
 import '../providers/app_navigation_provider.dart';
 import '../utils/collectory_room_catalog.dart';
 import '../providers/collection_list_provider.dart';
@@ -35,6 +36,16 @@ class ProfileCollectionPreview extends ConsumerStatefulWidget {
 class _ProfileCollectionPreviewState
     extends ConsumerState<ProfileCollectionPreview> {
   String _activeFavoriteTag = CollectoryFavoriteTags.labels.first;
+
+  String _roomsCountLabel(WidgetRef ref, List<CollectionItem> allItems) {
+    final roomsAsync = ref.watch(roomsProvider);
+    final count = roomsAsync.maybeWhen(
+      data: (rooms) => rooms.length,
+      orElse: () =>
+          CollectoryRoomCatalog.fallbackSummaries(items: allItems).length,
+    );
+    return count.toString().padLeft(2, '0');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +118,7 @@ class _ProfileCollectionPreviewState
     required bool publicPreview,
   }) {
     final exhibits = stats.totalCollections.toString();
-    final rooms = stats.categoryCount.toString().padLeft(2, '0');
+    final rooms = _roomsCountLabel(ref, allItems);
     final publicCount = stats.publicCollections.toString();
     final lastAdded = resolveLastAdded(allItems, stats.recentCollections);
 
@@ -237,156 +248,185 @@ class _ProfileCollectionPreviewState
     );
 
     return [
-          _VisibilityCard(
-            publicPreview: publicPreview,
-            onToggle: () {
-              ref.read(profilePublicPreviewProvider.notifier).state =
-                  !publicPreview;
-            },
-            onOpenSettings: () => openShareRoom(ref),
+      _VisibilityCard(
+        publicPreview: publicPreview,
+        onToggle: () {
+          ref.read(profilePublicPreviewProvider.notifier).state =
+              !publicPreview;
+        },
+        onOpenSettings: () => openShareRoom(ref),
+      ),
+      const SizedBox(height: 20),
+      Text(
+        'Recent exhibits',
+        style: GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: CollectoryColors.textPrimary,
+        ),
+      ),
+      const SizedBox(height: 10),
+      if (recent.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            'No recent exhibits yet.',
+            style: CollectoryHandoffHeader.bodySecondary(),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Recent exhibits',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: CollectoryColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 10),
-          if (recent.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                'No recent exhibits yet.',
-                style: CollectoryHandoffHeader.bodySecondary(),
-              ),
-            )
-          else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var i = 0; i < recent.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 12),
-                      SizedBox(
-                        width: 168,
-                        child: CollectionCard(
-                          item: recent[i],
-                          categoryLabel: recent[i].category != null
-                              ? categoryNames[recent[i].category!]
-                              : null,
-                          onTap: () => openItemDetail(ref, recent[i].id),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          const SizedBox(height: 20),
-          Text(
-            'Favorite tags',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: CollectoryColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          CollectoryFavoriteTagRow(
-            activeTag: _activeFavoriteTag,
-            onTagTap: (tag) => setState(() => _activeFavoriteTag = tag),
-          ),
-          const SizedBox(height: 12),
-          if (favoriteItems.isEmpty)
-            Text(
-              publicPreview
-                  ? 'No public exhibits in this category.'
-                  : 'No exhibits in this category.',
-              style: CollectoryHandoffHeader.bodySecondary(),
-            )
-          else
-            CollectionGrid(
-              items: favoriteItems,
-              categoryNames: categoryNames,
-              onItemTap: (item) => openItemDetail(ref, item.id),
-            ),
-          const SizedBox(height: 20),
-          Text(
-            'Collection rooms',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: CollectoryColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 72,
+        )
+      else
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: IntrinsicHeight(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (var i = 0; i < CollectoryRoomCatalog.rooms.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 7),
-                  Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        final spec = CollectoryRoomCatalog.rooms[i];
-                        return _RoomPreviewCard(
-                          room: spec.roomCode,
-                          title: spec.monthYear,
-                          color: spec.cardColor,
-                          preview: spec.isPreview,
-                          onTap: () => openCollectionRoom(ref, roomIndex: i),
-                        );
-                      },
+                for (var i = 0; i < recent.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 12),
+                  SizedBox(
+                    width: 168,
+                    child: CollectionCard(
+                      item: recent[i],
+                      categoryLabel: recent[i].category != null
+                          ? categoryNames[recent[i].category!]
+                          : null,
+                      onTap: () => openItemDetail(ref, recent[i].id),
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Settings',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: CollectoryColors.textPrimary,
-            ),
-          ),
-          const _HairlineDivider(),
-          InkWell(
-            onTap: () => openShareRoom(ref),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Account and privacy',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: CollectoryColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '→',
-                    style: CollectoryHandoffHeader.metaLabel().copyWith(
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+        ),
+      const SizedBox(height: 20),
+      Text(
+        'Favorite tags',
+        style: GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: CollectoryColors.textPrimary,
+        ),
+      ),
+      const SizedBox(height: 8),
+      CollectoryFavoriteTagRow(
+        activeTag: _activeFavoriteTag,
+        onTagTap: (tag) => setState(() => _activeFavoriteTag = tag),
+      ),
+      const SizedBox(height: 12),
+      if (favoriteItems.isEmpty)
+        Text(
+          publicPreview
+              ? 'No public exhibits in this category.'
+              : 'No exhibits in this category.',
+          style: CollectoryHandoffHeader.bodySecondary(),
+        )
+      else
+        CollectionGrid(
+          items: favoriteItems,
+          categoryNames: categoryNames,
+          onItemTap: (item) => openItemDetail(ref, item.id),
+        ),
+      const SizedBox(height: 20),
+      Text(
+        'Collection rooms',
+        style: GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: CollectoryColors.textPrimary,
+        ),
+      ),
+      const SizedBox(height: 8),
+      SizedBox(
+        height: 72,
+        child: Builder(
+          builder: (context) {
+            final roomsAsync = ref.watch(roomsProvider);
+            final fallbackRooms =
+                CollectoryRoomCatalog.fallbackSummaries(items: allItems);
+            return roomsAsync.when(
+              data: (rooms) => _RoomPreviewRow(
+                rooms:
+                    rooms.isNotEmpty ? rooms.take(3).toList() : fallbackRooms,
+                onOpenRoom: (roomId) => openCollectionRoom(ref, roomId: roomId),
               ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => _RoomPreviewRow(
+                rooms: fallbackRooms,
+                onOpenRoom: (roomId) => openCollectionRoom(ref, roomId: roomId),
+              ),
+            );
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
+      Text(
+        'Settings',
+        style: GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: CollectoryColors.textPrimary,
+        ),
+      ),
+      const _HairlineDivider(),
+      InkWell(
+        onTap: () => openShareRoom(ref),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Account and privacy',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: CollectoryColors.textPrimary,
+                  ),
+                ),
+              ),
+              Text(
+                '→',
+                style: CollectoryHandoffHeader.metaLabel().copyWith(
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const _HairlineDivider(),
+    ];
+  }
+}
+
+class _RoomPreviewRow extends StatelessWidget {
+  const _RoomPreviewRow({
+    required this.rooms,
+    required this.onOpenRoom,
+  });
+
+  final List<CollectionRoomSummary> rooms;
+  final ValueChanged<int> onOpenRoom;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < rooms.length; i++) ...[
+          if (i > 0) const SizedBox(width: 7),
+          Expanded(
+            child: _RoomPreviewCard(
+              room: rooms[i].month,
+              title: rooms[i].label ?? rooms[i].month,
+              collectionCount: rooms[i].collectionCount,
+              color: const Color(0xFFF5F0E8),
+              preview: rooms[i].id < 0,
+              onTap: () => onOpenRoom(rooms[i].id),
             ),
           ),
-          const _HairlineDivider(),
-        ];
+        ],
+      ],
+    );
   }
 }
 
@@ -604,6 +644,7 @@ class _RoomPreviewCard extends StatelessWidget {
   const _RoomPreviewCard({
     required this.room,
     required this.title,
+    this.collectionCount,
     required this.color,
     required this.onTap,
     this.preview = false,
@@ -611,6 +652,7 @@ class _RoomPreviewCard extends StatelessWidget {
 
   final String room;
   final String title;
+  final int? collectionCount;
   final Color color;
   final VoidCallback onTap;
   final bool preview;
@@ -667,6 +709,8 @@ class _RoomPreviewCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -674,6 +718,16 @@ class _RoomPreviewCard extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
+                    if (collectionCount != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '$collectionCount exhibits',
+                        style: CollectoryHandoffHeader.bodySecondary()
+                            .copyWith(fontSize: 10, height: 1.1),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
                 Container(

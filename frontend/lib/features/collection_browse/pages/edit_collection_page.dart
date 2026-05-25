@@ -4,10 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/collectory_theme.dart';
+import '../../collection_form/models/ai_form_payload.dart';
+import '../../collection_form/services/ai_suggestion_service.dart';
 import '../models/collection_item.dart';
+import '../models/collection_room.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
 import '../services/collection_query_service.dart';
+import '../utils/collectory_room_catalog.dart';
 import '../widgets/collectory_handoff_header.dart';
 import '../widgets/collection_exhibit_image.dart';
 import '../widgets/design/collectory_favorite_tags.dart';
@@ -41,6 +45,7 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
   bool _uploadingImage = false;
   String? _error;
   int _imageVersion = 0;
+  int? _selectedRoomId;
 
   @override
   void dispose() {
@@ -92,6 +97,7 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
       if (match.isNotEmpty) _activeTag = match.first;
     }
     _privateMuseum = item.visibility != 'public';
+    _selectedRoomId = item.roomId;
   }
 
   InputDecoration _inputDecoration({String? hint, int maxLines = 1}) {
@@ -119,19 +125,37 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
     );
   }
 
-  void _suggestStory() {
+  Future<void> _suggestStory() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add a title first for story suggestions')),
+        const SnackBar(
+            content: Text('Add a title first for story suggestions')),
       );
       return;
     }
     final tag = _activeTag.toLowerCase();
-    final draft =
-        'This piece — $title — sits in my ${_privateMuseum ? 'private' : 'public'} '
-        'archive as a $tag memory. I want to remember where it came from and why it still matters.';
-    setState(() => _storyController.text = draft);
+    final payload = AiFormPayload(
+      description: _storyController.text.trim().isNotEmpty
+          ? _storyController.text.trim()
+          : title,
+      title: title,
+      category: tag,
+      location:
+          _locationController.text.trim().isNotEmpty ? _locationController.text.trim() : null,
+      dateAcquired:
+          _dateController.text.trim().isNotEmpty ? _dateController.text.trim() : null,
+    );
+    try {
+      final story = await ref.read(aiSuggestionServiceProvider).generateStory(payload);
+      if (!mounted) return;
+      setState(() => _storyController.text = story);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Story generation failed: $e')),
+      );
+    }
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -151,13 +175,12 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
     }
     setState(() => _uploadingImage = true);
     try {
-      final updated = await ref
-          .read(collectionQueryServiceProvider)
-          .uploadCollectionImage(
-            widget.collectionId,
-            bytes: bytes,
-            filename: file.name.isNotEmpty ? file.name : 'photo.jpg',
-          );
+      final updated =
+          await ref.read(collectionQueryServiceProvider).uploadCollectionImage(
+                widget.collectionId,
+                bytes: bytes,
+                filename: file.name.isNotEmpty ? file.name : 'photo.jpg',
+              );
       if (!mounted) return;
       setState(() {
         _item = updated;
@@ -194,17 +217,30 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
     try {
       final category =
           CollectoryFavoriteTags.categorySlugForTag(_activeTag) ?? 'mineral';
-      final updated = await ref.read(collectionQueryServiceProvider).updateCollection(
-            widget.collectionId,
-            title: title,
-            category: category,
-            story: _storyController.text.trim(),
-            location: _locationController.text.trim(),
-            dateAcquired: _dateController.text.trim(),
-            visibility: _privateMuseum ? 'private' : 'public',
-            tags: [_activeTag],
-          );
+      final previousRoomId = _item?.roomId;
+      final apiRoomId = _selectedRoomId != null && _selectedRoomId! > 0
+          ? _selectedRoomId
+          : null;
+      final updated =
+          await ref.read(collectionQueryServiceProvider).updateCollection(
+                widget.collectionId,
+                title: title,
+                category: category,
+                story: _storyController.text.trim(),
+                location: _locationController.text.trim(),
+                dateAcquired: _dateController.text.trim(),
+                visibility: _privateMuseum ? 'private' : 'public',
+                tags: [_activeTag],
+                roomId: apiRoomId,
+              );
       ref.invalidate(userStatsProvider);
+      ref.invalidate(roomsProvider);
+      if (previousRoomId != null && previousRoomId > 0) {
+        ref.invalidate(roomDetailProvider(previousRoomId));
+      }
+      if (apiRoomId != null) {
+        ref.invalidate(roomDetailProvider(apiRoomId));
+      }
       await ref.read(collectionListProvider.notifier).refresh();
       if (!mounted) return;
       setState(() {
@@ -272,6 +308,15 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
     }
 
     final item = _item!;
+    final list = ref.watch(collectionListProvider);
+    final roomsAsync = ref.watch(roomsProvider);
+    final fallbackRooms =
+        CollectoryRoomCatalog.fallbackSummaries(items: list.items);
+    final roomOptions = roomsAsync.maybeWhen(
+      data: (rooms) => rooms.isNotEmpty ? rooms : fallbackRooms,
+      error: (_, __) => fallbackRooms,
+      orElse: () => roomsAsync.valueOrNull ?? fallbackRooms,
+    );
 
     return ColoredBox(
       color: CollectoryColors.bgApp,
@@ -336,7 +381,8 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('EDIT EXHIBIT', style: CollectoryHandoffHeader.metaLabel()),
+                    Text('EDIT EXHIBIT',
+                        style: CollectoryHandoffHeader.metaLabel()),
                     const SizedBox(height: 6),
                     Text(
                       'Refine the story, tags, and visibility of this piece.',
@@ -384,6 +430,18 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
                     ),
                     const SizedBox(height: 12),
                     _FieldBlock(
+                      label: 'ROOM',
+                      child: _RoomDropdown(
+                        rooms: roomOptions,
+                        selectedRoomId: _selectedRoomId,
+                        decoration: _inputDecoration(hint: 'Choose a room'),
+                        onChanged: (roomId) {
+                          setState(() => _selectedRoomId = roomId);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _FieldBlock(
                       label: 'STORY NOTE',
                       child: TextField(
                         controller: _storyController,
@@ -406,9 +464,11 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
                       onTagTap: (tag) => setState(() => _activeTag = tag),
                     ),
                     const SizedBox(height: 24),
-                    const Divider(height: 1, color: CollectoryColors.borderLight),
+                    const Divider(
+                        height: 1, color: CollectoryColors.borderLight),
                     const SizedBox(height: 16),
-                    Text('VISIBILITY', style: CollectoryHandoffHeader.metaLabel()),
+                    Text('VISIBILITY',
+                        style: CollectoryHandoffHeader.metaLabel()),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -676,5 +736,53 @@ class _FieldBlock extends StatelessWidget {
         child,
       ],
     );
+  }
+}
+
+class _RoomDropdown extends StatelessWidget {
+  const _RoomDropdown({
+    required this.rooms,
+    required this.selectedRoomId,
+    required this.decoration,
+    required this.onChanged,
+  });
+
+  final List<CollectionRoomSummary> rooms;
+  final int? selectedRoomId;
+  final InputDecoration decoration;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final value =
+        rooms.any((room) => room.id == selectedRoomId) ? selectedRoomId : null;
+    return DropdownButtonFormField<int>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: decoration,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+      items: [
+        for (final room in rooms)
+          DropdownMenuItem<int>(
+            value: room.id,
+            child: Text(
+              _labelFor(room),
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: CollectoryColors.textPrimary,
+              ),
+            ),
+          ),
+      ],
+      onChanged: rooms.isEmpty ? null : onChanged,
+    );
+  }
+
+  String _labelFor(CollectionRoomSummary room) {
+    final label = room.label ?? room.month;
+    final count = room.collectionCount;
+    if (count == null) return '$label · ${room.month}';
+    return '$label · ${room.month} · $count exhibits';
   }
 }

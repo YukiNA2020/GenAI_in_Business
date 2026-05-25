@@ -20,6 +20,9 @@ async function createCollection(req, res, next) {
     const collection = await service.create(req.validatedBody);
     return created(res, collection, 'Collection created');
   } catch (err) {
+    if (err.code === 'ROOM_NOT_FOUND') {
+      return error(res, 'ROOM_NOT_FOUND', 'Room not found', err.statusCode || 404);
+    }
     next(err);
   }
 }
@@ -128,6 +131,9 @@ async function updateCollection(req, res, next) {
     }
     return success(res, collection, 'Collection updated');
   } catch (err) {
+    if (err.code === 'ROOM_NOT_FOUND') {
+      return error(res, 'ROOM_NOT_FOUND', 'Room not found', err.statusCode || 404);
+    }
     next(err);
   }
 }

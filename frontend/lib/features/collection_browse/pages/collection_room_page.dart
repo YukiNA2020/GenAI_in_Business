@@ -4,9 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/collectory_theme.dart';
 import '../models/collection_item.dart';
+import '../models/collection_room.dart';
 import '../providers/app_navigation_provider.dart';
 import '../providers/collection_list_provider.dart';
-import '../services/collection_query_service.dart';
 import '../utils/collectory_room_catalog.dart';
 import '../utils/gallery_layers.dart';
 import '../widgets/collectory_handoff_header.dart';
@@ -14,57 +14,61 @@ import '../widgets/design/collectory_top_bar.dart';
 import '../widgets/design/exhibit_illustrations.dart';
 
 /// Figma Collectory - Collection Room / Mobile.png
-/// 单屏无滚动；按所选月度 room 展示标题、日期与 Highlights / Timeline。
+/// 单屏无滚动；按所选 room（来自 /api/rooms）展示标题、日期与 Highlights / Timeline。
 class CollectionRoomPage extends ConsumerWidget {
   const CollectionRoomPage({
     super.key,
-    required this.roomIndex,
+    required this.roomId,
   });
 
-  /// 0=May 1=Jun 2=Jul — Gallery / Profile 同月下标进入同一页面配置
-  final int roomIndex;
+  /// room ID from /api/rooms
+  final int roomId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pad = CollectoryColors.screenPadding;
-    final room = CollectoryRoomCatalog.forIndex(roomIndex);
-    final statsAsync = ref.watch(userStatsProvider);
-    final list = ref.watch(collectionListProvider);
-    final roomItems = CollectoryRoomCatalog.itemsInRoom(list.items, room);
+    final fallbackRoom = CollectoryRoomCatalog.fallbackDetailForRoomId(
+      roomId,
+      ref.watch(collectionListProvider).items,
+    );
+    if (fallbackRoom != null) {
+      return ColoredBox(
+        color: CollectoryColors.bgApp,
+        child: SafeArea(
+          child: _roomBody(
+            ref: ref,
+            pad: pad,
+            room: fallbackRoom,
+            roomItems: fallbackRoom.collections,
+            exhibitCount: fallbackRoom.collections.length,
+          ),
+        ),
+      );
+    }
+
+    final roomAsync = ref.watch(roomDetailProvider(roomId));
 
     return ColoredBox(
       color: CollectoryColors.bgApp,
       child: SafeArea(
-        child: statsAsync.when(
+        child: roomAsync.when(
           loading: () => const Center(
             child: CircularProgressIndicator(color: CollectoryColors.textLabel),
           ),
-          error: (_, __) => _roomBody(
+          error: (e, _) => _roomBody(
+            ref: ref,
+            pad: pad,
+            room: null,
+            roomItems: const [],
+            exhibitCount: demoUserStatsFallback.totalCollections,
+          ),
+          data: (room) => _roomBody(
             ref: ref,
             pad: pad,
             room: room,
-            roomItems: roomItems,
-            allItems: list.items,
-            exhibitCount: roomItems.isNotEmpty
-                ? roomItems.length
-                : (room.isPreview ? 0 : demoUserStatsFallback.totalCollections),
+            roomItems: room.collections,
+            exhibitCount: room.collections.length,
           ),
-          data: (stats) {
-            final pool = roomItems.isNotEmpty
-                ? roomItems
-                : CollectoryRoomCatalog.itemsInRoom(stats.recentCollections, room);
-            final count = pool.isNotEmpty
-                ? pool.length
-                : (room.isPreview ? 0 : (stats.totalCollections > 0 ? stats.totalCollections : 24));
-            return _roomBody(
-              ref: ref,
-              pad: pad,
-              room: room,
-              roomItems: pool,
-              allItems: list.items,
-              exhibitCount: count,
-            );
-          },
         ),
       ),
     );
@@ -73,13 +77,14 @@ class CollectionRoomPage extends ConsumerWidget {
   Widget _roomBody({
     required WidgetRef ref,
     required double pad,
-    required CollectoryRoomSpec room,
+    required CollectionRoomDetail? room,
     required List<CollectionItem> roomItems,
-    required List<CollectionItem> allItems,
     required int exhibitCount,
   }) {
-    final highlights = _resolveHighlights(room, roomItems);
-    final timeline = _resolveTimeline(room, roomItems);
+    final label = room?.label ?? room?.month ?? 'Collection room';
+    final month = room?.month ?? '';
+    final highlights = _resolveHighlights(roomItems);
+    final timeline = _resolveTimeline(roomItems);
 
     return SizedBox.expand(
       child: Padding(
@@ -117,10 +122,10 @@ class CollectionRoomPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(room.roomCode, style: CollectoryHandoffHeader.metaLabel()),
+                      Text(month, style: CollectoryHandoffHeader.metaLabel()),
                       const SizedBox(height: 4),
                       Text(
-                        room.archiveTitle,
+                        label,
                         style: CollectoryHandoffHeader.pageTitle().copyWith(
                           fontSize: 28,
                           height: 1.05,
@@ -129,28 +134,11 @@ class CollectionRoomPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-                if (room.isPreview)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: CollectoryColors.bgApp,
-                      border: Border.all(color: CollectoryColors.textLabel),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'Preview',
-                      style: CollectoryHandoffHeader.metaLabel().copyWith(
-                        fontSize: 9,
-                        height: 1,
-                      ),
-                    ),
-                  ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              room.roomBlurb,
+              'Monthly collection archive',
               style: CollectoryHandoffHeader.bodySecondary().copyWith(
                 fontSize: 13,
                 height: 1.3,
@@ -161,14 +149,19 @@ class CollectionRoomPage extends ConsumerWidget {
             const SizedBox(height: 10),
             _StatsCard(
               exhibitCount: exhibitCount,
-              room: room,
+              month: month,
             ),
             const SizedBox(height: 8),
-            _AiReflectionCard(reflection: room.reflection),
+            _AiReflectionCard(
+              reflection: roomItems.isEmpty
+                  ? 'Start adding exhibits to this room to see AI reflections.'
+                  : 'A rich month of memories — $exhibitCount exhibits collected.',
+            ),
             const Spacer(flex: 2),
             Text(
               'Highlights',
-              style: CollectoryHandoffHeader.sectionTitle().copyWith(fontSize: 17),
+              style:
+                  CollectoryHandoffHeader.sectionTitle().copyWith(fontSize: 17),
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -183,12 +176,8 @@ class CollectionRoomPage extends ConsumerWidget {
                         ),
                         child: _HighlightCard(
                           highlight: highlights[i],
-                          onTap: () => _openRoomHighlight(
-                            ref,
-                            allItems,
-                            highlights[i].categorySlug,
-                            highlights[i].itemId,
-                          ),
+                          onTap: () =>
+                              _openRoomHighlight(ref, roomItems, highlights[i]),
                         ),
                       ),
                     ),
@@ -198,7 +187,8 @@ class CollectionRoomPage extends ConsumerWidget {
             const Spacer(flex: 2),
             Text(
               'Room timeline',
-              style: CollectoryHandoffHeader.sectionTitle().copyWith(fontSize: 17),
+              style:
+                  CollectoryHandoffHeader.sectionTitle().copyWith(fontSize: 17),
             ),
             const SizedBox(height: 6),
             for (var i = 0; i < timeline.length; i++) ...[
@@ -211,8 +201,7 @@ class CollectionRoomPage extends ConsumerWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: () {
-                      ref.read(collectionRoomIndexProvider.notifier).state =
-                          roomIndex;
+                      ref.read(selectedRoomIdProvider.notifier).state = roomId;
                       goToGalleryTab(ref);
                     },
                     style: FilledButton.styleFrom(
@@ -234,7 +223,8 @@ class CollectionRoomPage extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 44),
                       foregroundColor: CollectoryColors.textPrimary,
-                      side: const BorderSide(color: CollectoryColors.borderLight),
+                      side:
+                          const BorderSide(color: CollectoryColors.borderLight),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -249,170 +239,113 @@ class CollectionRoomPage extends ConsumerWidget {
       ),
     );
   }
-}
 
-List<_RoomHighlight> _resolveHighlights(
-  CollectoryRoomSpec room,
-  List<CollectionItem> roomItems,
-) {
-  if (roomItems.isEmpty) {
-    return _designHighlightsFor(room);
-  }
-
-  final sorted = [...roomItems]
-    ..sort((a, b) {
-      final da = a.dateAcquired ?? a.createdAt ?? '';
-      final db = b.dateAcquired ?? b.createdAt ?? '';
-      return db.compareTo(da);
-    });
-
-  return sorted.take(3).map((item) {
-    final spec = galleryLayerSpecs.firstWhere(
-      (s) => item.category != null && s.categorySlugs.contains(item.category),
-      orElse: () => galleryLayerSpecs.first,
-    );
-    return _RoomHighlight(
-      exhibitId: item.id.toString().padLeft(3, '0'),
-      title: item.title,
-      kind: ExhibitIcon.fromCategory(item.category) ?? ExhibitIconKind.vinyl,
-      color: Color(spec.cardColor),
-      categorySlug: item.category ?? spec.categorySlugs.first,
-      itemId: item.id,
-    );
-  }).toList();
-}
-
-List<_RoomHighlight> _designHighlightsFor(CollectoryRoomSpec room) {
-  return switch (room.index) {
-    1 => const [
+  List<_RoomHighlight> _resolveHighlights(List<CollectionItem> roomItems) {
+    if (roomItems.isEmpty) {
+      return const [
         _RoomHighlight(
           exhibitId: '—',
-          title: 'June archive',
-          kind: ExhibitIconKind.ticket,
-          color: Color(0xFFD5E0DC),
-          categorySlug: 'ticket',
-        ),
-        _RoomHighlight(
-          exhibitId: '—',
-          title: 'Travel postcard',
-          kind: ExhibitIconKind.memory,
-          color: Color(0xFFE8E4DC),
-          categorySlug: 'postcard',
-        ),
-        _RoomHighlight(
-          exhibitId: '—',
-          title: 'Shelf mineral',
-          kind: ExhibitIconKind.mineral,
-          color: Color(0xFFDCD5EA),
-          categorySlug: 'mineral',
-        ),
-      ],
-    2 => const [
-        _RoomHighlight(
-          exhibitId: '—',
-          title: 'July fluorite',
-          kind: ExhibitIconKind.mineral,
-          color: Color(0xFFDCD5EA),
-          categorySlug: 'mineral',
-        ),
-        _RoomHighlight(
-          exhibitId: '—',
-          title: 'Summer vinyl',
+          title: 'No exhibits yet',
           kind: ExhibitIconKind.vinyl,
           color: Color(0xFFC7A679),
           categorySlug: 'vinyl',
         ),
         _RoomHighlight(
           exhibitId: '—',
-          title: 'Memory ticket',
-          kind: ExhibitIconKind.ticket,
-          color: Color(0xFFD5E0DC),
-          categorySlug: 'ticket',
-        ),
-      ],
-    _ => const [
-        _RoomHighlight(
-          exhibitId: '014',
-          title: 'Signed Vinyl',
-          kind: ExhibitIconKind.vinyl,
-          color: Color(0xFFC7A679),
-          categorySlug: 'vinyl',
-        ),
-        _RoomHighlight(
-          exhibitId: '015',
-          title: 'Concert Ticket',
-          kind: ExhibitIconKind.ticket,
-          color: Color(0xFFD5E0DC),
-          categorySlug: 'ticket',
-        ),
-        _RoomHighlight(
-          exhibitId: '022',
-          title: 'Green Fluorite',
+          title: 'Start collecting',
           kind: ExhibitIconKind.mineral,
           color: Color(0xFFDCD5EA),
           categorySlug: 'mineral',
         ),
-      ],
-  };
-}
-
-List<_TimelineEntry> _resolveTimeline(
-  CollectoryRoomSpec room,
-  List<CollectionItem> roomItems,
-) {
-  if (roomItems.isEmpty) {
-    return room.designTimeline
-        .map(
-          (e) => _TimelineEntry(e.date, e.label, e.dotColor),
-        )
-        .toList();
-  }
-
-  final sorted = [...roomItems]
-    ..sort((a, b) {
-      final da = a.dateAcquired ?? a.createdAt ?? '';
-      final db = b.dateAcquired ?? b.createdAt ?? '';
-      return db.compareTo(da);
-    });
-
-  return sorted.take(3).map((item) {
-    final dateLabel = CollectoryRoomCatalog.formatTimelineDate(
-      item.dateAcquired ?? item.createdAt,
-      room,
-    );
-    final label = item.title.length > 28
-        ? '${item.title.substring(0, 28)}…'
-        : item.title;
-    return _TimelineEntry(dateLabel, label, const Color(0xFF171512));
-  }).toList();
-}
-
-void _openRoomHighlight(
-  WidgetRef ref,
-  List<CollectionItem> items,
-  String categorySlug,
-  int? itemId,
-) {
-  if (itemId != null) {
-    openItemDetail(ref, itemId);
-    return;
-  }
-  GalleryLayerSpec? spec;
-  for (final s in galleryLayerSpecs) {
-    if (s.categorySlugs.contains(categorySlug)) {
-      spec = s;
-      break;
+        _RoomHighlight(
+          exhibitId: '—',
+          title: 'Add your first item',
+          kind: ExhibitIconKind.ticket,
+          color: Color(0xFFD5E0DC),
+          categorySlug: 'ticket',
+        ),
+      ];
     }
+
+    final sorted = [...roomItems]..sort((a, b) {
+        final da = a.dateAcquired ?? a.createdAt ?? '';
+        final db = b.dateAcquired ?? b.createdAt ?? '';
+        return db.compareTo(da);
+      });
+
+    return sorted.take(3).map((item) {
+      final spec = galleryLayerSpecs.firstWhere(
+        (s) => item.category != null && s.categorySlugs.contains(item.category),
+        orElse: () => galleryLayerSpecs.first,
+      );
+      return _RoomHighlight(
+        exhibitId: item.id.toString().padLeft(3, '0'),
+        title: item.title,
+        kind: ExhibitIcon.fromCategory(item.category) ?? ExhibitIconKind.vinyl,
+        color: Color(spec.cardColor),
+        categorySlug: item.category ?? spec.categorySlugs.first,
+        itemId: item.id,
+      );
+    }).toList();
   }
-  if (spec != null) {
-    for (final item in items) {
-      if (spec.categorySlugs.contains(item.category)) {
-        openItemDetail(ref, item.id);
-        return;
+
+  List<_TimelineEntry> _resolveTimeline(List<CollectionItem> roomItems) {
+    if (roomItems.isEmpty) {
+      return const [];
+    }
+
+    final sorted = [...roomItems]..sort((a, b) {
+        final da = a.dateAcquired ?? a.createdAt ?? '';
+        final db = b.dateAcquired ?? b.createdAt ?? '';
+        return db.compareTo(da);
+      });
+
+    return sorted.take(3).map((item) {
+      final dateLabel = _formatDate(item.dateAcquired ?? item.createdAt);
+      final label = item.title.length > 28
+          ? '${item.title.substring(0, 28)}…'
+          : item.title;
+      return _TimelineEntry(dateLabel, label, const Color(0xFF171512));
+    }).toList();
+  }
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '—';
+    try {
+      final parts = dateStr.split('-');
+      if (parts.length >= 2) {
+        return '${parts[1]}/${parts[0].substring(2)}';
+      }
+    } catch (_) {}
+    return dateStr;
+  }
+
+  void _openRoomHighlight(
+    WidgetRef ref,
+    List<CollectionItem> items,
+    _RoomHighlight highlight,
+  ) {
+    if (highlight.itemId != null) {
+      openItemDetail(ref, highlight.itemId!);
+      return;
+    }
+    GalleryLayerSpec? spec;
+    for (final s in galleryLayerSpecs) {
+      if (s.categorySlugs.contains(highlight.categorySlug)) {
+        spec = s;
+        break;
       }
     }
+    if (spec != null) {
+      for (final item in items) {
+        if (spec.categorySlugs.contains(item.category)) {
+          openItemDetail(ref, item.id);
+          return;
+        }
+      }
+    }
+    goToGalleryTab(ref, categorySlug: highlight.categorySlug);
   }
-  goToGalleryTab(ref, categorySlug: categorySlug);
 }
 
 class _RoomHighlight {
@@ -444,18 +377,18 @@ class _TimelineEntry {
 class _StatsCard extends StatelessWidget {
   const _StatsCard({
     required this.exhibitCount,
-    required this.room,
+    required this.month,
   });
 
   final int exhibitCount;
-  final CollectoryRoomSpec room;
+  final String month;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: room.cardColor,
+        color: const Color(0xFFF5F0E8),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: CollectoryColors.borderLight),
       ),
@@ -468,7 +401,8 @@ class _StatsCard extends StatelessWidget {
               children: [
                 Text(
                   '$exhibitCount',
-                  style: CollectoryHandoffHeader.pageTitle().copyWith(fontSize: 34),
+                  style: CollectoryHandoffHeader.pageTitle()
+                      .copyWith(fontSize: 34),
                 ),
                 Text(
                   'exhibits in this room',
@@ -486,7 +420,7 @@ class _StatsCard extends StatelessWidget {
                 Text('ROOM MOOD', style: CollectoryHandoffHeader.metaLabel()),
                 const SizedBox(height: 2),
                 Text(
-                  room.isPreview ? 'preview, forming' : 'warm, loud, nostalgic',
+                  'warm, loud, nostalgic',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -495,7 +429,7 @@ class _StatsCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  room.dateRangeLabel,
+                  month,
                   style: CollectoryHandoffHeader.bodySecondary().copyWith(
                     fontSize: 11,
                   ),
@@ -598,7 +532,8 @@ class _HighlightCard extends StatelessWidget {
                 highlight.exhibitId == '—'
                     ? 'PREVIEW'
                     : 'EXH ${highlight.exhibitId}',
-                style: CollectoryHandoffHeader.metaLabel().copyWith(fontSize: 8),
+                style:
+                    CollectoryHandoffHeader.metaLabel().copyWith(fontSize: 8),
               ),
               Text(
                 highlight.title,

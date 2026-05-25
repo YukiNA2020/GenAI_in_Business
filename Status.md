@@ -14,14 +14,30 @@
 >
 > 全项目 Markdown 文档状态请先看 `DOCUMENTATION_STATUS.md`。该文件用于区分当前依据、活跃任务说明、完成记录和历史参考，避免把早期计划或旧分支记录误当成新任务。
 >
+> 当前 MVP 已经整合完成并集中在 `codex/integration-prep`。旧阶段日志和旧技术路线保留为完成记录；下一步行动计划看 `next_detail_plan.md`。
+>
 > 保持 Status.md 是最新状态，让未来的 AI 和开发者能快速了解项目当前情况。
 
 ---
 
 # Collection Journey App - 项目状态
 
-> 上次更新：2026-05-22
-> 最近更新负责人：成员 E / 成员 5，由 Codex 协助更新（新增统一整合实施路径）
+> 上次更新：2026-05-25
+> 最近更新负责人：成员 E / 成员 5，由 Codex 协助更新（MVP 整合完成标识、README 和后 MVP 计划同步）
+
+---
+
+## 当前状态摘要
+
+截至 2026-05-25，核心 MVP 已经完成整合：
+
+- 当前可交付工作分支：`codex/integration-prep`。
+- 判断口径：不要求一定合并到 `main`；MVP 产品能力已经在同一个分支/工作树内可启动、可测试、可演示。
+- 已完成主路径：后端 API、Rooms、Create/Edit、Gallery、Detail、Profile、Share Preview、AI 文本建议、GLM Vision 图片理解。
+- 已完成复测：统一整合阶段 3、阶段 4、阶段 6、阶段 7 均已通过；测试细节见 `Test.md`。
+- 后续计划：不要从旧阶段路线重新领取任务；请以 `next_detail_plan.md` 的 P0/P1/P2/P3 为下一步依据。
+
+旧的成员阶段日志、技术路线和测试表仍保留在本文档后续章节中，作为完成记录和审计材料。
 
 ---
 
@@ -29,9 +45,10 @@
 
 ```
 GENAI_Group/
-├── README.md                    # 团队协作入口、GitHub 流程和 AI 工具使用说明
+├── README.md                    # 当前项目入口、启动说明、结构说明
+├── next_detail_plan.md           # MVP 完成后的下一步行动计划
 ├── DOCUMENTATION_STATUS.md       # 全项目 Markdown 文档索引和新旧状态说明
-├── INTEGRATION_IMPLEMENTATION_PATH.md # 分阶段整合实施路径（rooms / 正式表单 / API Contract / 回归）
+├── INTEGRATION_IMPLEMENTATION_PATH.md # 已完成的分阶段整合实施路径（保留为技术审计记录）
 ├── Project_intro.md              # 产品介绍与开发路线（核心指导文件）
 ├── Status.md                     # 项目状态（本文档）
 ├── Prompt_library.md             # Prompt 记录库
@@ -50,6 +67,7 @@ GENAI_Group/
 │   └── frontend/lib/features/profile/  # 成员 E 阶段三源码副本
 │   ├── README.md                 # 成员 E 工作区说明
 │   ├── Member_5_AI_Profile_Test_Detail_Plan.md # 成员 5 开发任务详细文档
+├── PictureofProduct/             # 当前 MVP 产品截图与中文使用指南
 ├── backend/                      # 后端项目（成员 1 负责）
 │   ├── package.json
 │   ├── src/
@@ -101,8 +119,8 @@ GENAI_Group/
 | 文件 | 说明 | 状态 |
 |------|------|------|
 | `README.md` | 团队协作入口、GitHub 流程、AI 工具使用说明 | ✅ 完成 |
-| `DOCUMENTATION_STATUS.md` | 全项目 Markdown 文档索引，区分当前依据、活跃任务说明、完成记录和历史参考 | ✅ 完成（2026-05-22，文档整理入口） |
-| `INTEGRATION_IMPLEMENTATION_PATH.md` | 本轮统一整合前的分阶段实施路径，明确先局部迁移 rooms / 正式表单 / GLM 图片理解 / API Contract，最后再完全合并 | ✅ 完成（2026-05-24，成员 E，GLM 图片理解章节已更新） |
+| `DOCUMENTATION_STATUS.md` | 全项目 Markdown 文档索引，区分当前依据、活跃任务说明、完成记录和历史参考 | ✅ 完成（2026-05-25，已同步 rooms / Create flow / API Contract V2.0 当前状态） |
+| `INTEGRATION_IMPLEMENTATION_PATH.md` | 本轮统一整合前的分阶段实施路径，明确先局部迁移 rooms / 正式表单 / GLM 图片理解 / API Contract，最后再完全合并 | ✅ 已更新（2026-05-25，阶段 3/4/6/7 已复测通过；成员 6 展示素材仍需整理最终截图说明） |
 | `Project_intro.md` | 产品介绍与开发路线规划 | ✅ 完成 |
 | `business-model-canvas+Grp_I.pdf` | 商业模式画布（原始资料） | ✅ 完成 |
 | `past_doc/Product_v1_detail_plan.md` | V1.0 早期技术规划，立项参考方案 | 🟡 参考，不直接用于实际开发 |
@@ -143,7 +161,7 @@ GENAI_Group/
 | `backend/src/app.js` | 挂载 `/api/ai`（成员 E 阶段二，一行） | ✅ 已更新（成员 E，2026-05-21） |
 | `member_B/README.md` | 成员 B 工作区说明 | ✅ 完成（成员 E 代建，2026-05-21） |
 | `member_B/docs/Phase2_Task5_AI_Panel_by_Member_E.md` | 成员 E 为成员 B 编写的 AI 面板交接 | ✅ 完成（成员 E，2026-05-21） |
-| `frontend/lib/features/collection_form/` | 成员 B 表单模块 — AI 部分由成员 E 编写 | ✅ 完成（成员 E，2026-05-21），待成员 B 扩展 |
+| `frontend/lib/features/collection_form/` | 成员 B 表单模块 — AI 部分由成员 E 编写，当前已接入正式 Create flow 主入口 | ✅ 主路径完成（2026-05-25，CreateCollectionPage + AI 面板 + 完整保存 payload 已复测） |
 | `frontend/lib/features/collection_browse/pages/add_exhibit_design_page.dart` | Add 页接入 `AiSuggestionPanel`（成员 E 挂钩） | ✅ 已更新（成员 E，2026-05-21） |
 | `frontend/lib/features/profile/` | 成员 E 阶段三：ProfilePage、统计、编辑、登录占位 | ✅ 完成（成员 E，2026-05-21），待独立测试 |
 | `frontend/lib/features/collection_browse/pages/profile_design_page.dart` | Profile Tab 挂载成员 E `ProfilePage` | ✅ 已更新（成员 E，2026-05-21） |
@@ -163,7 +181,7 @@ GENAI_Group/
 | `Prompt_library.md` | Prompt 记录库 | ✅ 完成 |
 | `Status.md` | 项目状态文档 | ✅ 完成 |
 | `Test.md` | 测试记录、Bug 跟踪和测试报告文档 | ✅ 完成 |
-| `API_Contract.md` | 已冻结的 API 接口文档（供全体成员联调） | ✅ 完成（成员 1） |
+| `API_Contract.md` | 已冻结的 API 接口文档（供全体成员联调） | ✅ V2.0 已冻结（2026-05-25，含 `roomId`、`/api/rooms`、`/api/ai/*`；live contract 18/18） |
 | `backend/package.json` | 后端项目依赖与脚本配置 | ✅ 完成（成员 1） |
 | `backend/src/app.js` | Express 应用配置（CORS、JSON、静态文件、错误处理） | ✅ 完成（成员 1） |
 | `backend/src/server.js` | 服务入口（端口 3000，dotenv 加载） | ✅ 完成（成员 1） |
@@ -262,7 +280,7 @@ GENAI_Group/
 - [x] 任务 3：实现分类和标签建议接口（成员 E，2026-05-21）
 - [x] 任务 4：实现故事生成接口 `POST /api/ai/generate-story`（成员 E，2026-05-21）
 - [x] DeepSeek 真实 LLM 接入测试（成员 E，2026-05-22）：service live 5/5、HTTP live 5/5，`deepseek-v4-flash` 可用
-- [x] 任务 5：AI 建议面板预交付（成员 E 代写至 `member_B/` + `frontend/lib/features/collection_form/`；Add 页最小挂钩，待成员 B 正式表单与独立测试）
+- [x] 任务 5：AI 建议面板预交付（成员 E 代写至 `member_B/` + `frontend/lib/features/collection_form/`；2026-05-25 已随正式 `CreateCollectionPage` 主路径复测）
 - [x] 阶段二·任务 2–4 开发自检：`verify_phase2_tasks2_4_api.js` 14/14（待独立测试 AI）
 
 ### 成员 E 阶段三：V2.1 用户主页与资料
@@ -320,6 +338,12 @@ GENAI_Group/
 - [x] 搜索、筛选、分页与图片接口（阶段三全部 6 个任务已完成，成员 1，2026-05-15）
 - [x] 成员 3 阶段三：搜索框、分类/标签筛选、分页加载、下拉刷新、空状态（2026-05-19 成员 C：pageSize=6、Previous/Next 翻页、Cupertino 下拉刷新；待独立测试）
 
+### 统一整合准备分支进展（2026-05-25）
+- [x] 阶段 3：rooms API 与当前前端接入复测通过。`GET /api/rooms`、`GET /api/rooms/:id`、`roomId` 创建/更新/详情、Gallery/Profile/Room/Add/Edit 主路径可用。
+- [x] 阶段 4：正式 Create flow 复测通过。Add Tab 已指向 `CreateCollectionPage`；AI tags 写入正式 Tag input；保存时传 `categoryTemplate`、`customFields`、`roomId`、`dateAcquired`、`location`；图片上传失败不阻塞文本收藏。
+- [x] 阶段 6：`API_Contract.md` V2.0 冻结复测通过。live API Contract 18/18；阶段二 AI HTTP 14/14；阶段四 AI HTTP 15/15；Flutter test/analyze/build 均通过。
+- [x] 阶段 7：完整 Demo 手测通过。后端/API/AI/Flutter 自动化通过；浏览器验证 Home/Gallery/Room/Create/Edit/Profile/Share Preview 主路径；成员 6 展示材料仍需按最终截图整理。
+
 ### V2.0 收藏体验强化版
 - [ ] 待开发
 
@@ -359,6 +383,7 @@ GENAI_Group/
 - [x] 完成成员 E 阶段一 AI Prompt 模板和 API Contract
 - [x] 由独立测试 AI 测试成员 E 阶段一交付物并更新 `Test.md`
 - [x] 写清统一整合实施路径：先局部迁移 `20260522-version` / rooms API / 正式 Create flow，再把完全整合作为最后一步
+- [x] 完成统一整合阶段 3/4/6/7 复测，并同步 `INTEGRATION_IMPLEMENTATION_PATH.md`、`Test.md`、`DOCUMENTATION_STATUS.md`、`Status.md`（2026-05-25）
 - [x] 在核心状态同步文档中增加成员 A-E / 成员 6 身份标记规则
 - [x] 将 `past_doc/` 中旧版本规划标记为立项参考方案，不直接用于实际开发
 - [ ] 确定技术选型（前端框架、是否需要后端等）
@@ -372,15 +397,19 @@ GENAI_Group/
 
 ## 备注
 
+2026-05-25（成员 E / 成员 5，统一整合阶段 3/4/6 复测）：按 `INTEGRATION_IMPLEMENTATION_PATH.md` 重新测试 rooms API、正式 Create flow 和新版 API Contract。结果：V2.0 live API Contract **18/18**，成员 E 阶段二 AI HTTP **14/14**，阶段四 AI HTTP **15/15**，`flutter test` **1/1**，`flutter analyze --no-fatal-infos` 通过（仅 29 个 info），Flutter Web release build 成功。上次发现的 `roomId=null` 清空、无效 room 状态码、前端 create payload 缺 `categoryTemplate/customFields` 均已修正。当前可以进入下一阶段；最终 Demo 前仍需浏览器手测和成员 6 截图复核。
+
+2026-05-25（成员 E / 成员 5，统一整合阶段 7 复测）：完成完整 Demo 回归。后端 seed、基础 API、成员 E 阶段 1/2/4/5 脚本、Flutter test/analyze/build 均通过；浏览器 Web 构建验证 Home、Gallery、April/May Room、Create 保存、Edit 改 room、Profile rooms 统计和 Share Preview。复测中修复 Web 离线字体/CDN loading、详情页 room 硬编码、Profile rooms 统计误用 categoryCount、Share Settings 底部按钮 hit-test 不可靠、`/api/users/1/stats` recentCollections `roomId` 映射。结论：可以进入下一阶段；最终交付前只剩成员 6 展示截图/说明整理。
+
 2026-05-22 / 2026-05-24（成员 E / 成员 5，统一整合实施路径）：新增并更新 `INTEGRATION_IMPLEMENTATION_PATH.md`，将后续最重要任务拆成分阶段路线：先从 `feature/ai-profile-test` 开准备分支，局部吸收 `20260522-version` 的有效前端内容；不要第一步完整合并 `feature/member-1-task`，而是手动迁移 rooms API、`roomId`、seed 和相关后端字段；随后改造 Flutter 模型、Gallery/Profile/Room/Add/Edit；再把成员 B AI 面板迁入正式 Create flow，确保 AI tags 写入正式 Tag input；图片理解正式采用 GLM Vision；最后更新冻结新版 `API_Contract.md` 并做完整回归。
 
 2026-05-22（成员 E / 成员 5，DeepSeek 真实 LLM 测试）：用户已在本地提供 DeepSeek API。使用 `deepseek-v4-flash` 完成真实调用验证：`verify_deepseek_provider_live.js` service live **5/5**，HTTP live **5/5**（`suggest-title`、`suggest-category`、`suggest-tags`、`generate-story`、`analyze-image`），阶段 1/2/4/5 自动化回归 **66/66**，`flutter test` **1/1**。结论：文字生成大模型已可用，现有 provider 无需重写；`analyze-image` 的真实图片理解后续由 GLM Vision 独立 provider 接管。
 
-2026-05-22（成员 E / 成员 5，文档冲突整理）：根据当前线上仓库状态重新整理成员 E 文档。删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`，新增 `member_E/docs/E_Current_Status_and_Plan.md`，将成员 E 口径从“按昨晚旧任务文档继续逐项开发”改为“以当前已有实现为主，接管、复测、适配成员 A rooms API、等待成员 B 正式表单联调”。`memberE` 后续仅在高风险实验或大范围重构时再使用；当前协作文档和测试结果同步到 `feature/ai-profile-test`。
+2026-05-22（成员 E / 成员 5，文档冲突整理，历史记录）：根据当时线上仓库状态重新整理成员 E 文档。删除过时的 `member_E/docs/E_Fresh_AI_Workflow.md`，新增 `member_E/docs/E_Current_Status_and_Plan.md`，将成员 E 口径从“按昨晚旧任务文档继续逐项开发”改为“以当前已有实现为主，接管、复测、适配成员 A rooms API，并对接当时尚未完成的正式表单”。截至 2026-05-25，rooms 与正式 Create flow 主路径已进入当前整合基线并复测通过；`memberE` 后续仅在高风险实验或大范围重构时再使用。
 
 2026-05-22（成员 E / 成员 5，分支与路线检查）：已从远端拉取最新更新。曾从最新 `origin/feature/ai-profile-test` 创建本地隔离分支 `memberE`；后续判断 E 的主要成果已在 `feature/ai-profile-test`，因此 `memberE` 暂不推远端，当前文档和测试结果继续同步到 `feature/ai-profile-test`。检查发现远端 `origin/feature/ai-profile-test` 已出现成员 E 阶段三、四、五相关代码实现，提交作者显示为 `Jean030`，因此最初采用“远端已有实现 / 待成员 E 接管确认和独立测试”的口径；DeepSeek 与自动化回归已在 2026-05-22 补测通过。
 
-2026-05-22（成员 E / 成员 5，同伴更新兼容性）：已检查 `origin/feature/member-1-task` 最新提交 `a26da25`，成员 A 新增 `rooms` 表、`collections.room_id`、`GET /api/rooms`、`GET /api/rooms/:id` 和每月 room seed 数据。该更新尚未合并进当前 `feature/ai-profile-test`；后续合并成员 A 分支时，成员 E Profile / Room 相关路线应优先对齐 `roomId` 和 rooms API，避免继续只依赖本地 `collectory_room_catalog.dart`。
+2026-05-22（成员 E / 成员 5，同伴更新兼容性，历史记录）：当时检查 `origin/feature/member-1-task` 最新提交 `a26da25`，成员 A 新增 `rooms` 表、`collections.room_id`、`GET /api/rooms`、`GET /api/rooms/:id` 和每月 room seed 数据。该记录发生在 rooms 局部迁移前；截至 2026-05-25，rooms API 与 `roomId` 主路径已进入当前整合基线并复测通过，`collectory_room_catalog.dart` 仅作为 fallback / 设计元数据。
 
 以下为历史记录：2026-05-08 时项目尚处于规划阶段，尚未开始实际开发；当时已根据 `Final_Team_Work_Division.md` 重新确认最终分工，成员 1-5 负责开发相关工作，成员 6 负责 PPT、报告、视频和 Demo 展示材料。当前截至 2026-05-22，后端、Flutter 前端、成员 E AI/Profile/测试等已有大量实现，后续应以最新分支状态和本文件顶部记录为准。
 

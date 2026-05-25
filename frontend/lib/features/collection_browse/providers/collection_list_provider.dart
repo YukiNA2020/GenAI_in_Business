@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/collection_item.dart';
 import '../models/collection_query_state.dart';
+import '../models/collection_room.dart';
 import '../services/collection_query_service.dart';
 
 final collectionQueryServiceProvider = Provider<CollectionQueryService>((ref) {
@@ -14,6 +15,15 @@ final categoriesProvider = FutureProvider<List<CategoryOption>>((ref) async {
 
 final allTagsProvider = FutureProvider<List<String>>((ref) async {
   return ref.watch(collectionQueryServiceProvider).fetchAllTags();
+});
+
+final roomsProvider = FutureProvider<List<CollectionRoomSummary>>((ref) async {
+  return ref.watch(collectionQueryServiceProvider).fetchRooms();
+});
+
+final roomDetailProvider =
+    FutureProvider.family<CollectionRoomDetail, int>((ref, roomId) async {
+  return ref.watch(collectionQueryServiceProvider).fetchRoomById(roomId);
 });
 
 /// Design-time fallback when backend is offline (Room / Share / Profile).

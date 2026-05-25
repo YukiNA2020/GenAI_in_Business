@@ -2,32 +2,38 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/collectory_tokens.dart';
 import '../../../../core/theme/collectory_theme.dart';
-import '../../utils/collectory_room_catalog.dart';
+import '../../models/collection_room.dart';
 
 /// handoff Gallery — ROOM 切换条
 class RoomSelectorRow extends StatelessWidget {
   const RoomSelectorRow({
     super.key,
-    this.selectedIndex = 0,
+    this.rooms = const [],
+    this.selectedRoomId,
     this.onSelect,
   });
 
-  final int selectedIndex;
+  final List<CollectionRoomSummary> rooms;
+  final int? selectedRoomId;
   final ValueChanged<int>? onSelect;
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = rooms.indexWhere((r) => r.id == selectedRoomId);
+    final actualIndex = selectedIndex >= 0 ? selectedIndex : 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: List.generate(CollectoryRoomCatalog.rooms.length, (i) {
-            final active = i == selectedIndex;
-            final spec = CollectoryRoomCatalog.rooms[i];
+          children: List.generate(rooms.length, (i) {
+            final active = i == actualIndex;
+            final room = rooms[i];
+            final label = room.label ?? room.month;
             return Expanded(
               child: Padding(
                 padding: EdgeInsets.only(
-                  right: i < CollectoryRoomCatalog.rooms.length - 1
+                  right: i < rooms.length - 1
                       ? CollectorySpacing.unit
                       : 0,
                 ),
@@ -37,7 +43,7 @@ class RoomSelectorRow extends StatelessWidget {
                       : CollectoryColors.bgApp,
                   borderRadius: CollectoryRadius.cardBorder,
                   child: InkWell(
-                    onTap: onSelect != null ? () => onSelect!(i) : null,
+                    onTap: onSelect != null ? () => onSelect!(room.id) : null,
                     borderRadius: CollectoryRadius.cardBorder,
                     child: Ink(
                       decoration: BoxDecoration(
@@ -57,7 +63,7 @@ class RoomSelectorRow extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              spec.roomCode,
+                              room.month,
                               style: CollectoryTypography.metaLabel.copyWith(
                                 fontSize: 9,
                                 letterSpacing: 0.4,
@@ -66,7 +72,7 @@ class RoomSelectorRow extends StatelessWidget {
                             ),
                             const SizedBox(height: CollectorySpacing.unit / 2),
                             Text(
-                              spec.monthYear,
+                              label,
                               style: CollectoryTypography.cardTitle.copyWith(
                                 fontSize: 14,
                                 color: active

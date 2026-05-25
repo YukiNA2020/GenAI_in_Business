@@ -1,10 +1,12 @@
 # Collection Journey App 分阶段整合实施路径
 
-> 上次更新：2026-05-24
-> 负责人：成员 E / 成员 5，由 Codex 协助整理
-> 当前目标：在不立即完整合并高风险分支的前提下，先把 `20260522-version` 的非 AI 后端 / 数据库逻辑作为整合依据，同时保护 `feature/ai-profile-test` 中 DeepSeek 和 GLM 的 AI 设计，再把 rooms API、正式创建表单、AI 面板、API Contract 和回归路径拆成可执行步骤。
+> 上次更新：2026-05-25
+> 负责人：成员 E / 成员 5，由 Codex 协助整理；2026-05-25 由 Codex 按阶段 3/4/6/7 复测结果补充进度
+> 当前状态：已完成 / 已归档。核心 MVP 已经整合到当前工作分支 `codex/integration-prep`，阶段 3/4/6/7 已复测通过。
+> 后续计划：请使用 `next_detail_plan.md`。本文件保留为整合过程、技术取舍和测试审计记录，不再作为待执行任务清单。
+> 历史目标：在不立即完整合并高风险分支的前提下，先把 `20260522-version` 的非 AI 后端 / 数据库逻辑作为整合依据，同时保护 `feature/ai-profile-test` 中 DeepSeek 和 GLM 的 AI 设计，再把 rooms API、正式创建表单、AI 面板、API Contract 和回归路径拆成可执行步骤。
 
-本文件是接下来统一整合前的执行路线。它不替代 `Status.md`、`Test.md` 或 `API_Contract.md`，而是说明“先做什么、怎么做、哪些内容暂时不要直接合并”。
+本文件最初是统一整合前的执行路线。现在整合已经按本路线完成，文档用途已变更为完成记录。后续不要从本文档继续领取新任务；遗留优化和后 MVP 计划已经迁移到 `next_detail_plan.md`。
 
 ---
 
@@ -961,6 +963,19 @@ ZHIPU_VISION_TIMEOUT_MS=45000
 - `member_E/docs/AI_API_Contract.md` 与根目录合同不冲突。
 - `Test.md` 中记录新版合同的验证结果。
 
+当前复测状态（2026-05-25）：
+
+| 检查项 | 结论 | 证据 |
+|---|---|---|
+| `roomId` / rooms 合同 | ✅ 通过 | live API 18/18；`GET /api/rooms`、`GET /api/rooms/:id`、收藏 create/list/detail/update 均返回并保存 `roomId` |
+| `roomId=null` 更新语义 | ✅ 通过 | `PUT /api/collections/:id { "roomId": null }` 保留已有 room，不清空 |
+| 无效 `roomId` 错误码 | ✅ 通过 | POST / PUT 无效 room 均返回 404 + `ROOM_NOT_FOUND` |
+| 正式 Create flow payload | ✅ 通过 | `collection_query_service.dart` 和 `collection_form_provider.dart` 已传 `categoryTemplate`、`customFields`、`roomId`、`dateAcquired`、`location` |
+| AI 合同回归 | ✅ 通过 | `verify_phase2_tasks2_4_api.js` 14/14；`verify_phase4_tasks1_5_api.js` 15/15 |
+| Flutter 回归 | ✅ 通过 | `flutter test` 1/1；`flutter analyze --no-fatal-infos` 0 error/warning（29 info）；`flutter build web --release --dart-define=API_BASE_URL=http://localhost:3000` 成功 |
+
+阶段 6 结论：新版 `API_Contract.md` V2.0 已可作为下一阶段统一接口依据。最终 Demo 前仍建议按阶段 7 补一轮浏览器手测和截图复核。
+
 ---
 
 ## 10. 阶段 7：完整回归
@@ -1028,6 +1043,18 @@ flutter build web --release --dart-define=API_BASE_URL=http://localhost:3000
 9. AI 失败时手动保存仍可用。
 10. 后端临时关闭时，前端 fallback 不白屏。
 
+当前复测状态（2026-05-25，阶段 7）：
+
+| 检查项 | 结论 | 证据 |
+|---|---|---|
+| 后端基础回归 | ✅ 通过 | `npm run seed`；`/api/health`、`/api/categories`、`/api/users/1/stats`、`/api/rooms`、`/api/rooms/:id` 均通过 |
+| 成员 E 自动化 | ✅ 通过 | 阶段一标题 15/15；阶段二 provider 11/11；阶段二 HTTP 14/14；阶段四 HTTP 15/15；阶段五 Demo E2E 11/11 |
+| Flutter 自动化 | ✅ 通过 | `flutter test --no-pub` 1/1；`flutter analyze --no-pub --no-fatal-infos` 通过（27 info）；no-CDN release web build 成功 |
+| 浏览器 Demo 主路径 | ✅ 通过 | Home、Gallery、Room、Create 保存、Edit 改 room、Profile rooms 统计、Share Settings / Preview 已在本地 Web 构建验证 |
+| 本轮修复项 | ✅ 已复测 | Web 离线字体/CDN loading；详情页 room label 硬编码；Profile rooms 统计误用 `categoryCount`；Share Settings 底部按钮 hit-test；stats recent `roomId` 映射 |
+
+阶段 7 结论：完整 Demo 回归已通过，可以进入下一阶段。最终交付前仍需把成员 6 展示截图和说明整理进对应交付文档。
+
 ### 10.3 成员 6 素材
 
 需要补截图：
@@ -1085,24 +1112,176 @@ git diff --name-status codex/final-integration..20260522-version
 
 ---
 
-## 12. 暂未完成清单
+## 12. 阶段四代码审查 — 修复状态复核
 
-这些内容不要因为写了路线就标记完成：
+> 审查时间：2026-05-25
+> 复核时间：2026-05-25
+> 审查范围：阶段四完成后的全项目遍历（后端 API、Flutter 前端、数据流、导航）
 
-| 事项 | 当前状态 | 完成条件 |
+本节保留阶段四代码审查时发现的问题，并补充当前修复状态。除编辑页 AI 故事辅助外，其余阻塞项已在 2026-05-25 复测中关闭或缓解。
+
+### 12.1 已关闭：`dateAcquired` 和 `location` 未传递到后端
+
+**文件：** [collection_form_provider.dart:82-89](frontend/lib/features/collection_form/providers/collection_form_provider.dart#L82-L89)
+
+当前状态（2026-05-25）：已修复并通过 live API 复测。`CollectionFormNotifier.save()` 现在会向 `createCollection()` 传递 `dateAcquired` 和 `location`，创建后可从 `GET /api/collections/:id` 读回。
+
+以下为原始审查记录，已不代表当前代码状态：
+
+`CollectionFormNotifier.save()` 中 `CollectionFormState` 已正确存储 `dateAcquired` 和 `location`，但调用 `service.createCollection()` 时**没有传递这两个字段**。
+
+```dart
+// 当前代码 — 缺少 dateAcquired 和 location
+final created = await service.createCollection(
+  title: s.title.trim(),
+  category: s.category,
+  story: s.story.trim(),
+  visibility: s.visibility,
+  tags: s.tags,
+  userId: demoUserId,
+  roomId: s.roomId != null && s.roomId! > 0 ? s.roomId : null,
+  // ❌ 缺少 dateAcquired: s.dateAcquired
+  // ❌ 缺少 location: s.location.trim()
+);
+```
+
+影响范围：
+- 正式 Create 页（Tab 2 / `CreateCollectionPage`）— 用户在表单中填写的地点、日期会被静默丢弃
+- 独立 `CollectionForm` widget — 同样丢失这两个字段
+- 后端 `createSchema`（[collections.routes.js:31-44](backend/src/routes/collections.routes.js#L31-L44)）已支持 `dateAcquired` 和 `location`，修复前端即可
+
+修复方式：在 `save()` 的 `service.createCollection()` 调用中补入：
+
+```dart
+dateAcquired: s.dateAcquired != null && s.dateAcquired!.trim().isNotEmpty
+    ? s.dateAcquired!.trim()
+    : null,
+location: s.location.trim().isNotEmpty ? s.location.trim() : null,
+```
+
+### 12.2 已缓解：`_bootstrapApi` 静默失败导致 UI 永久 Loading
+
+**文件：** [app.dart:59-65](frontend/lib/app.dart#L59-L65)
+
+当前状态（2026-05-25）：已不再完全静默。health check 失败时会 invalidate `backendReachableProvider`，Collection Wall 已有 offline prompt。仍可作为后续体验优化：把离线提示扩展到全局 Shell / Gallery / Profile，而不只是在部分页面展示。
+
+以下为原始审查记录，已不完全代表当前代码状态：
+
+`_Member3ShellState._bootstrapApi()` 中 health check 失败时静默 `return`，不抛出错误、不触发 fallback、不通知用户。结果：
+
+- `userStatsProvider` / `roomsProvider` / `categoriesProvider` 永远停留在 loading 状态
+- MuseumHomePage 底部卡片永久显示 "Loading exhibits…"
+- Gallery / Profile 等页面无法获取真实数据
+- 用户看不到任何错误提示，无法判断是后端未启动还是网络问题
+
+```dart
+Future<void> _bootstrapApi(WidgetRef ref) async {
+  final service = ref.read(collectionQueryServiceProvider);
+  if (!await service.checkHealth()) return; // ❌ 静默失败
+  // ...
+}
+```
+
+建议修复：
+1. health check 失败时至少将 `backendReachableProvider` 设为 error 状态
+2. 或在 UI 层 watch `backendReachableProvider`，不可达时展示提示（如 "Backend offline — start with `cd backend && npm run dev`"）
+3. 或设较短的 timeout 后自动重试
+
+### 12.3 已关闭：`app.dart` 中未使用的 import
+
+**文件：** [app.dart:7](frontend/lib/app.dart#L7)
+
+当前状态（2026-05-25）：已修复。`AddExhibitDesignPage` import 不再出现在 `app.dart`；Add Tab 由 `CreateCollectionPage` 承接。
+
+以下为原始审查记录，已不代表当前代码状态：
+
+```dart
+import 'features/collection_browse/pages/add_exhibit_design_page.dart'; // ❌ unused
+```
+
+`AddExhibitDesignPage` 已在 Tab 2 被 `CreateCollectionPage` 替代，但 import 未删除。Flutter analyzer 已报告 `unused_import` warning。删除该行即可消除 warning。
+
+### 12.4 已关闭：`ImagePickerField` 类型安全 hack
+
+**文件：** [image_picker_field.dart:168](frontend/lib/features/collection_form/widgets/image_picker_field.dart#L168)
+
+当前状态（2026-05-25）：已修复。`Image.memory` 使用 `Uint8List.fromList(imageBytes!)`，不再通过 `dynamic` 绕过类型检查。
+
+以下为原始审查记录，已不代表当前代码状态：
+
+```dart
+typedef Uint8ListView = dynamic; // ❌ 绕过类型检查
+
+// build 中：
+Image.memory(
+  imageBytes as Uint8ListView, // List<int> as dynamic → 运行时风险
+  ...
+)
+```
+
+应改为正确类型转换：
+
+```dart
+Image.memory(
+  Uint8List.fromList(imageBytes!),
+  ...
+)
+```
+
+### 12.5 仍开放低优先级：编辑页 AI 故事辅助未对接真实 AI API
+
+**文件：** [edit_collection_page.dart:126-139](frontend/lib/features/collection_browse/pages/edit_collection_page.dart#L126-L139)
+
+当前状态（2026-05-25）：仍未改。该项不影响正式 Create flow、AI 面板主路径、API Contract 或 Demo 基础路径；可放入下一阶段的体验优化。
+
+`_suggestStory()` 使用本地模板拼接字符串，而非调用已实现的 `POST /api/ai/generate-story`：
+
+```dart
+final draft =
+    'This piece — $title — sits in my ${_privateMuseum ? 'private' : 'public'} '
+    'archive as a $tag memory. I want to remember where it came from and why it still matters.';
+```
+
+而 `AiSuggestionService.generateStory()` 已在 [ai_suggestion_service.dart:110-133](frontend/lib/features/collection_form/services/ai_suggestion_service.dart#L110-L133) 实现完毕，编辑页完全可以接入。
+
+### 12.6 复核确认正常的部分
+
+以下项目遍历确认无问题，无需修改：
+
+| 检查项 | 状态 | 备注 |
 |---|---|---|
-| 完全整合 `feature/member-1-task` | 暂不直接合并 | rooms API 局部迁移和回归通过后，最终分支处理剩余差异 |
-| 完全整合 `20260522-version` | 暂不直接合并 | 非 AI 后端 / 数据库逻辑已按该分支对齐；有效 UI/体验内容逐项迁移或明确放弃；DeepSeek / GLM 未被覆盖 |
-| rooms API 接入当前前端 | 待开发 | Gallery/Profile/Room/Add/Edit 都使用真实 `roomId` / `/api/rooms` |
-| 成员 B 正式 Create flow | 待开发 | AI 面板进入正式表单，tags 写入 Tag input，保存完整字段 |
-| GLM 图片理解 | 已完成接入，合并时保护 | `vision.provider.js`、`vision.prompts.js`、`verify_glm_vision_live.js`、`imageDataUrl` 合同和 25MB body limit 均保留；最终以 live/HTTP/Flutter 回归确认 |
-| 新版 API Contract 冻结 | 待 rooms/Form/GLM Vision 稳定 | `API_Contract.md` 与后端 schema、前端 payload 一致 |
-| 完整回归 | 待实现后执行 | 后端 API、Flutter release build、手动 Demo、成员 6 截图均通过 |
-| 最终文档口径清理 | 待最终整合后执行 | `Status.md`、`Test.md`、成员 6 handoff 全部改为统一整合后的结论 |
+| 后端所有 API 端点 | 正常 | `/api/health`、`/api/rooms`、`/api/collections`、`/api/categories`、`/api/users/:id/stats`、`/api/collections/tags` 全部返回 `success: true` |
+| CORS 配置 | 正常 | `app.use(cors())` 已启用 |
+| Zod schema 与前端 payload 对齐 | 正常 | `createSchema` / `updateSchema` 与 `collection_query_service.dart` 字段一致 |
+| `CollectionItem.fromJson` 字段映射 | 正常 | `roomId` / `room_id`、`dateAcquired` / `date_acquired`、`imageUrl` / `image_url` 均双兼容 |
+| `toSnakeCase` / `toCamelCase` 字段转换 | 正常 | `FIELD_MAP` 包含 `roomId → room_id`、`dateAcquired → date_acquired` 等 |
+| `roomId` 校验 (`assertRoomExists`) | 正常 | 仅当 `roomId` 非 undefined/null 时校验，不传 room 不报错 |
+| Rooms API `/api/rooms/:id` | 正常 | 返回 room + collections，包含 `roomId` |
+| Flutter web build | 正常 | 编译通过 |
+| 导航流程 | 正常 | Tab 切换、Overlay 叠层、AnimatedSwitcher key 策略均正确 |
+| AI 面板 callbacks（Create 页） | 正常 | `onTagsSuggested` 已写入正式 Tag input，不再仅 SnackBar |
+| 图片上传失败不阻塞文本保存 | 正常 | `collection_form_provider.dart` save 逻辑正确隔离 |
 
 ---
 
-## 13. 执行时不要做的事
+## 13. 已迁移遗留项（原“合并前遗留”）
+
+本节原本记录“合并前遗留”。截至 2026-05-25，阻塞 MVP 的整合事项已完成；剩余内容已经迁移到 `next_detail_plan.md`，作为后 MVP 优化和交付整理事项。
+
+| 事项 | 当前状态 | 完成条件 |
+|---|---|---|
+| 完全整合 `feature/member-1-task` | 已按 MVP 所需局部迁移完成 | rooms API 已进入当前分支；不再要求完整合并该历史分支 |
+| 完全整合 `20260522-version` | 已按 MVP 所需局部迁移完成 | 非 AI 后端 / 数据库逻辑和有效前端修复已进入当前分支；不再要求完整合并该历史分支 |
+| rooms API 接入当前前端 | 已完成并通过复测 | Gallery/Profile/Room/Add/Edit 已使用真实 `roomId` / `/api/rooms`，`collectory_room_catalog.dart` 仅作 fallback / 设计元数据 |
+| 成员 B 正式 Create flow | 已完成主路径并通过复测 | Add Tab 指向 `CreateCollectionPage`；AI 面板进入正式表单；tags 写入 Tag input；保存完整字段和图片上传闭环通过 |
+| GLM 图片理解 | 已完成接入，合并时保护 | `vision.provider.js`、`vision.prompts.js`、`verify_glm_vision_live.js`、`imageDataUrl` 合同和 25MB body limit 均保留；live/HTTP/Flutter 回归已通过 |
+| 新版 API Contract 冻结 | 已完成并通过复测 | `API_Contract.md` V2.0 与后端 schema、service FIELD_MAP、前端 create payload 一致 |
+| 完整回归 | 已完成 MVP 主路径回归 | 后端 live API、AI API、Flutter test/analyze/build 和浏览器主路径已通过；演示前仍建议补成员 6 最终截图 |
+| 最终文档口径清理 | 已完成根文档主口径更新 | README、`DOCUMENTATION_STATUS.md`、`Status.md` 和本文件已标记整合完成；后续计划见 `next_detail_plan.md` |
+
+---
+
+## 14. 执行时不要做的事
 
 1. 不要把 `feature/member-1-task` 作为第一步完整 merge。
 2. 不要让任何分支删除当前 `frontend/`、`member_B/`、`member_E/` 的有效内容。

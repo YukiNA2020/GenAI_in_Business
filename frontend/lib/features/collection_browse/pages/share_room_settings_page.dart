@@ -37,197 +37,192 @@ class ShareRoomSettingsPage extends ConsumerWidget {
     final storyCount = stats.recentCollections
         .where((e) => e.story?.isNotEmpty == true)
         .length;
-    final exhibits =
-        stats.totalCollections > 0 ? stats.totalCollections : 24;
+    final exhibits = stats.totalCollections > 0 ? stats.totalCollections : 24;
     final stories = storyCount > 0 ? storyCount : 3;
 
     return ColoredBox(
       color: CollectoryColors.bgApp,
       child: SafeArea(
-        child: SizedBox.expand(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(pad, 10, pad, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(pad, 10, pad, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CollectoryBackBar(
+                backLabel: 'Room',
+                centerTitle: 'Share settings',
+                onBack: () => closeShareToProfile(ref),
+                trailing: FilledButton(
+                  onPressed: () => closeShareToProfile(ref),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text('Done'),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'ROOM SHARING',
+                style: CollectoryHandoffHeader.metaLabel(),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Share May 2026 Archive',
+                style: CollectoryHandoffHeader.pageTitle().copyWith(
+                  fontSize: 28,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Choose what visitors can see before creating a room link.',
+                style: CollectoryHandoffHeader.bodySecondary().copyWith(
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 14),
+              _RoomPreviewCard(
+                exhibitCount: exhibits,
+                storyCount: stories,
+                showStories: options.showStories,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Visibility',
+                style: CollectoryHandoffHeader.sectionTitle().copyWith(
+                  fontSize: 17,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _VisibilityOption(
+                title: 'Private',
+                subtitle: 'Only you can view this room',
+                selected: !options.linkSharing,
+                onTap: () => updateShareRoomPreview(ref, linkSharing: false),
+              ),
+              const SizedBox(height: 8),
+              _VisibilityOption(
+                title: 'Anyone with link',
+                subtitle: 'Visitors can open the room link',
+                selected: options.linkSharing,
+                dark: true,
+                onTap: () => updateShareRoomPreview(ref, linkSharing: true),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Include in shared room',
+                style: CollectoryHandoffHeader.sectionTitle().copyWith(
+                  fontSize: 17,
+                ),
+              ),
+              const SizedBox(height: 4),
+              _ShareToggleRow(
+                label: 'Show item stories',
+                value: options.showStories,
+                onChanged: () => updateShareRoomPreview(
+                  ref,
+                  showStories: !options.showStories,
+                ),
+              ),
+              _ShareToggleRow(
+                label: 'Show dates + tags',
+                value: options.showDates,
+                onChanged: () => updateShareRoomPreview(
+                  ref,
+                  showDates: !options.showDates,
+                ),
+              ),
+              _ShareToggleRow(
+                label: 'Hide private notes',
+                value: options.hideNotes,
+                onChanged: () => updateShareRoomPreview(
+                  ref,
+                  hideNotes: !options.hideNotes,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: CollectoryColors.room01,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: CollectoryColors.borderLight),
+                ),
+                child: Row(
                   children: [
-                    CollectoryBackBar(
-                      backLabel: 'Room',
-                      centerTitle: 'Share settings',
-                      onBack: () => closeShareToProfile(ref),
-                      trailing: FilledButton(
-                        onPressed: () => closeShareToProfile(ref),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
+                    Expanded(
+                      child: Text(
+                        'collectory.app/room/may-2026',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: CollectoryColors.textPrimary,
                         ),
-                        child: const Text('Done'),
                       ),
                     ),
-                    const SizedBox(height: 14),
                     Text(
-                      'ROOM SHARING',
-                      style: CollectoryHandoffHeader.metaLabel(),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Share May 2026 Archive',
-                      style: CollectoryHandoffHeader.pageTitle().copyWith(
-                        fontSize: 28,
-                        height: 1.1,
+                      'Link ready',
+                      style: CollectoryHandoffHeader.metaLabel().copyWith(
+                        fontSize: 11,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Choose what visitors can see before creating a room link.',
-                      style: CollectoryHandoffHeader.bodySecondary().copyWith(
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _RoomPreviewCard(
-                      exhibitCount: exhibits,
-                      storyCount: stories,
-                      showStories: options.showStories,
-                    ),
-                    const Spacer(flex: 2),
-                    Text(
-                      'Visibility',
-                      style: CollectoryHandoffHeader.sectionTitle().copyWith(
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _VisibilityOption(
-                      title: 'Private',
-                      subtitle: 'Only you can view this room',
-                      selected: !options.linkSharing,
-                      onTap: () =>
-                          updateShareRoomPreview(ref, linkSharing: false),
-                    ),
-                    const SizedBox(height: 8),
-                    _VisibilityOption(
-                      title: 'Anyone with link',
-                      subtitle: 'Visitors can open the room link',
-                      selected: options.linkSharing,
-                      dark: true,
-                      onTap: () =>
-                          updateShareRoomPreview(ref, linkSharing: true),
-                    ),
-                    const Spacer(flex: 2),
-                    Text(
-                      'Include in shared room',
-                      style: CollectoryHandoffHeader.sectionTitle().copyWith(
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    _ShareToggleRow(
-                      label: 'Show item stories',
-                      value: options.showStories,
-                      onChanged: () => updateShareRoomPreview(
-                        ref,
-                        showStories: !options.showStories,
-                      ),
-                    ),
-                    _ShareToggleRow(
-                      label: 'Show dates + tags',
-                      value: options.showDates,
-                      onChanged: () => updateShareRoomPreview(
-                        ref,
-                        showDates: !options.showDates,
-                      ),
-                    ),
-                    _ShareToggleRow(
-                      label: 'Hide private notes',
-                      value: options.hideNotes,
-                      onChanged: () => updateShareRoomPreview(
-                        ref,
-                        hideNotes: !options.hideNotes,
-                      ),
-                    ),
-                    const Spacer(flex: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: CollectoryColors.room01,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: CollectoryColors.borderLight),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'collectory.app/room/may-2026',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: CollectoryColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            'Link ready',
-                            style: CollectoryHandoffHeader.metaLabel().copyWith(
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () {
-                              Clipboard.setData(
-                                const ClipboardData(
-                                  text: 'https://collectory.app/room/may-2026',
-                                ),
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Link copied')),
-                              );
-                            },
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 46),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            child: const Text('Copy link'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => openShareRoomPreview(ref),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 46),
-                              foregroundColor: CollectoryColors.textPrimary,
-                              side: const BorderSide(
-                                color: CollectoryColors.borderLight,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            child: const Text('Preview'),
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          const ClipboardData(
+                            text: 'https://collectory.app/room/may-2026',
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Link copied')),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 46),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text('Copy link'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => openShareRoomPreview(ref),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 46),
+                        foregroundColor: CollectoryColors.textPrimary,
+                        side: const BorderSide(
+                          color: CollectoryColors.borderLight,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text('Preview'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -347,9 +342,8 @@ class _VisibilityOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkSelected = dark && selected;
-    final bg = isDarkSelected
-        ? CollectoryColors.btnPrimaryBg
-        : CollectoryColors.bgApp;
+    final bg =
+        isDarkSelected ? CollectoryColors.btnPrimaryBg : CollectoryColors.bgApp;
     final titleColor = isDarkSelected
         ? CollectoryColors.btnPrimaryText
         : CollectoryColors.textPrimary;
