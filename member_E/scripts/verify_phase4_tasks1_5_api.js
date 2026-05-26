@@ -29,43 +29,43 @@ process.env.AI_PROVIDER = 'mock';
 delete process.env.OPENAI_API_KEY;
 
 const sampleBody = {
-  category: '明信片',
-  location: '东京',
+  category: 'Postcards',
+  location: 'Tokyo',
   dateAcquired: '2026-05-01',
-  description: '在一家小书店买到的蓝色明信片',
+  description: 'A blue postcard bought at a small bookshop',
 };
 
 async function runServiceTests() {
   console.log('\n[1] ai.service 层（mock）\n');
 
   const image = await aiService.analyzeImage({
-    imageDescription: '一张泛黄的展览票根，边缘略有磨损',
+    imageDescription: 'A faded exhibition ticket with slightly worn edges',
   });
-  assert(aiSchemas.validateAnalyzeImageResponse(image), 'analyzeImage 返回合法结构');
+  assert(aiSchemas.validateAnalyzeImageResponse(image), 'analyzeImage returns valid structure');
 
   try {
     await aiService.analyzeImage({});
-    assert(false, '空 image 输入应失败');
+    assert(false, 'Empty image input should fail');
   } catch (error) {
-    assert(error.code === aiSchemas.AI_ERROR_CODES.validation, '缺 image 输入返回 AI_VALIDATION_ERROR');
+    assert(error.code === aiSchemas.AI_ERROR_CODES.validation, 'Missing image input returns AI_VALIDATION_ERROR');
   }
 
   for (const style of aiSchemas.STORY_STYLES) {
     const story = await aiService.generateStory({
       ...sampleBody,
-      title: '东京蓝色明信片',
+      title: 'A Blue Postcard from Tokyo',
       style,
     });
-    assert(aiSchemas.validateStoryResponse(story), `generateStory style=${style} 合法`);
-    assert(story.story.length > 20, `generateStory style=${style} 有内容`);
+    assert(aiSchemas.validateStoryResponse(story), `generateStory style=${style} is valid`);
+    assert(story.story.length > 20, `generateStory style=${style} has content`);
   }
 
   const concise = await aiService.generateStory({
     ...sampleBody,
-    title: '测试',
+    title: 'Test',
     style: 'invalid-style',
   });
-  assert(aiSchemas.validateStoryResponse(concise), '无效 style 回退 concise');
+  assert(aiSchemas.validateStoryResponse(concise), 'Invalid style falls back to concise');
 }
 
 function httpRequest(baseUrl, route, body) {
@@ -106,27 +106,27 @@ async function runHttpTests(baseUrl) {
   console.log(`\n[2] HTTP 层（${baseUrl}）\n`);
 
   const analyze = await httpRequest(baseUrl, '/api/ai/analyze-image', {
-    imageDescription: '黑胶唱片封面，红色标签',
+    imageDescription: 'A vinyl record cover with a red label',
   });
   assert(
     analyze.status === 200 && analyze.json.success === true,
-    '/api/ai/analyze-image 返回 200'
+    '/api/ai/analyze-image returns 200'
   );
   assert(
     analyze.json.data?.suggestedTitle,
-    'analyze-image data 含 suggestedTitle'
+    'analyze-image data contains suggestedTitle'
   );
 
   const story = await httpRequest(baseUrl, '/api/ai/generate-story', {
     ...sampleBody,
     style: 'travel',
   });
-  assert(story.status === 200 && story.json.data?.story, 'generate-story + style 返回 story');
+  assert(story.status === 200 && story.json.data?.story, 'generate-story + style returns story');
 
   const bad = await httpRequest(baseUrl, '/api/ai/analyze-image', {});
   assert(
     bad.status === 400 && bad.json.error?.code === 'AI_VALIDATION_ERROR',
-    'analyze-image 缺字段返回 400'
+    'analyze-image missing fields returns 400'
   );
 }
 

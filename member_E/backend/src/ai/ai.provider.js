@@ -41,17 +41,20 @@ function inferMockKind(prompt, explicitKind) {
   if (typeof prompt !== 'string') {
     return 'title';
   }
-  if (prompt.includes('收藏分类助手') || prompt.includes('固定类别')) {
+  if (prompt.includes('category assistant') || prompt.includes('Fixed categories')) {
     return 'category';
   }
-  if (prompt.includes('收藏标签助手')) {
+  if (prompt.includes('tag assistant')) {
     return 'tags';
   }
-  if (prompt.includes('收藏故事助手')) {
+  if (prompt.includes('story assistant')) {
     return 'story';
   }
-  if (prompt.includes('图片识别助手')) {
+  if (prompt.includes('image recognition')) {
     return 'analyzeImage';
+  }
+  if (prompt.includes('title suggestions') || prompt.includes('Generate 3 English title')) {
+    return 'title';
   }
   return 'title';
 }
@@ -59,61 +62,61 @@ function inferMockKind(prompt, explicitKind) {
 function getMockStoryByStyle(style) {
   const stories = {
     concise:
-      '这件收藏被留下来，是因为它连接着某段不想忘记的时间。不必说太多，只要看见它，就能想起当时的安静与满足。',
+      'This piece stays because it connects to a time I do not want to forget. No need to say much — just seeing it brings back the quiet satisfaction of that moment.',
     scrapbook:
-      '今天把它收进本子边——不算贵重，却刚好装下那天的温度。后来翻到这里，仍会觉得心里轻轻顿了一下。',
+      'Tucked it into the edge of my journal today — nothing fancy, but it fit the temperature of that day. Flipping back, it still makes me pause.',
     travel:
-      '路途上遇见它时，街道、光线和脚步都挤在同一张照片里。带回家后，它像一小段未完的旅程，提醒我曾经到过那里。',
+      'Found it on the road where the street, the light and my footsteps all crowded into the same photo. It sits in my room like an unfinished journey, reminding me I was there.',
     vintage:
-      '岁月在上面留下浅浅的痕迹，像旧物自有自己的呼吸。保存它，是为了让某段缓慢而温柔的时间继续留在手边。',
+      'Time has left faint traces on it, as old things breathe in their own way. Keeping it means letting a certain slow and gentle kind of time stay a little longer.',
   };
   return stories[style] || stories.concise;
 }
 
 function getMockAnalyzeImagePayload(prompt) {
   const text = typeof prompt === 'string' ? prompt : '';
-  if (text.includes('票根') || text.includes('ticket')) {
+  if (text.includes('ticket') || text.includes('Ticket')) {
     return {
-      suggestedTitle: '复古展览票根',
-      suggestedCategory: '票根',
-      suggestedTags: ['展览', '票根', '复古'],
-      description: '这看起来像一张展览或活动票根。',
+      suggestedTitle: 'Vintage Exhibition Ticket',
+      suggestedCategory: 'Tickets',
+      suggestedTags: ['Exhibition', 'Ticket', 'Vintage'],
+      description: 'This looks like an exhibition or event ticket.',
     };
   }
-  if (text.includes('黑胶') || text.includes('vinyl') || text.includes('唱片')) {
+  if (text.includes('vinyl') || text.includes('Vinyl') || text.includes('record')) {
     return {
-      suggestedTitle: '封面完好的黑胶',
-      suggestedCategory: '黑胶唱片',
-      suggestedTags: ['黑胶', '音乐', '收藏'],
-      description: '这看起来像一张黑胶唱片或相关封面。',
+      suggestedTitle: 'Well-Preserved Vinyl Record',
+      suggestedCategory: 'Vinyl Records',
+      suggestedTags: ['Vinyl', 'Music', 'Collection'],
+      description: 'This looks like a vinyl record or its cover.',
     };
   }
-  if (text.includes('矿石') || text.includes('mineral') || text.includes('水晶')) {
+  if (text.includes('mineral') || text.includes('Mineral') || text.includes('crystal') || text.includes('Crystal')) {
     return {
-      suggestedTitle: '天然矿石标本',
-      suggestedCategory: '矿石',
-      suggestedTags: ['矿石', '自然', '标本'],
-      description: '这看起来像一块矿石或矿物标本。',
+      suggestedTitle: 'Natural Mineral Specimen',
+      suggestedCategory: 'Minerals',
+      suggestedTags: ['Mineral', 'Nature', 'Specimen'],
+      description: 'This looks like a mineral or crystal specimen.',
     };
   }
   return {
-    suggestedTitle: '值得保存的小物',
-    suggestedCategory: '其他',
-    suggestedTags: ['收藏', '纪念', '日常'],
-    description: '这看起来像一件值得保存的日常收藏品。',
+    suggestedTitle: 'A Small Thing Worth Keeping',
+    suggestedCategory: 'Other Collections',
+    suggestedTags: ['Collection', 'Memory', 'Daily'],
+    description: 'This looks like an everyday collectible worth preserving.',
   };
 }
 
 function getMockPayload(kind, prompt) {
   switch (kind) {
     case 'category':
-      return { category: '明信片', confidence: 0.75 };
+      return { category: 'Postcards', confidence: 0.75 };
     case 'tags':
-      return { tags: ['旅行', '明信片', '书店'] };
+      return { tags: ['Travel', 'Postcards', 'Bookshop'] };
     case 'story': {
       let style = 'concise';
       if (typeof prompt === 'string') {
-        const match = prompt.match(/风格代码：(\w+)/);
+        const match = prompt.match(/Style code:\s*(\w+)/i);
         if (match) {
           style = match[1];
         }
@@ -125,7 +128,7 @@ function getMockPayload(kind, prompt) {
     case 'title':
     default:
       return {
-        suggestions: ['我的收藏记忆', '一件小小收藏', '值得保存的瞬间'],
+        suggestions: ['My Collection Memory', 'A Small Keepsake', 'A Moment Worth Preserving'],
       };
   }
 }

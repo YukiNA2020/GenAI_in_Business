@@ -44,7 +44,7 @@ class UserProfile {
       displayName: 'Group I',
       email: 'demo@collection-journey.app',
       avatarUrl: null,
-      bio: '热爱收藏生活中的每一个美好瞬间。矿石、唱片、票根、明信片——每件小物背后都有一段旅程。',
+      bio: 'Loves collecting the beautiful moments in life. Minerals, vinyl records, tickets, postcards — every small item carries a journey.',
       collectionPreferences: ['Music', 'Travel', 'Minerals', 'Memory'],
     );
   }

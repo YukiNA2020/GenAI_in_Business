@@ -340,11 +340,11 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                               ? form.story
                               : (form.title.isNotEmpty
                                   ? form.title
-                                  : '收藏品'),
+                                  : 'collectible'),
                           title:
                               form.title.isNotEmpty ? form.title : null,
                           category: form.category != null
-                              ? apiSlugToChineseCategory[form.category]
+                              ? apiSlugToAiCategory[form.category]
                               : null,
                           location: form.location.isNotEmpty
                               ? form.location

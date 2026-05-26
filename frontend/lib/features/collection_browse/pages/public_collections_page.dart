@@ -105,8 +105,8 @@ class _PublicCollectionsPageState extends ConsumerState<PublicCollectionsPage> {
                   const SizedBox(height: 24),
                   if (items.isEmpty)
                     const EmptyCollectionState(
-                      title: '暂无公开收藏',
-                      description: '将收藏设为 public 后会出现在此列表。',
+                      title: 'No public exhibits yet',
+                      description: 'Set an exhibit to public and it will appear here.',
                     )
                   else ...[
                     if (recent.isNotEmpty) ...[
@@ -167,10 +167,10 @@ class _PublicCollectionsPageState extends ConsumerState<PublicCollectionsPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: const [
-                      _SocialPlaceholderButton(label: '点赞'),
-                      _SocialPlaceholderButton(label: '评论'),
-                      _SocialPlaceholderButton(label: '收藏'),
-                      _SocialPlaceholderButton(label: '关注'),
+                      _SocialPlaceholderButton(label: 'Like'),
+                      _SocialPlaceholderButton(label: 'Comment'),
+                      _SocialPlaceholderButton(label: 'Save'),
+                      _SocialPlaceholderButton(label: 'Follow'),
                     ],
                   ),
                 ],

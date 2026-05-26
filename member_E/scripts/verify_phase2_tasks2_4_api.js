@@ -15,10 +15,10 @@ const aiService = require(path.join(__dirname, '../backend/src/ai/ai.service.js'
 const aiSchemas = require(path.join(__dirname, '../backend/src/ai/ai.schemas.js'));
 
 const sampleBody = {
-  category: '明信片',
-  location: '东京',
+  category: 'Postcards',
+  location: 'Tokyo',
   dateAcquired: '2026-05-01',
-  description: '在一家小书店买到的蓝色明信片',
+  description: 'A blue postcard bought at a small bookshop',
 };
 
 let passed = 0;
@@ -41,26 +41,26 @@ async function runServiceTests() {
   console.log('\n[1] ai.service 层（mock）\n');
 
   const title = await aiService.suggestTitle(sampleBody);
-  assert(aiSchemas.validateTitleResponse(title), 'suggestTitle 返回合法结构');
+  assert(aiSchemas.validateTitleResponse(title), 'suggestTitle returns valid structure');
 
   const category = await aiService.suggestCategory({
     ...sampleBody,
-    title: '东京蓝色明信片',
-    imageDescription: '蓝色调明信片',
+    title: 'A Blue Postcard from Tokyo',
+    imageDescription: 'A blue-toned postcard',
   });
-  assert(aiSchemas.validateCategoryResponse(category), 'suggestCategory 返回合法结构');
+  assert(aiSchemas.validateCategoryResponse(category), 'suggestCategory returns valid structure');
 
-  const tags = await aiService.suggestTags({ ...sampleBody, title: '东京蓝色明信片' });
-  assert(aiSchemas.validateTagsResponse(tags), 'suggestTags 返回合法结构');
+  const tags = await aiService.suggestTags({ ...sampleBody, title: 'A Blue Postcard from Tokyo' });
+  assert(aiSchemas.validateTagsResponse(tags), 'suggestTags returns valid structure');
 
-  const story = await aiService.generateStory({ ...sampleBody, title: '东京蓝色明信片' });
-  assert(aiSchemas.validateStoryResponse(story), 'generateStory 返回合法结构');
+  const story = await aiService.generateStory({ ...sampleBody, title: 'A Blue Postcard from Tokyo' });
+  assert(aiSchemas.validateStoryResponse(story), 'generateStory returns valid structure');
 
   try {
     await aiService.suggestTitle({ description: '' });
-    assert(false, '空 description 应失败');
+    assert(false, 'Empty description should fail');
   } catch (error) {
-    assert(error.code === aiSchemas.AI_ERROR_CODES.validation, '空 description 返回 AI_VALIDATION_ERROR');
+    assert(error.code === aiSchemas.AI_ERROR_CODES.validation, 'Empty description returns AI_VALIDATION_ERROR');
   }
 }
 
@@ -115,7 +115,7 @@ async function runHttpTests(baseUrl) {
   }
 
   const bad = await httpRequest(baseUrl, '/api/ai/suggest-title', { description: '' });
-  assert(bad.status === 400 && bad.json.error?.code === 'AI_VALIDATION_ERROR', 'HTTP 缺 description 返回 400');
+  assert(bad.status === 400 && bad.json.error?.code === 'AI_VALIDATION_ERROR', 'HTTP empty description returns 400');
 }
 
 async function main() {

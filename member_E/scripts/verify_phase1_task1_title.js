@@ -25,45 +25,45 @@ function assert(condition, message) {
 }
 
 const sampleInput = {
-  category: '明信片',
-  location: '东京',
+  category: 'Postcards',
+  location: 'Tokyo',
   dateAcquired: '2026-05-01',
-  description: '在一家小书店买到的蓝色明信片',
+  description: 'A blue postcard bought at a small bookshop',
 };
 
 console.log('\n成员 E — 阶段一·任务一：标题生成 Prompt 自检\n');
 
 // 1. Prompt builder
 const prompt = aiPrompts.buildTitlePrompt(sampleInput);
-assert(typeof prompt === 'string' && prompt.length > 100, 'buildTitlePrompt 返回非空字符串');
-assert(prompt.includes('3 个中文标题建议'), 'Prompt 要求生成 3 个标题');
-assert(prompt.includes('不超过 20 个中文字符'), 'Prompt 包含 20 字长度限制');
-assert(prompt.includes('不要编造'), 'Prompt 包含禁止编造规则');
-assert(prompt.includes('"suggestions"'), 'Prompt 固定 suggestions JSON 字段');
-assert(prompt.includes(sampleInput.description), 'Prompt 注入用户描述');
-assert(prompt.includes(sampleInput.location), 'Prompt 注入地点');
+assert(typeof prompt === 'string' && prompt.length > 100, 'buildTitlePrompt returns non-empty string');
+assert(prompt.includes('Generate 3 English title suggestions'), 'Prompt requires 3 English titles');
+assert(prompt.includes('40 characters') || prompt.includes('40 character'), 'Prompt includes 40 char limit');
+assert(prompt.includes('Do not fabricate') || prompt.includes('fabricate'), 'Prompt includes no-fabrication rule');
+assert(prompt.includes('"suggestions"'), 'Prompt specifies suggestions JSON field');
+assert(prompt.includes(sampleInput.description), 'Prompt injects user description');
+assert(prompt.includes(sampleInput.location), 'Prompt injects location');
 
 // 2. 必填字段校验（供阶段二接口复用）
 assert(aiSchemas.hasRequiredDescription({ description: '  有内容  ' }), 'description 非空时通过校验');
 assert(!aiSchemas.hasRequiredDescription({ description: '' }), 'description 为空时校验失败');
 assert(!aiSchemas.hasRequiredDescription({}), '缺少 description 时校验失败');
 
-// 3. 响应结构校验
+// 3. Response structure validation
 const validResponse = {
-  suggestions: ['东京蓝色明信片', '小书店的蓝色记忆', '那张蓝色明信片'],
+  suggestions: ['A Blue Postcard from Tokyo', 'Bookshop Memory', 'That Blue Postcard'],
 };
-assert(aiSchemas.validateTitleResponse(validResponse), '合法 3 条标题响应通过校验');
+assert(aiSchemas.validateTitleResponse(validResponse), 'Valid 3-title response passes validation');
 
-const badCount = { suggestions: ['仅一条'] };
-assert(!aiSchemas.validateTitleResponse(badCount), '标题数量不为 3 时校验失败');
+const badCount = { suggestions: ['Only one'] };
+assert(!aiSchemas.validateTitleResponse(badCount), 'Title count not 3 fails validation');
 
 const tooLong = {
-  suggestions: ['一二三四五六七八九十一二三四五六七八九十一', '标题二', '标题三'],
+  suggestions: ['A very long title that exceeds forty characters limit here', 'Title two', 'Title three'],
 };
-assert(!aiSchemas.validateTitleResponse(tooLong), '单条标题超过 20 字时校验失败');
+assert(!aiSchemas.validateTitleResponse(tooLong), 'Single title over 40 chars fails validation');
 
-const emptyItem = { suggestions: ['', '标题二', '标题三'] };
-assert(!aiSchemas.validateTitleResponse(emptyItem), '空字符串标题时校验失败');
+const emptyItem = { suggestions: ['', 'Title two', 'Title three'] };
+assert(!aiSchemas.validateTitleResponse(emptyItem), 'Empty string title fails validation');
 
 // 4. API 端点常量（任务五合同，任务一输出格式与之对齐）
 assert(

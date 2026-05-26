@@ -51,10 +51,10 @@ assert(aiProvider.resolveProviderMode(aiProvider.getConfig()) === 'mock', '无 A
 
 (async () => {
   const titlePrompt = aiPrompts.buildTitlePrompt({
-    category: '明信片',
-    location: '东京',
+    category: 'Postcards',
+    location: 'Tokyo',
     dateAcquired: '2026-05-01',
-    description: '在一家小书店买到的蓝色明信片',
+    description: 'A blue postcard bought at a small bookshop',
   });
   const titleData = await aiProvider.generateJson(titlePrompt, {
     validate: aiSchemas.validateTitleResponse,
@@ -62,21 +62,21 @@ assert(aiProvider.resolveProviderMode(aiProvider.getConfig()) === 'mock', '无 A
   });
   assert(aiSchemas.validateTitleResponse(titleData), 'mock 模式生成标题 JSON 并通过校验');
 
-  const categoryPrompt = aiPrompts.buildCategoryPrompt({ description: '黑胶唱片封面很复古' });
+  const categoryPrompt = aiPrompts.buildCategoryPrompt({ description: 'A vintage vinyl record cover' });
   const categoryData = await aiProvider.generateJson(categoryPrompt, {
     validate: aiSchemas.validateCategoryResponse,
     mockKind: 'category',
   });
-  assert(aiSchemas.validateCategoryResponse(categoryData), 'mock 模式生成分类 JSON');
+  assert(aiSchemas.validateCategoryResponse(categoryData), 'mock mode generates category JSON');
 
-  const tagsPrompt = aiPrompts.buildTagsPrompt({ description: '旅行纪念品' });
+  const tagsPrompt = aiPrompts.buildTagsPrompt({ description: 'Travel souvenir' });
   const tagsData = await aiProvider.generateJson(tagsPrompt, {
     validate: aiSchemas.validateTagsResponse,
     mockKind: 'tags',
   });
-  assert(aiSchemas.validateTagsResponse(tagsData), 'mock 模式生成标签 JSON');
+  assert(aiSchemas.validateTagsResponse(tagsData), 'mock mode generates tags JSON');
 
-  const storyPrompt = aiPrompts.buildStoryPrompt({ description: '想留住那次旅行的记忆' });
+  const storyPrompt = aiPrompts.buildStoryPrompt({ description: 'Want to keep the memory of that trip' });
   const storyData = await aiProvider.generateJson(storyPrompt, {
     validate: aiSchemas.validateStoryResponse,
     mockKind: 'story',

@@ -58,7 +58,7 @@ function validateTitleResponse(response) {
     isPlainObject(response) &&
     Array.isArray(response.suggestions) &&
     response.suggestions.length === 3 &&
-    response.suggestions.every((item) => typeof item === 'string' && item.trim().length > 0 && item.length <= 20)
+    response.suggestions.every((item) => typeof item === 'string' && item.trim().length > 0 && item.length <= 40)
   );
 }
 
@@ -99,7 +99,7 @@ function validateAnalyzeImageResponse(response) {
   return (
     typeof response.suggestedTitle === 'string' &&
     response.suggestedTitle.trim().length > 0 &&
-    response.suggestedTitle.length <= 20 &&
+    response.suggestedTitle.length <= 40 &&
     COLLECTION_CATEGORIES.includes(response.suggestedCategory) &&
     Array.isArray(response.suggestedTags) &&
     response.suggestedTags.length >= 3 &&

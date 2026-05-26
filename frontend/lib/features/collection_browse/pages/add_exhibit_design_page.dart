@@ -425,10 +425,10 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
 
   static String _mockImageDescriptionForKind(ExhibitIconKind kind) {
     return switch (kind) {
-      ExhibitIconKind.ticket => '一张泛黄的展览票根照片，边缘略有磨损，印刷字体清晰',
-      ExhibitIconKind.vinyl => '黑胶唱片封面照片，色彩饱和，中央圆形标签可见',
-      ExhibitIconKind.mineral => '天然矿石标本特写，表面有晶体反光',
-      _ => '收藏品物件照片，光线柔和，适合识别类别',
+      ExhibitIconKind.ticket => 'A faded exhibition ticket photo with slightly worn edges and clear printed text',
+      ExhibitIconKind.vinyl => 'A vinyl record cover with saturated colors and a visible central circular label',
+      ExhibitIconKind.mineral => 'A close-up of a natural mineral specimen with crystal reflections on the surface',
+      _ => 'A collectible item photo with soft lighting, suitable for category recognition',
     };
   }
 }
