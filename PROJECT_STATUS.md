@@ -1,7 +1,7 @@
 # Project Status — Collection Journey App
 
 > 当前分支：`codex/integration-prep`
-> 最后更新：2026-05-26
+> 最后更新：2026-05-27
 > MVP 状态：✅ 已完成整合
 
 ---
@@ -20,6 +20,7 @@
 
 | # | 问题 | 优先级 | 状态 |
 |---|------|--------|------|
+| 8 | 英文化 AI 合同迁移（schema / prompt / mock / 前端映射 / 测试脚本） | 🔴 P0 | ✅ 已验证完成（2026-05-27） |
 | 5 | AI 故事风格切换时内容追加而非替换 | 🔴 高 | ❌ 未处理 |
 | 6 | Profile "Favorite tags" 筛选逻辑与 Gallery/Room 不一致 | 🟡 中 | ❌ 未处理 |
 | 7 | AI Suggestions 面板"（Member E）"标注应移除 | 🟢 低 | ❌ 未处理 |
@@ -28,7 +29,7 @@
 | 4 | RoomSelectorRow 字符长度不一致导致排版问题 | 🟢 低 | ❌ 未处理 |
 | 2 | AI 空输入时灵活度不足 | 🟢 低 | ❌ 未处理 |
 
-**⚠️ 关注**：`0990e6e` 将 `ai.schemas.js` 的 `COLLECTION_CATEGORIES` 改为英文（`Minerals`/`Crystals`/`Vinyl Records` 等），与前端 `ai_category_mapping.dart`（中文 slug 映射）合同不再匹配，需后续同步。
+**✅ 已处理**：`0990e6e` 引入的英文 category schema 已与 AI prompt/mock、Vision prompt、前端 `ai_category_mapping.dart`、Create/Add 调用点、成员 B 交接副本和验证脚本完成同步。2026-05-27 回归验证已通过：Phase 1 / Phase 2 provider / Phase 2 HTTP / Phase 4 HTTP / Phase 5 demo E2E / Flutter test / Flutter analyze。
 
 ---
 

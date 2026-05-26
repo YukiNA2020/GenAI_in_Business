@@ -66,7 +66,7 @@ function request(method, path, body, headers = {}) {
   });
 }
 
-function chineseCategoryToSlug(name, categories) {
+function categoryNameToSlug(name, categories) {
   const hit = categories.find((c) => c.name === name);
   return hit ? hit.id : 'other';
 }
@@ -87,7 +87,7 @@ async function main() {
   });
   assert(image.status === 200 && image.json?.data?.suggestedTitle, 'AI 图片识别成功');
   const ai = image.json.data;
-  const slug = chineseCategoryToSlug(ai.suggestedCategory, categoryList);
+  const slug = categoryNameToSlug(ai.suggestedCategory, categoryList);
 
   const create = await request('POST', '/api/collections', {
     title: `[E5-Demo] ${ai.suggestedTitle}`,
@@ -106,7 +106,7 @@ async function main() {
   const manual = await request('POST', '/api/collections', {
     title: '[E5-Demo] Manual save after AI fail',
     category: 'postcard',
-    story: '手动保存验证',
+    story: 'Manual save validation',
     userId: 1,
   });
   assert(manual.status === 201, 'AI 失败后仍可手动创建');

@@ -335,12 +335,12 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
                 final note = _storyController.text.trim();
                 return AiFormPayload(
                   description:
-                      note.isEmpty ? (_imageDescription ?? '收藏品图片') : note,
+                      note.isEmpty ? (_imageDescription ?? 'collectible photo') : note,
                   title: _titleController.text.trim().isEmpty
                       ? null
                       : _titleController.text.trim(),
                   category:
-                      slug == null ? null : apiSlugToChineseCategory[slug],
+                      slug == null ? null : apiSlugToAiCategory[slug],
                   imageDescription: _imageDescription,
                 );
               },

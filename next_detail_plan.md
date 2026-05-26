@@ -1,6 +1,6 @@
 # Collection Journey App 后 MVP 下一步详细技术计划
 
-> 上次更新：2026-05-26  
+> 上次更新：2026-05-27  
 > 当前基线：`codex/integration-prep` 已达到 MVP 整合完成标准。  
 > 主要依据：`PROJECT_STATUS.md`、`Post_MVP_Issues.md`、`README.md`、`API_Contract.md`，并结合当前代码状态复核。  
 > 本文件用途：作为 Post-MVP bug 修复、演示前打磨、测试补强和后续生产化的具体执行路线。
@@ -20,7 +20,7 @@
 
 | 统一编号 | 问题 | 优先级 | 当前状态 |
 |---|---|---|---|
-| ISSUE-08 | 英文化迁移未完成：数据库/schema 已英文，AI prompt/mock/前端映射仍有中文 | P0 | 未处理 |
+| ISSUE-08 | 英文化 AI 合同迁移：数据库/schema 已英文，AI prompt/mock/前端映射/测试脚本需同步 | P0 | ✅ 已验证完成（2026-05-27） |
 | ISSUE-05 | AI 故事风格切换时内容追加/污染，而非干净替换 | P1 | 未处理 |
 | ISSUE-06 | Profile Favorite tags 使用 Gallery 当前列表，筛选结果可能错误 | P1 | 未处理 |
 | ISSUE-01 | Room Reflection Redo 按钮无功能 | P1 | 未处理 |
@@ -28,7 +28,7 @@
 | ISSUE-07 | AI Suggestions 标题旁的 `(Member E)` 标注应移除 | P2 | 未处理 |
 | ISSUE-04 | RoomSelectorRow room label 过长时缺少溢出保护 | P2 | 未处理 |
 | ISSUE-02 | Add 页空输入时 AI 生成过于模板化 | P2 | 未处理 |
-| ISSUE-09 | 用户可见中文 UI / AI 语言口径清理 | P2/P3 | 未处理 |
+| ISSUE-09 | 剩余中文注释 / 历史说明 / 测试日志清理 | P3 | 可选未处理 |
 
 ---
 
@@ -38,7 +38,7 @@
 
 目标：让 AI、Profile、Room 这三块不会在演示中出现明显错误。
 
-1. 修复 ISSUE-08：完成英文 category / AI 输出 / 前端映射迁移。
+1. ISSUE-08 已完成：英文 category / AI 输出 / 前端映射迁移已验证，可作为后续修复基线。
 2. 修复 ISSUE-05：AI 故事风格切换污染。
 3. 修复 ISSUE-06：Profile Favorite tags 数据源独立。
 4. 修复 ISSUE-01：Room Reflection Redo 接入真实 AI 或稳定 mock。
@@ -51,7 +51,7 @@
 1. 修复 ISSUE-07：移除 `(Member E)`。
 2. 修复 ISSUE-04：RoomSelectorRow label 加 `maxLines` / `ellipsis`。
 3. 修复 ISSUE-02：优化空输入 AI 行为和 mock 随机性。
-4. 处理 ISSUE-09 中剩余用户可见中文字符串和旧 demo 文案。
+4. 处理 ISSUE-09 中剩余注释、历史说明和测试日志中文。
 
 ### 第三轮：测试、文档和交付整理
 
@@ -66,6 +66,10 @@
 ---
 
 ## 2. P0：完成英文 AI 合同迁移
+
+### 当前状态
+
+✅ 已验证完成（2026-05-27）。本节保留为技术路线和验收依据，后续成员不需要再把 ISSUE-08 当作未处理 P0 领取；若团队要求“代码文件完全无中文字符”，应另开 P3 注释/历史文案清理任务。
 
 ### 问题
 
@@ -228,6 +232,27 @@ node member_E/scripts/verify_phase5_demo_e2e.js
 cd frontend
 flutter analyze --no-pub --no-fatal-infos
 ```
+
+### 2026-05-27 回归结果
+
+已通过：
+
+```bash
+node member_E/scripts/verify_phase1_task1_title.js
+node member_E/scripts/verify_phase2_task1_provider.js
+node member_E/scripts/verify_phase2_tasks2_4_api.js
+node member_E/scripts/verify_phase4_tasks1_5_api.js
+node member_E/scripts/verify_phase5_demo_e2e.js
+cd frontend && flutter test --no-pub
+cd frontend && flutter analyze --no-pub --no-fatal-infos
+```
+
+手动 API 复核：
+
+- `/api/ai/suggest-category` 返回英文 category，例如 `Tickets`。
+- `/api/ai/analyze-image` 返回英文 title/category/tags/description。
+
+备注：`flutter analyze --no-pub --no-fatal-infos` 退出码为 0，仅剩既有 info 级样式/弃用提示。
 
 ---
 
@@ -751,13 +776,13 @@ description: form.story.isNotEmpty
 
 ### 问题
 
-P0 会处理影响运行合同的 AI prompt/mock/mapping，以及主要用户可见中文。剩下的中文大多是注释、历史说明、测试日志文案或成员交接副本。
+ISSUE-08 已经处理影响运行合同的 AI prompt/mock/mapping，以及主要用户可见中文。剩下的中文大多是注释、历史说明或测试日志文案。
 
 这里分两类处理，避免为了“零中文”去改动已经不参与运行的历史代码。
 
-### P2：补清直接用户可见 UI 中文
+### P2：补清未来发现的用户可见 UI 中文
 
-如果 P0 没有顺手处理，优先处理 `frontend/lib/features/collection_browse/pages/public_collections_page.dart`：
+2026-05-27 复核时，已知公开浏览页用户可见中文已处理。若后续扫描或手测又发现新的用户可见中文，优先按下面口径替换：
 
 | 当前中文 | 建议英文 |
 |---|---|

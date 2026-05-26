@@ -1,6 +1,6 @@
 # Post-MVP Issues - 待处理问题记录
 
-> 上次更新：2026-05-26（第二次更新）
+> 上次更新：2026-05-27
 > 记录人：成员 E
 > 用途：记录 MVP 整合后发现的新问题，不混入 Test.md / Status.md 等已有文档
 
@@ -558,8 +558,58 @@ Text(
 
 ---
 
+## 问题 8：英文化 AI 合同迁移（P0）已验证完成
+
+### 概述
+
+数据库负责人已经把数据库与 `COLLECTION_CATEGORIES` 迁到英文后，剩余风险在 AI 适配层：prompt、mock provider、Vision prompt、前端 category 映射、Add/Create 调用点、成员交接副本和验证脚本必须同步成英文合同，否则会出现 schema 校验失败、前端映射失败或 AI 输出语言不一致。
+
+### 处理结果（2026-05-27）
+
+状态：✅ 已验证完成。
+
+本次确认并补齐的运行相关范围：
+
+| 范围 | 文件 | 结果 |
+|------|------|------|
+| AI schema / prompt / mock | `member_E/backend/src/ai/ai.schemas.js`、`ai.prompts.js`、`ai.provider.js` | 使用英文 category display name 与英文输出 |
+| Vision prompt | `member_E/backend/src/ai/vision.prompts.js` | 默认 `en-US`，图片描述提示与 JSON 输出要求均为英文 |
+| 前端映射 | `frontend/lib/features/collection_form/utils/ai_category_mapping.dart` | 使用 `aiCategoryToSlug` / `apiSlugToAiCategory` 英文映射 |
+| Create/Add 调用点 | `create_collection_page.dart`、`add_exhibit_design_page.dart` | 传给 AI 的 category / fallback description 已切到英文 |
+| 用户可见英文 UI | `public_collections_page.dart`、`user_profile.dart` | 公开页与 profile mock 文案已为英文 |
+| 成员交接副本 | `member_B/frontend/lib/features/collection_form/utils/ai_category_mapping.dart` | 已同步英文映射，避免后续合并时带回中文合同 |
+| 验证脚本 | `member_E/scripts/verify_phase5_demo_e2e.js` 等 | sample / helper / manual story 已按英文合同验证 |
+
+### 验证记录
+
+已通过：
+
+```bash
+node member_E/scripts/verify_phase1_task1_title.js
+node member_E/scripts/verify_phase2_task1_provider.js
+node member_E/scripts/verify_phase2_tasks2_4_api.js
+node member_E/scripts/verify_phase4_tasks1_5_api.js
+node member_E/scripts/verify_phase5_demo_e2e.js
+cd frontend && flutter test --no-pub
+cd frontend && flutter analyze --no-pub --no-fatal-infos
+```
+
+补充手测：
+
+- `POST /api/ai/suggest-category` 返回英文 category，例如 `Tickets`。
+- `POST /api/ai/analyze-image` 返回英文 `suggestedTitle`、`suggestedCategory`、`suggestedTags` 和 `description`。
+- Phase 5 demo E2E 创建的测试记录已清理，测试后数据库文件已恢复。
+
+### 剩余说明
+
+运行合同相关中文已经处理完成。当前若继续用 `rg -n "[\\p{Han}]"` 全库扫描，剩余中文主要是注释、历史文档、测试日志标签或旧说明文字；如果团队要求“代码文件零中文字符”，建议单独开 P3 清注释任务，不再归入 ISSUE-08。
+
+---
+
 ## 中文内容清单
 
+> 2026-05-27 更新：运行相关英文化迁移已在“问题 8”中验证完成。本清单保留为 2026-05-26 的历史扫描记录，用来说明当时的风险来源；如需继续处理，重点已变成注释、历史说明和测试日志的零中文清理。
+>
 > 产品设计目标：**英文 UI**。以下中文是开发过程中因"方便开发者理解"而设置的。
 > 本清单按用途分类，便于后续统一替换为英文。
 
@@ -715,7 +765,9 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ---
 
-### 替换优先级建议
+### 历史替换优先级建议（已由问题 8 覆盖）
+
+> 2026-05-27：A/B/C/D/F 运行相关项已完成，E 中影响 AI fallback 的内容也已同步。下表仅保留为历史优先级。
 
 | 优先级 | 内容 | 说明 |
 |--------|------|------|
@@ -729,6 +781,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
+- **2026-05-27**（测试工程复核，由 Codex 协助）：新增问题 8 处理结果。确认英文化 AI 合同迁移已完成并通过 Phase 1 / Phase 2 provider / Phase 2 HTTP / Phase 4 HTTP / Phase 5 demo E2E / Flutter test / Flutter analyze；同步说明剩余中文主要是注释、历史说明或测试日志，不再阻塞 P0。
 - **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：Profile "Favorite tags"筛选逻辑与Gallery/Room不一致（`allItems`来自Gallery filter状态）；新增问题 7：AI Suggestions面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。并修正编号：问题5/6/7顺序整理完毕。
 - **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新建本文档。记录 Room Reflection Redo 按钮无功能（BUG-ME-006 原记录于 Test.md，现移至本文档）、Room 月份不一致两个问题。

@@ -28,7 +28,7 @@ ${JSON.stringify(COLLECTION_CATEGORIES)}
 7. Language: ${language}
 
 ## Image information (for reference)
-- User补充 description: ${imageDescription}
+- User-provided description: ${imageDescription}
 - Image URL: ${imageUrl}
 
 Output JSON directly:
