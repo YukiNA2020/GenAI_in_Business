@@ -1,6 +1,6 @@
 # Post-MVP Issues - 待处理问题记录
 
-> 上次更新：2026-05-26
+> 上次更新：2026-05-26（第二次更新）
 > 记录人：成员 E
 > 用途：记录 MVP 整合后发现的新问题，不混入 Test.md / Status.md 等已有文档
 
@@ -338,6 +338,113 @@ Text(
 
 ---
 
+## 问题 5：AI 故事风格切换时内容追加而非替换
+
+### 概述
+
+同伴测试反馈（2026-05-26 确认）：在 Create 页点击一种故事风格（如 scrapbook）生成故事后，再点击另一种风格（如 vintage），新风格生成的内容会**追加**到旧内容后面，而不是替换。
+
+### 复现步骤
+
+1. 打开 Create 页（或 Add 页）
+2. 留空 title 和 story（均无内容）
+3. 点击 **Scrapbook** 风格 → 点击 **Story** 按钮生成
+4. 看到 scrapbook 故事生成：`"我把「这件藏品」收进柜子里。收藏品像剪贴簿里一页泛黄的回忆。"`
+5. 再点击 **Vintage** 风格芯片
+6. **实际**：vintage 故事**追加**到 scrapbook 后面，形成重复前缀的混乱内容
+7. **预期**：vintage 故事应**替换** scrapbook 内容
+
+### 同伴测试实际输出示例
+
+```
+Scrapbook 生成：
+"我把「这件藏品」收进柜子里。收藏品像剪贴簿里一页泛黄的回忆。"
+
+点击 Vintage 后追加结果：
+"我把「这件藏品」收进柜子里。我把「这件藏品」收进柜子里。收藏品像剪贴薄里一页泛黄的回忆。旧时光在纸面上轻..."
+```
+
+### 根因分析
+
+**完整数据流追踪：**
+
+```
+初始状态：form.story = ''
+
+点击 Scrapbook → _runStory()
+  → buildPayload() → description = '收藏品'（story 为空，fallback）
+  → API 返回 scrapbook 故事
+  → onStoryApplied(story) → updateStory(story)
+  → form.story = scrapbook 内容  ✅
+
+点击 Vintage → onSelected(style) → setState(() => _storyStyle = vintage)
+  → _runStory()
+  → buildPayload() → description = form.story（此时为 scrapbook 内容！）
+  → API 返回内容时，prompt 中 description = scrapbook 内容
+  → 模型将 scrapbook 内容融入生成逻辑
+  → onStoryApplied(vintage_content) → updateStory(vintage_content)
+  → form.story = vintage 内容（覆盖 scrapbook）
+```
+
+**关键问题代码：**
+
+`create_collection_page.dart` 第 339-343 行：
+
+```dart
+description: form.story.isNotEmpty
+    ? form.story                    // ← 这里是 scrapbook 内容，不是空值
+    : (form.title.isNotEmpty
+        ? form.title
+        : '收藏品'),
+```
+
+当 form.story 已包含 scrapbook 故事时，切换 vintage 风格，`buildPayload()` 会把 scrapbook 内容作为 `description` 发送给 API。
+
+**另一个相关代码（第 356-357 行）：**
+
+```dart
+imageDescription: form.story.isNotEmpty ? form.story : null,
+```
+
+scrapbook 内容还被设为 `imageDescription`，虽然当前 `buildStoryPrompt` 不使用这个字段，但这是潜在的二义性来源。
+
+**为什么 API 返回的内容会包含旧 scrapbook 前缀：**
+
+API prompt 的 `用户输入：- 描述：${form.story}` 中，模型收到了 scrapbook 故事作为上下文。虽然 prompt 规则写的是"不要编造用户没有提供的内容"，但 scrapbook 故事本身是作为"用户输入的描述"被传入的，模型会自然地将已有描述的内容融入新风格生成。
+
+### 涉及代码
+
+| 文件 | 位置 | 问题 |
+|------|------|------|
+| `frontend/lib/features/collection_form/pages/create_collection_page.dart` | `buildPayload()` 第 339-343 行 | `form.story` 作为 description 没有在风格切换时清除 |
+| `frontend/lib/features/collection_form/widgets/ai_suggestion_panel.dart` | `ChoiceChip onSelected` 第 273-278 行 | 切换风格时没有清除已有 story 状态 |
+
+### 解决方案
+
+**方案 A（推荐）：风格切换时清除 form.story**
+
+在 `AiSuggestionPanel` 的 `ChoiceChip onSelected` 回调中，切换风格前先调用 `updateStory('')` 清空已有内容。这样 `buildPayload()` 会走 fallback 逻辑，用 `'收藏品'` 作为干净的 description。
+
+需要新增一个 `onStoryReset` 回调从 `AiSuggestionPanel` 传到 `CreateCollectionPage`，在 `onStoryReset` 中执行 `updateStory('')`。
+
+**方案 B：在 `buildPayload()` 中区分"初始生成"和"风格切换"**
+
+增加参数标识当前是初始生成还是风格切换，风格切换时强制用 `'收藏品'` 作为 description，不使用 form.story。但这个方案会破坏"用户手动编辑后重新生成"的逻辑。
+
+**方案 C：后端 prompt 层面做强制隔离**
+
+在 `buildStoryPrompt` 中增加逻辑：如果是风格切换（通过某个标识），prompt 中描述字段应该传空，让模型不要基于旧内容生成。但这需要前端传额外参数，且同样影响用户手动编辑后的生成场景。
+
+### 严重程度
+
+**高** — 实质性功能 bug，用户体验明显异常（内容追加而非替换）
+
+### 状态
+
+❌ 尚未处理
+
+---
+
 ## 中文内容清单
 
 > 产品设计目标：**英文 UI**。以下中文是开发过程中因"方便开发者理解"而设置的。
@@ -509,6 +616,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
+- **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新建本文档。记录 Room Reflection Redo 按钮无功能（BUG-ME-006 原记录于 Test.md，现移至本文档）、Room 月份不一致两个问题。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新增问题 4：`RoomSelectorRow` 中 "March Room" 字符多于 "May Room" 导致视觉对齐差异；建议方案为给 `label` Text 增加 `maxLines: 1` + `overflow: ellipsis`。并注明该问题在切换为 March/April/May 后比原始 June/July 设计更明显。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新增"中文内容清单"章节。按 A/B/C/D/E/F 六类梳理了全库中文内容：AI mock 返回（A）、AI prompt 模板（B）、中文↔slug 映射（C）、AI fallback 参数（D）、开发 mock 中文（E）、用户面向 UI 中文（F）。标注了替换优先级。
