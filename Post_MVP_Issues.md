@@ -338,7 +338,38 @@ Text(
 
 ---
 
-## 问题 5：AI 故事风格切换时内容追加而非替换
+## 问题 6：AI Suggestions 面板标注"（Member E）"应移除
+
+### 概述
+
+同伴反馈：Add 页 AI Suggestions 面板标题后面有"（Member E）"标注，需要在产品正式展示时去掉。
+
+### 涉及代码
+
+`frontend/lib/features/collection_form/widgets/ai_suggestion_panel.dart:220`：
+
+```dart
+Text(
+  '(Member E)',
+  style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 10),
+),
+```
+
+### 解决方案
+
+直接删除这三行代码，或将文本改为产品正式标注（如空字符串或产品名称）。
+
+### 严重程度
+
+**低** — 仅 UI 标注，不影响功能
+
+### 状态
+
+❌ 尚未处理
+
+---
+
+## 问题 6：AI Suggestions 面板标注"（Member E）"应移除
 
 ### 概述
 
@@ -616,6 +647,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
+- **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：AI Suggestions 面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。
 - **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新建本文档。记录 Room Reflection Redo 按钮无功能（BUG-ME-006 原记录于 Test.md，现移至本文档）、Room 月份不一致两个问题。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新增问题 4：`RoomSelectorRow` 中 "March Room" 字符多于 "May Room" 导致视觉对齐差异；建议方案为给 `label` Text 增加 `maxLines: 1` + `overflow: ellipsis`。并注明该问题在切换为 March/April/May 后比原始 June/July 设计更明显。
