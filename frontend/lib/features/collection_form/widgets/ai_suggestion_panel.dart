@@ -215,11 +215,6 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
           Row(
             children: [
               Text('AI SUGGESTIONS', style: CollectoryHandoffHeader.metaLabel()),
-              const SizedBox(width: 6),
-              Text(
-                '(Member E)',
-                style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 10),
-              ),
             ],
           ),
           const SizedBox(height: 8),
