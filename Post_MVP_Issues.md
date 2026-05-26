@@ -369,11 +369,62 @@ Text(
 
 ---
 
-## 问题 6：AI Suggestions 面板标注"（Member E）"应移除
+## 问题 6：Profile "Favorite tags" 筛选逻辑与 Gallery/Room 不一致
 
 ### 概述
 
-同伴测试反馈（2026-05-26 确认）：在 Create 页点击一种故事风格（如 scrapbook）生成故事后，再点击另一种风格（如 vintage），新风格生成的内容会**追加**到旧内容后面，而不是替换。
+同伴反馈：Gallery、Profile、Room 页面的筛选和切换逻辑不通；Profile 页面点击某个 tag 时显示"No exhibits"，但实际该 category 下有数据。
+
+### 根因分析
+
+**数据源差异：**
+
+| 页面 | category 数据来源 | 使用的 slug |
+|------|-----------------|-------------|
+| Gallery | `GET /api/collections?category=` | API slug（如 `mineral`/`vinyl`/`ticket`） |
+| Profile | `allItems`（本地列表）+ `filterProfileItems()` | API slug |
+| Room | `GET /api/rooms/:id` 展品列表 | API slug |
+
+**Profile 筛选逻辑（`profile_collection_preview.dart:242-248`）：**
+
+```dart
+final favoriteCategoryId =
+    CollectoryFavoriteTags.categorySlugForTag(_activeFavoriteTag);
+final favoriteItems = filterProfileItems(
+  allItems,
+  publicOnly: publicPreview,
+  categoryId: favoriteCategoryId,
+);
+```
+
+**问题可能来源：**
+
+`allItems` 来自 `collectionListProvider`，是 Gallery 当前列表的数据，不是用户所有收藏。当 Gallery 有搜索/分类筛选 active 时，`allItems` 可能已被过滤，导致某些 category 的展品不在列表中，在 Profile 的 tag 筛选中显示"No exhibits"。
+
+### 涉及代码
+
+| 文件 | 位置 | 问题 |
+|------|------|------|
+| `profile_collection_preview.dart:244` | `filterProfileItems` 调用 | `allItems` 可能是 Gallery filter 后的数据 |
+| `collection_list_provider.dart` | `collectionListProvider` | Gallery filter 状态影响 Profile 可视数据 |
+
+### 解决方案
+
+**方案 A（推荐）：Profile 使用独立的不受 Gallery filter 影响的收藏数据**
+
+Profile 的 `Favorite tags` 应基于用户全量收藏，而非 Gallery 当前视图。可新建 provider 专门服务 Profile 的数据需求。
+
+### 严重程度
+
+**中** — 用户可见的筛选结果与预期不符，影响体验
+
+### 状态
+
+❌ 尚未处理
+
+---
+
+## 问题 7：AI Suggestions 面板标注"（Member E）"应移除
 
 ### 复现步骤
 
@@ -469,6 +520,37 @@ API prompt 的 `用户输入：- 描述：${form.story}` 中，模型收到了 s
 ### 严重程度
 
 **高** — 实质性功能 bug，用户体验明显异常（内容追加而非替换）
+
+### 状态
+
+❌ 尚未处理
+
+---
+
+## 问题 7：AI Suggestions 面板标注"（Member E）"应移除
+
+### 概述
+
+同伴反馈：Add 页 AI Suggestions 面板标题后面有"（Member E）"标注，需要在产品正式展示时去掉。
+
+### 涉及代码
+
+`frontend/lib/features/collection_form/widgets/ai_suggestion_panel.dart:220`：
+
+```dart
+Text(
+  '(Member E)',
+  style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 10),
+),
+```
+
+### 解决方案
+
+直接删除这三行代码，或将文本改为产品正式标注。
+
+### 严重程度
+
+**低** — 仅 UI 标注，不影响功能
 
 ### 状态
 
@@ -647,7 +729,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
-- **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：AI Suggestions 面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。
+- **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：Profile "Favorite tags"筛选逻辑与Gallery/Room不一致（`allItems`来自Gallery filter状态）；新增问题 7：AI Suggestions面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。并修正编号：问题5/6/7顺序整理完毕。
 - **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新建本文档。记录 Room Reflection Redo 按钮无功能（BUG-ME-006 原记录于 Test.md，现移至本文档）、Room 月份不一致两个问题。
 - **2026-05-26**（成员 E / 成员 5，由 Codex 协助）：新增问题 4：`RoomSelectorRow` 中 "March Room" 字符多于 "May Room" 导致视觉对齐差异；建议方案为给 `label` Text 增加 `maxLines: 1` + `overflow: ellipsis`。并注明该问题在切换为 March/April/May 后比原始 June/July 设计更明显。

@@ -21,7 +21,8 @@
 | # | 问题 | 优先级 | 状态 |
 |---|------|--------|------|
 | 5 | AI 故事风格切换时内容追加而非替换 | 🔴 高 | ❌ 未处理 |
-| 6 | AI Suggestions 面板"（Member E）"标注应移除 | 🟢 低 | ❌ 未处理 |
+| 6 | Profile "Favorite tags" 筛选逻辑与 Gallery/Room 不一致 | 🟡 中 | ❌ 未处理 |
+| 7 | AI Suggestions 面板"（Member E）"标注应移除 | 🟢 低 | ❌ 未处理 |
 | 1 | Room Reflection Redo 按钮无功能 | 🟡 中 | ❌ 未处理 |
 | 3 | Room 月份不一致（前端硬编码 vs 后端 API） | 🟡 中 | ❌ 未处理 |
 | 4 | RoomSelectorRow 字符长度不一致导致排版问题 | 🟢 低 | ❌ 未处理 |
