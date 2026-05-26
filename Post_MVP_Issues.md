@@ -338,7 +338,7 @@ Text(
 
 ---
 
-## 问题 6：AI Suggestions 面板标注"（Member E）"应移除
+## 问题 5：AI Suggestions 面板标注"（Member E）"应移除
 
 ### 概述
 
