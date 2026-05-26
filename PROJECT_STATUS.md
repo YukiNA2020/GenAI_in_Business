@@ -1,0 +1,74 @@
+# Project Status — Collection Journey App
+
+> 当前分支：`codex/integration-prep`
+> 最后更新：2026-05-26
+> MVP 状态：✅ 已完成整合
+
+---
+
+## 1. MVP 已完成
+
+核心功能已在 `codex/integration-prep` 验证通过：
+- 后端 API + AI API + Flutter build/test/analyze ✅
+- Create → Gallery → Detail → Edit → Profile 主路径 ✅
+- Share Preview / Room / Categories / Stats ✅
+- 不要求合并到 `main`，当前分支可作为交付基准
+
+---
+
+## 2. 已知问题一览
+
+| # | 问题 | 优先级 | 状态 |
+|---|------|--------|------|
+| 5 | AI 故事风格切换时内容追加而非替换 | 🔴 高 | ❌ 未处理 |
+| 1 | Room Reflection Redo 按钮无功能 | 🟡 中 | ❌ 未处理 |
+| 3 | Room 月份不一致（前端硬编码 vs 后端 API） | 🟡 中 | ❌ 未处理 |
+| 4 | RoomSelectorRow 字符长度不一致导致排版问题 | 🟢 低 | ❌ 未处理 |
+| 2 | AI 空输入时灵活度不足 | 🟢 低 | ❌ 未处理 |
+
+**⚠️ 关注**：`0990e6e` 将 `ai.schemas.js` 的 `COLLECTION_CATEGORIES` 改为英文（`Minerals`/`Crystals`/`Vinyl Records` 等），与前端 `ai_category_mapping.dart`（中文 slug 映射）合同不再匹配，需后续同步。
+
+---
+
+## 3. 下一步计划（来自 `next_detail_plan.md`）
+
+| 优先级 | 任务 | 说明 |
+|--------|------|------|
+| P0 | 分支和提交整理 | 整理 MVP 为可交付状态 |
+| P1 | 成员 6 Demo 材料 | 截图 / PPT / 视频 / 讲稿 |
+| P1 | 编辑页 AI 故事辅助接入 | 复用 `generateStory()` |
+| P2 | 体验打磨（离线 banner / 空状态 / 骨架屏） | 提高演示稳定性 |
+| P2 | 测试与 CI | 一键测试脚本 + GitHub Actions |
+
+---
+
+## 4. 最近提交记录
+
+| Commit | 作者 | 说明 |
+|--------|------|------|
+| `698e288` | YukiNA | docs: 记录问题5—AI故事风格切换时内容追加而非替换 |
+| `0990e6e` | huangxiangrong45-ux | backend\data里数据全改为英文了 |
+| `ce63d11` | YukiNA | 记录 Post-MVP 问题：新文档 + 移除过期 BUG-ME-006 |
+| `3364f1a` | YukiNA | 完成MVP整合并更新交付文档 |
+
+---
+
+## 5. 领取任务方法
+
+1. 从 `codex/integration-prep` 拉取最新
+2. 从上方"已知问题一览"选一个任务
+3. 完成后更新本文档对应状态列
+4. 推送后通知其他成员
+
+> 不要从旧阶段文档（`INTEGRATION_IMPLEMENTATION_PATH.md` 等）领取已完成的任务。
+
+---
+
+## 6. 文档索引
+
+| 文档 | 用途 |
+|------|------|
+| `Post_MVP_Issues.md` | 已发现问题的详细记录（根因 / 解决方案 / 涉及代码） |
+| `next_detail_plan.md` | P0-P3 下一步行动计划 |
+| `Test.md` | 历史测试记录，已不再作为任务清单 |
+| `DOCUMENTATION_STATUS.md` | 全项目文档索引 |
