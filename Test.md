@@ -2377,7 +2377,6 @@ C:\src\flutter\bin\flutter.bat run -d chrome
 | BUG-ME-003 | AI HTTP | 旧 backend 进程无 `/analyze-image` → 404 | 未重启即调 analyze-image | 中 | 成员 E | 已规避 | 重启 backend；真实 DeepSeek 测试需从 `backend/` 目录读 `.env` |
 | BUG-ME-004 | Profile UI | 展示名硬编码「Group I」（`UserProfile.demo()`），非后端用户资料 | 打开 Profile Tab | 低 | 成员 E | 待联调 | 无 `GET /api/users/:id` 资料接口；`Member6_Demo_Handoff.md` 仍写「Tong」为文档滞后 |
 | BUG-ME-005 | AI Vision | 旧限制：无真实 Vision，仅 `imageDescription` / `imageUrl` 文本描述 + LLM 推断 | Upload 后 Recognize | 低 | 成员 E | 已关闭 | 2026-05-24 已切到 GLM Vision 主路径；GLM live、HTTP 回归和 Flutter 单测均通过 |
-
 ---
 
 ## 成员 3 Bug 记录
