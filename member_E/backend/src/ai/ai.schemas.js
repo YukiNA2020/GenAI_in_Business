@@ -1,11 +1,12 @@
 const COLLECTION_CATEGORIES = [
-  '矿石',
-  '水晶',
-  '黑胶唱片',
-  '明信片',
-  '票根',
-  '旅行纪念品',
-  '其他',
+  'Minerals',
+  'Crystals',
+  'Vinyl Records',
+  'Postcards',
+  'Tickets',
+  'Travel Souvenirs',
+  'Stamps',
+  'Other Collections',
 ];
 
 const STORY_STYLES = ['concise', 'scrapbook', 'travel', 'vintage'];
