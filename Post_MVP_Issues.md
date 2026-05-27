@@ -1,6 +1,6 @@
 # Post-MVP Issues - 待处理问题记录
 
-> 上次更新：2026-05-27
+> 上次更新：2026-05-28
 > 记录人：成员 E
 > 用途：记录 MVP 整合后发现的新问题，不混入 Test.md / Status.md 等已有文档
 
@@ -334,7 +334,15 @@ Text(
 
 ### 状态
 
-❌ 尚未处理
+✅ 已验证完成（2026-05-28）
+
+### 验证记录（2026-05-28）
+
+- 已确认 `RoomSelectorRow` 的第二行 `Text(label)` 增加 `maxLines: 1` 和 `overflow: TextOverflow.ellipsis`。
+- 新增 `frontend/test/room_selector_row_test.dart`，在 240px 窄宽度下渲染 March / April / May 三个 room label，确认无 Flutter overflow 异常，并断言 `March Room` 为单行 ellipsis。
+- 已通过 `flutter test --no-pub test/room_selector_row_test.dart`。
+- 已通过 `flutter test --no-pub`。
+- 已通过 `flutter analyze --no-pub --no-fatal-infos`；仅剩既有 info 级提示。
 
 ---
 
@@ -781,6 +789,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
+- **2026-05-28**（测试工程复核，由 Codex 协助）：验证问题 4 已正确修复。`RoomSelectorRow` 的 room label 已有单行省略保护，并新增窄屏 widget regression test；`flutter test --no-pub` 与 `flutter analyze --no-pub --no-fatal-infos` 均通过。
 - **2026-05-27**（测试工程复核，由 Codex 协助）：新增问题 8 处理结果。确认英文化 AI 合同迁移已完成并通过 Phase 1 / Phase 2 provider / Phase 2 HTTP / Phase 4 HTTP / Phase 5 demo E2E / Flutter test / Flutter analyze；同步说明剩余中文主要是注释、历史说明或测试日志，不再阻塞 P0。
 - **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：Profile "Favorite tags"筛选逻辑与Gallery/Room不一致（`allItems`来自Gallery filter状态）；新增问题 7：AI Suggestions面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。并修正编号：问题5/6/7顺序整理完毕。
 - **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。

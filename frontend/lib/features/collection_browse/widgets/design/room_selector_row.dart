@@ -73,6 +73,8 @@ class RoomSelectorRow extends StatelessWidget {
                             const SizedBox(height: CollectorySpacing.unit / 2),
                             Text(
                               label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: CollectoryTypography.cardTitle.copyWith(
                                 fontSize: 14,
                                 color: active
