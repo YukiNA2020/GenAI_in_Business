@@ -9,7 +9,7 @@ async function findAll() {
     FROM rooms
     LEFT JOIN collections ON collections.room_id = rooms.id
     GROUP BY rooms.id
-    ORDER BY rooms.month DESC
+    ORDER BY rooms.month ASC
   `);
   if (!result.length || !result[0].values.length) return [];
   const cols = result[0].columns;

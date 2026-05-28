@@ -371,6 +371,28 @@ class CollectionQueryService {
     return CollectionRoomDetail.fromJson(data);
   }
 
+  /// Fetch ALL collections across all pages, ignoring Gallery filters.
+  /// Used by Profile to get a complete dataset for favorite tag filtering.
+  Future<List<CollectionItem>> fetchAllCollections({
+    int pageSize = 100,
+  }) async {
+    final items = <CollectionItem>[];
+    var page = 1;
+    var total = 0;
+    do {
+      final result = await fetchCollections(
+        CollectionQueryState(
+          page: page,
+          pageSize: pageSize,
+        ),
+      );
+      items.addAll(result.items);
+      total = result.total;
+      page += 1;
+    } while (items.length < total && page < 20);
+    return items;
+  }
+
   /// POST /api/collections — create exhibit (Member 2 contract; wired for Add draft)
   Future<CollectionItem> createCollection({
     required String title,

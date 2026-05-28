@@ -142,7 +142,7 @@ mock 模式下让返回结果有一定随机性（多准备几套 mock 数据随
 
 ### 状态
 
-❌ 尚未处理
+❌ 尚未处理（P3，可选）
 
 ---
 
@@ -230,7 +230,14 @@ rooms: [
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：`backend/src/db/seed.js` 的 `rooms` 已改为 `May Room / June Room / July Room`，并重新 seed。
+
+### 验证
+
+```bash
+curl http://localhost:3000/api/rooms
+# 返回：May Room (collectionCount: 15) / June Room (0) / July Room (0)
+```
 
 ---
 
@@ -431,7 +438,20 @@ Profile 的 `Favorite tags` 应基于用户全量收藏，而非 Gallery 当前�
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：新增 `profileCollectionsProvider`，Profile 页面读取独立于 Gallery filter 的全量收藏数据。
+
+### 修复方案
+
+1. `CollectionQueryService` 新增 `fetchAllCollections(pageSize = 100)` 方法，内部循环拉取所有分页数据（最多 20 页），返回完整列表。
+2. `collection_list_provider.dart` 新增 `profileCollectionsProvider = FutureProvider` 使用上述方法。
+3. `ProfileCollectionPreview` 改为读取 `profileCollectionsProvider` 而非 `collectionListProvider`，`_museumSectionWidgets` 和各处 `allItems` 一律使用 `profileCollectionsProvider.maybeWhen(data: ..., orElse: () => <CollectionItem>[])` 作为 fallback。
+
+修复后 Gallery 筛选状态不影响 Profile Favorite tags 数据源。
+
+### 验证
+
+- `flutter analyze --no-pub --no-fatal-infos` 通过（27 info，无 error）
+- `flutter test --no-pub` 通过（2 tests passed）
 
 ---
 

@@ -50,7 +50,7 @@ class _ProfileCollectionPreviewState
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(userStatsProvider);
-    final list = ref.watch(collectionListProvider);
+    final profileCollectionsAsync = ref.watch(profileCollectionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final publicPreview = ref.watch(profilePublicPreviewProvider);
     final pad = CollectoryColors.screenPadding;
@@ -72,14 +72,20 @@ class _ProfileCollectionPreviewState
         error: (_, __) => _buildMuseumSections(
           ref: ref,
           stats: demoUserStatsFallback,
-          allItems: list.items,
+          allItems: profileCollectionsAsync.maybeWhen(
+            data: (items) => items,
+            orElse: () => <CollectionItem>[],
+          ),
           categoryNames: categoryNames,
           publicPreview: publicPreview,
         ),
         data: (stats) => _buildMuseumSections(
           ref: ref,
           stats: stats,
-          allItems: list.items,
+          allItems: profileCollectionsAsync.maybeWhen(
+            data: (items) => items,
+            orElse: () => <CollectionItem>[],
+          ),
           categoryNames: categoryNames,
           publicPreview: publicPreview,
         ),
@@ -94,7 +100,10 @@ class _ProfileCollectionPreviewState
         ref: ref,
         pad: pad,
         stats: demoUserStatsFallback,
-        allItems: list.items,
+        allItems: profileCollectionsAsync.maybeWhen(
+          data: (items) => items,
+          orElse: () => <CollectionItem>[],
+        ),
         categoryNames: categoryNames,
         publicPreview: publicPreview,
       ),
@@ -102,7 +111,10 @@ class _ProfileCollectionPreviewState
         ref: ref,
         pad: pad,
         stats: stats,
-        allItems: list.items,
+        allItems: profileCollectionsAsync.maybeWhen(
+          data: (items) => items,
+          orElse: () => <CollectionItem>[],
+        ),
         categoryNames: categoryNames,
         publicPreview: publicPreview,
       ),

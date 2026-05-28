@@ -241,6 +241,13 @@ extension _Copy on CollectionListState {
   }
 }
 
+/// Profile-specific collection provider — always fetches all collections
+/// across pages, independent of Gallery filter state.
+final profileCollectionsProvider =
+    FutureProvider<List<CollectionItem>>((ref) async {
+  return ref.watch(collectionQueryServiceProvider).fetchAllCollections();
+});
+
 final collectionListProvider =
     StateNotifierProvider<CollectionListNotifier, CollectionListState>((ref) {
   final notifier =
