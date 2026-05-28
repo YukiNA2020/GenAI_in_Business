@@ -523,7 +523,7 @@ API prompt 的 `用户输入：- 描述：${form.story}` 中，模型收到了 s
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：`AiSuggestionPanel` 新增 `onStoryReset`；风格 `ChoiceChip` 切换时先清空 story 再 `_runStory()`。`CreateCollectionPage` / Add 页已接入。
 
 ---
 

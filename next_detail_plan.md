@@ -21,12 +21,12 @@
 | 统一编号 | 问题 | 优先级 | 当前状态 |
 |---|---|---|---|
 | ISSUE-08 | 英文化 AI 合同迁移：数据库/schema 已英文，AI prompt/mock/前端映射/测试脚本需同步 | P0 | ✅ 已验证完成（2026-05-27） |
-| ISSUE-05 | AI 故事风格切换时内容追加/污染，而非干净替换 | P1 | 未处理 |
-| ISSUE-06 | Profile Favorite tags 使用 Gallery 当前列表，筛选结果可能错误 | P1 | 未处理 |
+| ISSUE-05 | AI 故事风格切换时内容追加/污染，而非干净替换 | P1 | ✅ 已修复（`onStoryReset` 方案 A，2026-05-28） |
+| ISSUE-06 | Profile Favorite tags 使用 Gallery 当前列表，筛选结果可能错误 | P1 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
 | ISSUE-01 | Room Reflection Redo 按钮无功能 | P1 | 未处理 |
-| ISSUE-03 | Room 月份不一致：API 返回 March/April/May，设计预期 May/June/July | P1 | 未处理 |
-| ISSUE-07 | AI Suggestions 标题旁的 `(Member E)` 标注应移除 | P2 | 未处理 |
-| ISSUE-04 | RoomSelectorRow room label 过长时缺少溢出保护 | P2 | 未处理 |
+| ISSUE-03 | Room 月份不一致：API 返回 March/April/May，设计预期 May/June/July | P1 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
+| ISSUE-07 | AI Suggestions 标题旁的 `(Member E)` 标注应移除 | P2 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
+| ISSUE-04 | RoomSelectorRow room label 过长时缺少溢出保护 | P2 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
 | ISSUE-02 | Add 页空输入时 AI 生成过于模板化 | P2 | 未处理 |
 | ISSUE-09 | 剩余中文注释 / 历史说明 / 测试日志清理 | P3 | 可选未处理 |
 

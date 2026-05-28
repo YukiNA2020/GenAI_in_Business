@@ -21,6 +21,7 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
     required this.onCategoryTagSelected,
     required this.onTagsSuggested,
     required this.onStoryApplied,
+    this.onStoryReset,
     this.hasImageForAnalysis,
     this.onImageAnalysisApplied,
   });
@@ -32,6 +33,9 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
   final ValueChanged<String> onCategoryTagSelected;
   final ValueChanged<List<String>> onTagsSuggested;
   final ValueChanged<String> onStoryApplied;
+  /// Called before auto-regenerating story on style change so [buildPayload]
+  /// does not send the previous AI story as description (ISSUE-05).
+  final VoidCallback? onStoryReset;
 
   @override
   ConsumerState<AiSuggestionPanel> createState() => _AiSuggestionPanelState();
@@ -268,7 +272,7 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
                 onSelected: (selected) {
                   if (!selected || _storyStyle == style) return;
                   setState(() => _storyStyle = style);
-                  // 切换风格后重新请求故事（mock/OpenAI 均按 style 返回不同文案）
+                  widget.onStoryReset?.call();
                   _runStory();
                 },
                 selectedColor: CollectoryColors.btnPrimaryBg.withValues(alpha: 0.35),

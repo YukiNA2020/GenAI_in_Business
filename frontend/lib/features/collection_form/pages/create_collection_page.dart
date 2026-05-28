@@ -409,6 +409,12 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                             .updateStory(story);
                         _storyController.text = story;
                       },
+                      onStoryReset: () {
+                        ref
+                            .read(collectionFormProvider.notifier)
+                            .updateStory('');
+                        _storyController.clear();
+                      },
                     ),
                     const SizedBox(height: 12),
 

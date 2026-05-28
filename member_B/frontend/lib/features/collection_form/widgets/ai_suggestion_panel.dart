@@ -21,6 +21,7 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
     required this.onCategoryTagSelected,
     required this.onTagsSuggested,
     required this.onStoryApplied,
+    this.onStoryReset,
     this.hasImageForAnalysis,
     this.onImageAnalysisApplied,
   });
@@ -32,6 +33,7 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
   final ValueChanged<String> onCategoryTagSelected;
   final ValueChanged<List<String>> onTagsSuggested;
   final ValueChanged<String> onStoryApplied;
+  final VoidCallback? onStoryReset;
 
   @override
   ConsumerState<AiSuggestionPanel> createState() => _AiSuggestionPanelState();
@@ -272,6 +274,7 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
                 onSelected: (selected) {
                   if (!selected || _storyStyle == style) return;
                   setState(() => _storyStyle = style);
+                  widget.onStoryReset?.call();
                   _runStory();
                 },
                 selectedColor: CollectoryColors.btnPrimaryBg.withValues(alpha: 0.35),

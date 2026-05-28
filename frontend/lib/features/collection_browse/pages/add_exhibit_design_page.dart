@@ -362,6 +362,9 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
               onStoryApplied: (story) {
                 _storyController.text = story;
               },
+              onStoryReset: () {
+                _storyController.clear();
+              },
             ),
             if (_pendingAiTagsNote != null) ...[
               const SizedBox(height: 4),
