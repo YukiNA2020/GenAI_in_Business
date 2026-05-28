@@ -1,6 +1,0 @@
-node_modules/
-
-# Env files with API keys (never commit these)
-.env
-.env.local
-.env.*
