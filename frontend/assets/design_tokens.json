@@ -1,0 +1,62 @@
+{
+  "$schema": "Collectory design tokens — 与 collectory-ui-handoff.md 一致",
+  "colors": {
+    "bgApp": "#F7F1E7",
+    "bgSecondary": "#EDE2D2",
+    "bgCard": "#F4EBDD",
+    "textPrimary": "#171512",
+    "textSecondary": "#7C7469",
+    "textLabel": "#A8643A",
+    "borderLight": "#D4C8B8",
+    "borderDark": "#B8A996",
+    "btnPrimaryBg": "#171512",
+    "btnPrimaryText": "#FFF8EE",
+    "catVinyl": "#C7A679",
+    "catVinylBlack": "#17120F",
+    "catTicket": "#C98250",
+    "catMemory": "#C9D9D5",
+    "catMineral": "#55746A",
+    "catLavender": "#D8D1E8",
+    "room01": "#E8D7BD",
+    "room02": "#D5E0DC",
+    "room03": "#DCD5EA"
+  },
+  "typography": {
+    "fontFamily": "Inter",
+    "pageTitle": { "size": 40, "weight": 700, "height": 1.15 },
+    "sectionTitle": { "size": 24, "weight": 700, "height": 1.2 },
+    "cardTitle": { "size": 20, "weight": 600, "height": 1.25 },
+    "body": { "size": 15, "weight": 400, "height": 1.5 },
+    "metaLabel": { "size": 11, "weight": 600, "letterSpacing": 0.6 },
+    "bottomNav": { "size": 12, "weight": 400 }
+  },
+  "spacing": {
+    "unit": 8,
+    "screenHorizontal": 28,
+    "sectionGap": 24,
+    "cardPadding": 16,
+    "bottomNavHeight": 50
+  },
+  "radius": {
+    "card": 8,
+    "pill": 20,
+    "frame": 28,
+    "image": 6
+  },
+  "shadows": {
+    "card": { "blur": 24, "offsetY": 10, "color": "1A17120F" },
+    "elevated": { "blur": 24, "offsetY": 14, "color": "2E17120F" }
+  },
+  "navigation": {
+    "labels": ["Home", "Gallery", "Add", "Profile"],
+    "activeIndicatorWidth": 28,
+    "activeIndicatorHeight": 3,
+    "activeIndicatorColor": "#A8643A"
+  },
+  "galleryObjectTypes": [
+    { "label": "Vinyl", "categorySlugs": ["vinyl"] },
+    { "label": "Ticket", "categorySlugs": ["ticket"] },
+    { "label": "Memory", "categorySlugs": ["postcard", "souvenir", "stamp"] },
+    { "label": "Mineral", "categorySlugs": ["mineral", "crystal"] }
+  ]
+}
