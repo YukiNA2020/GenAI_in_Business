@@ -111,6 +111,10 @@ function validateAnalyzeImageResponse(response) {
   );
 }
 
+function validateRoomReflectionResponse(response) {
+  return isPlainObject(response) && typeof response.reflection === 'string' && response.reflection.trim().length > 0;
+}
+
 module.exports = {
   COLLECTION_CATEGORIES,
   STORY_STYLES,
@@ -124,4 +128,5 @@ module.exports = {
   validateTagsResponse,
   validateStoryResponse,
   validateAnalyzeImageResponse,
+  validateRoomReflectionResponse,
 };

@@ -64,7 +64,10 @@ Room 页面（Collection Room Page）的「AI ROOM REFLECTION」卡片中包含�
 
 ### 状态
 
-❌ 未实现
+✅ 已完成（2026-05-28）
+- 后端：`POST /api/ai/generate-room-reflection` 已添加，mock 和真实 AI 模式均可用
+- 前端：`_AiReflectionCard` 改为 `ConsumerStatefulWidget`，Redo 按钮接入 `RoomReflectionService`
+- 验证：`curl` 测试返回有效 reflection；`verify_phase5_demo_e2e.js` 通过
 
 ---
 
@@ -531,7 +534,20 @@ API prompt 的 `用户输入：- 描述：${form.story}` 中，模型收到了 s
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：新增 `onStoryReset` 回调，风格切换时清空 story 再请求新风格。
+
+### 修复方案
+
+1. `AiSuggestionPanel` 新增可选参数 `VoidCallback? onStoryReset`
+2. `ChoiceChip.onSelected` 风格切换时先调用 `widget.onStoryReset?.call()` 清空旧 story，再 `_runStory()`
+3. `CreateCollectionPage` 传入 `onStoryReset: () { ref.read(collectionFormProvider.notifier).updateStory(''); _storyController.clear(); }`
+
+修复后切换风格时，buildPayload() 的 description 走 fallback，不会复用旧 scrapbook 内容。
+
+### 验证
+
+- `flutter analyze --no-pub --no-fatal-infos` 通过（27 info，无 error）
+- `flutter test --no-pub` 通过（2 tests passed）
 
 ---
 

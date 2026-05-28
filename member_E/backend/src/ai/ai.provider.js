@@ -53,6 +53,9 @@ function inferMockKind(prompt, explicitKind) {
   if (prompt.includes('image recognition')) {
     return 'analyzeImage';
   }
+  if (prompt.includes('room reflection') || prompt.includes('Room Reflection')) {
+    return 'roomReflection';
+  }
   if (prompt.includes('title suggestions') || prompt.includes('Generate 3 English title')) {
     return 'title';
   }
@@ -113,6 +116,8 @@ function getMockPayload(kind, prompt) {
       return { category: 'Postcards', confidence: 0.75 };
     case 'tags':
       return { tags: ['Travel', 'Postcards', 'Bookshop'] };
+    case 'roomReflection':
+      return { reflection: 'A rich month of memories — this room holds stories of travel, music, and quiet moments collected together.' };
     case 'story': {
       let style = 'concise';
       if (typeof prompt === 'string') {

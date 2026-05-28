@@ -4,6 +4,7 @@ const {
   buildTagsPrompt,
   buildStoryPrompt,
   buildAnalyzeImagePrompt,
+  buildRoomReflectionPrompt,
 } = require('./ai.prompts');
 const { buildVisionAnalyzePrompt } = require('./vision.prompts');
 const { generateJson, AiProviderError } = require('./ai.provider');
@@ -18,6 +19,7 @@ const {
   validateTagsResponse,
   validateStoryResponse,
   validateAnalyzeImageResponse,
+  validateRoomReflectionResponse,
 } = require('./ai.schemas');
 
 function ensureDescription(input) {
@@ -126,10 +128,19 @@ async function analyzeImage(input) {
   });
 }
 
+async function generateRoomReflection(input = {}) {
+  const prompt = buildRoomReflectionPrompt(input);
+  return generateJson(prompt, {
+    validate: validateRoomReflectionResponse,
+    mockKind: 'roomReflection',
+  });
+}
+
 module.exports = {
   suggestTitle,
   suggestCategory,
   suggestTags,
   generateStory,
   analyzeImage,
+  generateRoomReflection,
 };

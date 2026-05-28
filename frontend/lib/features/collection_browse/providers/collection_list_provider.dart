@@ -4,9 +4,14 @@ import '../models/collection_item.dart';
 import '../models/collection_query_state.dart';
 import '../models/collection_room.dart';
 import '../services/collection_query_service.dart';
+import '../services/room_reflection_service.dart';
 
 final collectionQueryServiceProvider = Provider<CollectionQueryService>((ref) {
   return CollectionQueryService();
+});
+
+final roomReflectionServiceProvider = Provider<RoomReflectionService>((ref) {
+  return RoomReflectionService();
 });
 
 final categoriesProvider = FutureProvider<List<CategoryOption>>((ref) async {

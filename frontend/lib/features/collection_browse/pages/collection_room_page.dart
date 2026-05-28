@@ -153,9 +153,13 @@ class CollectionRoomPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _AiReflectionCard(
-              reflection: roomItems.isEmpty
+              initialReflection: roomItems.isEmpty
                   ? 'Start adding exhibits to this room to see AI reflections.'
                   : 'A rich month of memories — $exhibitCount exhibits collected.',
+              roomId: room?.id,
+              roomLabel: room?.label,
+              month: room?.month,
+              items: roomItems,
             ),
             const Spacer(flex: 2),
             Text(
@@ -443,10 +447,64 @@ class _StatsCard extends StatelessWidget {
   }
 }
 
-class _AiReflectionCard extends StatelessWidget {
-  const _AiReflectionCard({required this.reflection});
+class _AiReflectionCard extends ConsumerStatefulWidget {
+  const _AiReflectionCard({
+    required this.initialReflection,
+    this.roomId,
+    this.roomLabel,
+    this.month,
+    required this.items,
+  });
 
-  final String reflection;
+  final String initialReflection;
+  final int? roomId;
+  final String? roomLabel;
+  final String? month;
+  final List<CollectionItem> items;
+
+  @override
+  ConsumerState<_AiReflectionCard> createState() => _AiReflectionCardState();
+}
+
+class _AiReflectionCardState extends ConsumerState<_AiReflectionCard> {
+  late String _reflection;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reflection = widget.initialReflection;
+  }
+
+  Future<void> _onRedo() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      final service = ref.read(roomReflectionServiceProvider);
+      final result = await service.generateRoomReflection(
+        roomId: widget.roomId,
+        roomLabel: widget.roomLabel,
+        month: widget.month,
+        items: widget.items,
+      );
+      if (mounted) {
+        setState(() => _reflection = result);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI reflection failed. You can keep browsing.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -472,7 +530,7 @@ class _AiReflectionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  reflection,
+                  _reflection,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     height: 1.35,
@@ -485,7 +543,7 @@ class _AiReflectionCard extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: _loading ? null : _onRedo,
             style: TextButton.styleFrom(
               foregroundColor: CollectoryColors.btnPrimaryBg,
               backgroundColor: CollectoryColors.btnPrimaryText,
@@ -496,7 +554,16 @@ class _AiReflectionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text('Redo', style: TextStyle(fontSize: 12)),
+            child: _loading
+                ? const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: CollectoryColors.btnPrimaryBg,
+                    ),
+                  )
+                : const Text('Redo', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
