@@ -263,9 +263,9 @@ const seedData = {
   ],
 
   rooms: [
-    { month: '2026-03', label: 'March Room' },
-    { month: '2026-04', label: 'April Room' },
     { month: '2026-05', label: 'May Room' },
+    { month: '2026-06', label: 'June Room' },
+    { month: '2026-07', label: 'July Room' },
   ],
 };
 
