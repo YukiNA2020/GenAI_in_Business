@@ -122,6 +122,28 @@ function createAiRouter({ Router, z, response }) {
     wrapAi((body) => aiService.analyzeImage(body))
   );
 
+  const roomReflectionBodySchema = z.object({
+    roomId: z.number().optional(),
+    roomLabel: z.string().optional(),
+    month: z.string().optional(),
+    language: z.string().optional(),
+    items: z.array(z.object({
+      title: z.string().optional(),
+      category: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      story: z.string().optional(),
+      location: z.string().optional(),
+      dateAcquired: z.string().optional(),
+    })).default([]),
+  });
+  const validateRoomReflection = validateAiBody(roomReflectionBodySchema, response);
+
+  router.post(
+    '/generate-room-reflection',
+    validateRoomReflection,
+    wrapAi((body) => aiService.generateRoomReflection(body))
+  );
+
   return router;
 }
 

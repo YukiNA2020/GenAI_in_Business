@@ -21,9 +21,9 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
     required this.onCategoryTagSelected,
     required this.onTagsSuggested,
     required this.onStoryApplied,
-    this.onStoryReset,
     this.hasImageForAnalysis,
     this.onImageAnalysisApplied,
+    this.onStoryStyleChange,
   });
 
   final AiFormPayload Function() buildPayload;
@@ -33,9 +33,7 @@ class AiSuggestionPanel extends ConsumerStatefulWidget {
   final ValueChanged<String> onCategoryTagSelected;
   final ValueChanged<List<String>> onTagsSuggested;
   final ValueChanged<String> onStoryApplied;
-  /// Called before auto-regenerating story on style change so [buildPayload]
-  /// does not send the previous AI story as description (ISSUE-05).
-  final VoidCallback? onStoryReset;
+  final VoidCallback? onStoryStyleChange;
 
   @override
   ConsumerState<AiSuggestionPanel> createState() => _AiSuggestionPanelState();
@@ -121,7 +119,8 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
       final tag = tagLabelForAiCategory(result.category);
       if (tag == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Category: ${result.category} (map tag manually)')),
+          SnackBar(
+              content: Text('Category: ${result.category} (map tag manually)')),
         );
       } else {
         widget.onCategoryTagSelected(tag);
@@ -218,7 +217,8 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
         children: [
           Row(
             children: [
-              Text('AI SUGGESTIONS', style: CollectoryHandoffHeader.metaLabel()),
+              Text('AI SUGGESTIONS',
+                  style: CollectoryHandoffHeader.metaLabel()),
             ],
           ),
           const SizedBox(height: 8),
@@ -252,7 +252,8 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
           const SizedBox(height: 8),
           Text(
             'Story style',
-            style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
+            style:
+                CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
           ),
           const SizedBox(height: 4),
           Wrap(
@@ -272,10 +273,11 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
                 onSelected: (selected) {
                   if (!selected || _storyStyle == style) return;
                   setState(() => _storyStyle = style);
-                  widget.onStoryReset?.call();
+                  widget.onStoryStyleChange?.call();
                   _runStory();
                 },
-                selectedColor: CollectoryColors.btnPrimaryBg.withValues(alpha: 0.35),
+                selectedColor:
+                    CollectoryColors.btnPrimaryBg.withValues(alpha: 0.35),
                 side: const BorderSide(color: CollectoryColors.borderLight),
               );
             }).toList(),
@@ -284,7 +286,8 @@ class _AiSuggestionPanelState extends ConsumerState<AiSuggestionPanel> {
             const SizedBox(height: 8),
             Text(
               'Pick a title',
-              style: CollectoryHandoffHeader.bodySecondary().copyWith(fontSize: 11),
+              style: CollectoryHandoffHeader.bodySecondary()
+                  .copyWith(fontSize: 11),
             ),
             const SizedBox(height: 4),
             Wrap(

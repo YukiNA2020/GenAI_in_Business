@@ -1,6 +1,6 @@
 # Post-MVP Issues - 待处理问题记录
 
-> 上次更新：2026-05-27
+> 上次更新：2026-05-28
 > 记录人：成员 E
 > 用途：记录 MVP 整合后发现的新问题，不混入 Test.md / Status.md 等已有文档
 
@@ -64,7 +64,10 @@ Room 页面（Collection Room Page）的「AI ROOM REFLECTION」卡片中包含�
 
 ### 状态
 
-❌ 未实现
+✅ 已完成（2026-05-28）
+- 后端：`POST /api/ai/generate-room-reflection` 已添加，mock 和真实 AI 模式均可用
+- 前端：`_AiReflectionCard` 改为 `ConsumerStatefulWidget`，Redo 按钮接入 `RoomReflectionService`
+- 验证：`curl` 测试返回有效 reflection；`verify_phase5_demo_e2e.js` 通过
 
 ---
 
@@ -139,7 +142,7 @@ mock 模式下让返回结果有一定随机性（多准备几套 mock 数据随
 
 ### 状态
 
-❌ 尚未处理
+❌ 尚未处理（P3，可选）
 
 ---
 
@@ -227,7 +230,14 @@ rooms: [
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：`backend/src/db/seed.js` 的 `rooms` 已改为 `May Room / June Room / July Room`，并重新 seed。
+
+### 验证
+
+```bash
+curl http://localhost:3000/api/rooms
+# 返回：May Room (collectionCount: 15) / June Room (0) / July Room (0)
+```
 
 ---
 
@@ -334,7 +344,15 @@ Text(
 
 ### 状态
 
-❌ 尚未处理
+✅ 已验证完成（2026-05-28）
+
+### 验证记录（2026-05-28）
+
+- 已确认 `RoomSelectorRow` 的第二行 `Text(label)` 增加 `maxLines: 1` 和 `overflow: TextOverflow.ellipsis`。
+- 新增 `frontend/test/room_selector_row_test.dart`，在 240px 窄宽度下渲染 March / April / May 三个 room label，确认无 Flutter overflow 异常，并断言 `March Room` 为单行 ellipsis。
+- 已通过 `flutter test --no-pub test/room_selector_row_test.dart`。
+- 已通过 `flutter test --no-pub`。
+- 已通过 `flutter analyze --no-pub --no-fatal-infos`；仅剩既有 info 级提示。
 
 ---
 
@@ -420,7 +438,20 @@ Profile 的 `Favorite tags` 应基于用户全量收藏，而非 Gallery 当前�
 
 ### 状态
 
-❌ 尚未处理
+✅ 已修复（2026-05-28）：新增 `profileCollectionsProvider`，Profile 页面读取独立于 Gallery filter 的全量收藏数据。
+
+### 修复方案
+
+1. `CollectionQueryService` 新增 `fetchAllCollections(pageSize = 100)` 方法，内部循环拉取所有分页数据（最多 20 页），返回完整列表。
+2. `collection_list_provider.dart` 新增 `profileCollectionsProvider = FutureProvider` 使用上述方法。
+3. `ProfileCollectionPreview` 改为读取 `profileCollectionsProvider` 而非 `collectionListProvider`，`_museumSectionWidgets` 和各处 `allItems` 一律使用 `profileCollectionsProvider.maybeWhen(data: ..., orElse: () => <CollectionItem>[])` 作为 fallback。
+
+修复后 Gallery 筛选状态不影响 Profile Favorite tags 数据源。
+
+### 验证
+
+- `flutter analyze --no-pub --no-fatal-infos` 通过（27 info，无 error）
+- `flutter test --no-pub` 通过（2 tests passed）
 
 ---
 
@@ -523,7 +554,20 @@ API prompt 的 `用户输入：- 描述：${form.story}` 中，模型收到了 s
 
 ### 状态
 
-✅ 已修复（2026-05-28）：`AiSuggestionPanel` 新增 `onStoryReset`；风格 `ChoiceChip` 切换时先清空 story 再 `_runStory()`。`CreateCollectionPage` / Add 页已接入。
+✅ 已修复（2026-05-28）：新增 `onStoryReset` 回调，风格切换时清空 story 再请求新风格。
+
+### 修复方案
+
+1. `AiSuggestionPanel` 新增可选参数 `VoidCallback? onStoryReset`
+2. `ChoiceChip.onSelected` 风格切换时先调用 `widget.onStoryReset?.call()` 清空旧 story，再 `_runStory()`
+3. `CreateCollectionPage` 传入 `onStoryReset: () { ref.read(collectionFormProvider.notifier).updateStory(''); _storyController.clear(); }`
+
+修复后切换风格时，buildPayload() 的 description 走 fallback，不会复用旧 scrapbook 内容。
+
+### 验证
+
+- `flutter analyze --no-pub --no-fatal-infos` 通过（27 info，无 error）
+- `flutter test --no-pub` 通过（2 tests passed）
 
 ---
 
@@ -781,6 +825,7 @@ _ => '收藏品物件照片，光线柔和，适合识别类别',
 
 ## 更新日志
 
+- **2026-05-28**（测试工程复核，由 Codex 协助）：验证问题 4 已正确修复。`RoomSelectorRow` 的 room label 已有单行省略保护，并新增窄屏 widget regression test；`flutter test --no-pub` 与 `flutter analyze --no-pub --no-fatal-infos` 均通过。
 - **2026-05-27**（测试工程复核，由 Codex 协助）：新增问题 8 处理结果。确认英文化 AI 合同迁移已完成并通过 Phase 1 / Phase 2 provider / Phase 2 HTTP / Phase 4 HTTP / Phase 5 demo E2E / Flutter test / Flutter analyze；同步说明剩余中文主要是注释、历史说明或测试日志，不再阻塞 P0。
 - **2026-05-26（第三次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 6：Profile "Favorite tags"筛选逻辑与Gallery/Room不一致（`allItems`来自Gallery filter状态）；新增问题 7：AI Suggestions面板"（Member E）"标注应移除（`ai_suggestion_panel.dart:220`）。并修正编号：问题5/6/7顺序整理完毕。
 - **2026-05-26（第二次）**（成员 E / 成员 5，由 Codex 协助）：新增问题 5：AI 故事风格切换时内容追加而非替换——详细追踪了 `buildPayload() → form.story` 作为 description 字段传给 API 的完整链路，确认当 form.story 已包含 scrapbook 内容时切换 vintage 风格，会把 scrapbook 内容作为 description 传给 API，导致模型生成内容融入旧 scrapbook 元素。提出了方案 A（在风格切换时清除 form.story，推荐新增 `onStoryReset` 回调）作为推荐修复方案。

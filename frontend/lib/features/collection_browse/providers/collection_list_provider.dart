@@ -4,9 +4,14 @@ import '../models/collection_item.dart';
 import '../models/collection_query_state.dart';
 import '../models/collection_room.dart';
 import '../services/collection_query_service.dart';
+import '../services/room_reflection_service.dart';
 
 final collectionQueryServiceProvider = Provider<CollectionQueryService>((ref) {
   return CollectionQueryService();
+});
+
+final roomReflectionServiceProvider = Provider<RoomReflectionService>((ref) {
+  return RoomReflectionService();
 });
 
 final categoriesProvider = FutureProvider<List<CategoryOption>>((ref) async {
@@ -50,31 +55,6 @@ final userStatsProvider = FutureProvider<UserStats>((ref) async {
 final backendReachableProvider = FutureProvider<bool>((ref) async {
   return ref.read(collectionQueryServiceProvider).checkHealth();
 });
-
-/// 全量藏品列表（不受 Gallery 当前筛选影响）。
-final allCollectionsProvider = FutureProvider<List<CollectionItem>>((ref) async {
-  final service = ref.read(collectionQueryServiceProvider);
-  const pageSize = 200;
-  var page = 1;
-  var all = <CollectionItem>[];
-  while (true) {
-    final result = await service.fetchCollections(
-      CollectionQueryState(
-        page: page,
-        pageSize: pageSize,
-        sortBy: SortOption.newest,
-      ),
-    );
-    all = [...all, ...result.items];
-    if (all.length >= result.total || result.items.isEmpty) break;
-    page++;
-    if (page > 20) break;
-  }
-  return all;
-});
-
-/// 兼容旧命名（Profile 仍可直接使用）。
-final profileAllItemsProvider = allCollectionsProvider;
 
 class CollectionListState {
   const CollectionListState({
@@ -169,8 +149,6 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
     final filtersChanged = query.keyword != state.query.keyword ||
         query.category != state.query.category ||
         query.tag != state.query.tag ||
-        query.year != state.query.year ||
-        query.month != state.query.month ||
         query.visibility != state.query.visibility ||
         query.sortBy != state.query.sortBy;
     final next = filtersChanged && query.page == state.query.page
@@ -210,11 +188,10 @@ class CollectionListNotifier extends StateNotifier<CollectionListState> {
   }
 
   void clearAllFilters() {
-    state = state.copyWith(
-      query: CollectionQueryState.initial,
-      wallDisplayPage: 1,
-      clearError: true,
+    final next = CollectionQueryState.initial.copyWith(
+      pageSize: state.query.pageSize,
     );
+    state = state.copyWith(query: next, wallDisplayPage: 1);
     _load(append: false);
   }
 
@@ -279,6 +256,16 @@ extension _Copy on CollectionListState {
     );
   }
 }
+
+/// Profile-specific collection provider — always fetches all collections
+/// across pages, independent of Gallery filter state.
+final profileCollectionsProvider =
+    FutureProvider<List<CollectionItem>>((ref) async {
+  return ref.watch(collectionQueryServiceProvider).fetchAllCollections();
+});
+
+/// Backward-compatible alias used across gallery/profile widgets.
+final allCollectionsProvider = profileCollectionsProvider;
 
 final collectionListProvider =
     StateNotifierProvider<CollectionListNotifier, CollectionListState>((ref) {

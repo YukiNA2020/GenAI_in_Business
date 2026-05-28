@@ -140,10 +140,48 @@ Output exactly in this JSON format:
 }`;
 }
 
+function buildRoomReflectionPrompt(input = {}) {
+  const roomLabel = valueOrEmpty(input.roomLabel);
+  const month = valueOrEmpty(input.month);
+  const itemCount = Array.isArray(input.items) ? input.items.length : 0;
+
+  const itemSummaries = (input.items || [])
+    .slice(0, 10)
+    .map((item, i) => {
+      const title = item.title ? item.title.substring(0, 50) : 'Untitled';
+      const category = item.category || '';
+      const story = item.story ? item.story.substring(0, 120) : '';
+      return `${i + 1}. [${category}] ${title}${story ? ' — ' + story : ''}`;
+    })
+    .join('\n');
+
+  return `You are a room reflection assistant for Collection Journey App. Generate a warm, personal reflection (60-100 words) about this collection room.
+
+Room: ${roomLabel}
+Month: ${month}
+Item count: ${itemCount}
+
+Items in this room:
+${itemSummaries || 'No items yet.'}
+
+Rules:
+1. Write in a warm, nostalgic tone — this is a personal collection journal.
+2. Mention the variety of items if there are multiple categories.
+3. Do not fabricate names, brands, places, or events not in the items.
+4. If the room is empty or nearly empty, write a brief invitation to start collecting.
+5. Output JSON only, no Markdown or explanatory text.
+
+Output exactly in this JSON format:
+{
+  "reflection": "Your generated reflection text here."
+}`;
+}
+
 module.exports = {
   buildTitlePrompt,
   buildCategoryPrompt,
   buildTagsPrompt,
   buildStoryPrompt,
   buildAnalyzeImagePrompt,
+  buildRoomReflectionPrompt,
 };

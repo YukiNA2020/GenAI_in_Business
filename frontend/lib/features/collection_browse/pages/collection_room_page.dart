@@ -64,19 +64,13 @@ class CollectionRoomPage extends ConsumerWidget {
             roomItems: const [],
             exhibitCount: demoUserStatsFallback.totalCollections,
           ),
-          data: (room) {
-            final byMonth =
-                CollectoryRoomCatalog.itemsForApiRoomMonth(allItems, room.month);
-            final roomItems =
-                byMonth.length >= room.collections.length ? byMonth : room.collections;
-            return _roomBody(
-              ref: ref,
-              pad: pad,
-              room: room,
-              roomItems: roomItems,
-              exhibitCount: roomItems.length,
-            );
-          },
+          data: (room) => _roomBody(
+            ref: ref,
+            pad: pad,
+            room: room,
+            roomItems: room.collections,
+            exhibitCount: room.collections.length,
+          ),
         ),
       ),
     );
@@ -92,7 +86,7 @@ class CollectionRoomPage extends ConsumerWidget {
     final label = room?.label ?? room?.month ?? 'Collection room';
     final month = room?.month ?? '';
     final highlights = _resolveHighlights(roomItems);
-    final timeline = _resolveTimeline(roomItems, room?.month);
+    final timeline = _resolveTimeline(roomItems);
 
     return SizedBox.expand(
       child: Padding(
@@ -161,9 +155,13 @@ class CollectionRoomPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _AiReflectionCard(
-              reflection: roomItems.isEmpty
+              initialReflection: roomItems.isEmpty
                   ? 'Start adding exhibits to this room to see AI reflections.'
                   : 'A rich month of memories — $exhibitCount exhibits collected.',
+              roomId: room?.id,
+              roomLabel: room?.label,
+              month: room?.month,
+              items: roomItems,
             ),
             const Spacer(flex: 2),
             Text(
@@ -210,11 +208,12 @@ class CollectionRoomPage extends ConsumerWidget {
                   child: FilledButton(
                     onPressed: () {
                       ref.read(selectedRoomIdProvider.notifier).state = roomId;
-                      final roomYearMonth = _extractYearMonth(room?.month);
+                      final (year, monthNumber) =
+                          _extractYearMonth(room?.month);
                       goToGalleryTab(
                         ref,
-                        year: roomYearMonth?.$1,
-                        month: roomYearMonth?.$2,
+                        year: year,
+                        month: monthNumber,
                         scrollToCollectionWall: true,
                       );
                     },
@@ -303,20 +302,8 @@ class CollectionRoomPage extends ConsumerWidget {
     }).toList();
   }
 
-  List<_TimelineEntry> _resolveTimeline(
-    List<CollectionItem> roomItems,
-    String? roomMonth,
-  ) {
+  List<_TimelineEntry> _resolveTimeline(List<CollectionItem> roomItems) {
     if (roomItems.isEmpty) {
-      final month = _extractYearMonth(roomMonth)?.$2;
-      if (month == 6 || month == 7) {
-        final mm = month.toString().padLeft(2, '0');
-        return [
-          _TimelineEntry('$mm/03', 'Preview: collection moment placeholder', const Color(0xFF6F655B)),
-          _TimelineEntry('$mm/02', 'Preview: timeline note placeholder', const Color(0xFF8E7760)),
-          _TimelineEntry('$mm/01', 'Preview: upcoming exhibit slot', const Color(0xFF6F655B)),
-        ];
-      }
       return const [];
     }
 
@@ -338,31 +325,26 @@ class CollectionRoomPage extends ConsumerWidget {
   String _formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return '—';
     try {
-      final parts = dateStr.substring(0, 10).split('-');
-      if (parts.length >= 3) {
-        final month = int.tryParse(parts[1]);
-        final day = int.tryParse(parts[2]);
-        if (month != null && day != null) {
-          return '${month.toString().padLeft(2, '0')}/${day.toString().padLeft(2, '0')}';
-        }
+      final parts = dateStr.split('-');
+      if (parts.length >= 2) {
+        return '${parts[1]}/${parts[0].substring(2)}';
       }
     } catch (_) {}
     return dateStr;
   }
 
-  (int, int)? _extractYearMonth(String? monthLabel) {
-    if (monthLabel == null || monthLabel.isEmpty) return null;
-    final numeric = RegExp(r'(\d{4})-(\d{2})').firstMatch(monthLabel);
-    if (numeric != null) {
-      final year = int.tryParse(numeric.group(1)!);
-      final month = int.tryParse(numeric.group(2)!);
-      if (year != null && month != null) return (year, month);
+  (int?, int?) _extractYearMonth(String? rawMonth) {
+    if (rawMonth == null || rawMonth.trim().isEmpty) return (null, null);
+    final input = rawMonth.trim();
+    final isoMatch = RegExp(r'^(\d{4})-(\d{2})').firstMatch(input);
+    if (isoMatch != null) {
+      return (int.tryParse(isoMatch.group(1)!), int.tryParse(isoMatch.group(2)!));
     }
-    final text = RegExp(r'([A-Za-z]{3,9})\s+(\d{4})').firstMatch(monthLabel);
-    if (text != null) {
-      final monthName = text.group(1)!.toLowerCase();
-      final year = int.tryParse(text.group(2)!);
-      final monthMap = {
+    final textMatch = RegExp(r'^([A-Za-z]{3,9})\s+(\d{4})$').firstMatch(input);
+    if (textMatch != null) {
+      final monthName = textMatch.group(1)!.toLowerCase();
+      final year = int.tryParse(textMatch.group(2)!);
+      const monthMap = {
         'jan': 1,
         'january': 1,
         'feb': 2,
@@ -388,10 +370,9 @@ class CollectionRoomPage extends ConsumerWidget {
         'dec': 12,
         'december': 12,
       };
-      final month = monthMap[monthName];
-      if (year != null && month != null) return (year, month);
+      return (year, monthMap[monthName]);
     }
-    return null;
+    return (null, null);
   }
 
   void _openRoomHighlight(
@@ -418,11 +399,7 @@ class CollectionRoomPage extends ConsumerWidget {
         }
       }
     }
-    goToGalleryTab(
-      ref,
-      categorySlug: highlight.categorySlug,
-      scrollToCollectionWall: true,
-    );
+    goToGalleryTab(ref, categorySlug: highlight.categorySlug);
   }
 }
 
@@ -521,10 +498,64 @@ class _StatsCard extends StatelessWidget {
   }
 }
 
-class _AiReflectionCard extends StatelessWidget {
-  const _AiReflectionCard({required this.reflection});
+class _AiReflectionCard extends ConsumerStatefulWidget {
+  const _AiReflectionCard({
+    required this.initialReflection,
+    this.roomId,
+    this.roomLabel,
+    this.month,
+    required this.items,
+  });
 
-  final String reflection;
+  final String initialReflection;
+  final int? roomId;
+  final String? roomLabel;
+  final String? month;
+  final List<CollectionItem> items;
+
+  @override
+  ConsumerState<_AiReflectionCard> createState() => _AiReflectionCardState();
+}
+
+class _AiReflectionCardState extends ConsumerState<_AiReflectionCard> {
+  late String _reflection;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reflection = widget.initialReflection;
+  }
+
+  Future<void> _onRedo() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      final service = ref.read(roomReflectionServiceProvider);
+      final result = await service.generateRoomReflection(
+        roomId: widget.roomId,
+        roomLabel: widget.roomLabel,
+        month: widget.month,
+        items: widget.items,
+      );
+      if (mounted) {
+        setState(() => _reflection = result);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI reflection failed. You can keep browsing.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -550,7 +581,7 @@ class _AiReflectionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  reflection,
+                  _reflection,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     height: 1.35,
@@ -563,7 +594,7 @@ class _AiReflectionCard extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: _loading ? null : _onRedo,
             style: TextButton.styleFrom(
               foregroundColor: CollectoryColors.btnPrimaryBg,
               backgroundColor: CollectoryColors.btnPrimaryText,
@@ -574,7 +605,16 @@ class _AiReflectionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text('Redo', style: TextStyle(fontSize: 12)),
+            child: _loading
+                ? const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: CollectoryColors.btnPrimaryBg,
+                    ),
+                  )
+                : const Text('Redo', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),

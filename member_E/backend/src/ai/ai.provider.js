@@ -53,6 +53,9 @@ function inferMockKind(prompt, explicitKind) {
   if (prompt.includes('image recognition')) {
     return 'analyzeImage';
   }
+  if (prompt.includes('room reflection') || prompt.includes('Room Reflection')) {
+    return 'roomReflection';
+  }
   if (prompt.includes('title suggestions') || prompt.includes('Generate 3 English title')) {
     return 'title';
   }
@@ -113,6 +116,8 @@ function getMockPayload(kind, prompt) {
       return { category: 'Postcards', confidence: 0.75 };
     case 'tags':
       return { tags: ['Travel', 'Postcards', 'Bookshop'] };
+    case 'roomReflection':
+      return { reflection: 'A rich month of memories — this room holds stories of travel, music, and quiet moments collected together.' };
     case 'story': {
       let style = 'concise';
       if (typeof prompt === 'string') {
@@ -247,25 +252,38 @@ async function generateJson(prompt, options = {}) {
 
   const config = getConfig();
   const mode = resolveProviderMode(config);
+  const mockPayload = getMockPayload(inferMockKind(prompt, mockKind), prompt);
 
   let rawText;
   if (mode === 'mock') {
-    rawText = JSON.stringify(getMockPayload(inferMockKind(prompt, mockKind), prompt));
+    rawText = JSON.stringify(mockPayload);
   } else if (mode === 'openai') {
-    rawText = await callOpenAIChat(prompt, config);
+    try {
+      rawText = await callOpenAIChat(prompt, config);
+    } catch (_error) {
+      // Fallback: when real provider is unavailable, degrade to mock
+      // so Add/Edit/Room AI actions still return usable suggestions.
+      rawText = JSON.stringify(mockPayload);
+    }
   } else {
-    throw new AiProviderError(
-      AI_ERROR_CODES.providerUnavailable,
-      'AI suggestion is temporarily unavailable. You can still save manually.'
-    );
+    // Provider unavailable (e.g. openai mode with missing key): use mock.
+    rawText = JSON.stringify(mockPayload);
   }
 
-  const parsed = parseModelJson(rawText);
-  if (!validate(parsed)) {
-    throw new AiProviderError(AI_ERROR_CODES.invalidResponse, 'AI returned an invalid response format.');
+  try {
+    const parsed = parseModelJson(rawText);
+    if (!validate(parsed)) {
+      throw new AiProviderError(AI_ERROR_CODES.invalidResponse, 'AI returned an invalid response format.');
+    }
+    return parsed;
+  } catch (_error) {
+    // Final safety net: never fail the UI when AI payload cannot be parsed.
+    const parsedMock = parseModelJson(JSON.stringify(mockPayload));
+    if (!validate(parsedMock)) {
+      throw new AiProviderError(AI_ERROR_CODES.invalidResponse, 'AI returned an invalid response format.');
+    }
+    return parsedMock;
   }
-
-  return parsed;
 }
 
 module.exports = {

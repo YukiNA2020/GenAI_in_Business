@@ -16,6 +16,7 @@ import '../../collection_browse/widgets/collectory_handoff_header.dart';
 import '../../collection_browse/widgets/design/collectory_favorite_tags.dart';
 import '../../collection_browse/widgets/design/collectory_pill_toggle.dart';
 import '../models/ai_form_payload.dart';
+import '../models/collection_form_state.dart';
 import '../providers/collection_form_provider.dart';
 import '../utils/ai_category_mapping.dart';
 import '../widgets/ai_suggestion_panel.dart';
@@ -39,6 +40,31 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
   final _storyController = TextEditingController();
   final _locationController = TextEditingController();
   final _dateController = TextEditingController();
+  String? _storyGenerationSeed;
+  String? _lastAiGeneratedStory;
+
+  void _rememberStorySeed(String value) {
+    final seed = value.trim();
+    _storyGenerationSeed = seed.isEmpty ? null : seed;
+    _lastAiGeneratedStory = null;
+  }
+
+  String? _storyContextForAiPayload(CollectionFormState form) {
+    final story = form.story.trim();
+    final seed = _storyGenerationSeed?.trim();
+    final lastGenerated = _lastAiGeneratedStory?.trim();
+
+    if (story.isEmpty) {
+      return seed?.isNotEmpty == true ? seed : null;
+    }
+
+    if (lastGenerated != null && story == lastGenerated) {
+      return seed?.isNotEmpty == true ? seed : null;
+    }
+
+    _rememberStorySeed(story);
+    return story;
+  }
 
   @override
   void initState() {
@@ -74,6 +100,8 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
       _storyController.clear();
       _locationController.clear();
       _dateController.clear();
+      _storyGenerationSeed = null;
+      _lastAiGeneratedStory = null;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Exhibit created successfully')),
       );
@@ -280,8 +308,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                             child: TextField(
                               controller: _dateController,
                               style: GoogleFonts.inter(fontSize: 14),
-                              decoration:
-                                  _inputDecoration(hint: 'YYYY-MM-DD'),
+                              decoration: _inputDecoration(hint: 'YYYY-MM-DD'),
                               onChanged: (v) {
                                 ref
                                     .read(collectionFormProvider.notifier)
@@ -326,6 +353,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                           ref
                               .read(collectionFormProvider.notifier)
                               .updateStory(v);
+                          _rememberStorySeed(v);
                         },
                       ),
                     ),
@@ -335,43 +363,46 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                     AiSuggestionPanel(
                       hasImageForAnalysis: () => _imageDataUrl != null,
                       buildPayload: () {
+                        final currentForm = ref.read(collectionFormProvider);
+                        final storyContext =
+                            _storyContextForAiPayload(currentForm);
+                        final titleContext = currentForm.title.trim();
                         return AiFormPayload(
-                          description: form.story.isNotEmpty
-                              ? form.story
-                              : (form.title.isNotEmpty
-                                  ? form.title
+                          description: storyContext ??
+                              (titleContext.isNotEmpty
+                                  ? titleContext
                                   : 'collectible'),
-                          title:
-                              form.title.isNotEmpty ? form.title : null,
-                          category: form.category != null
-                              ? apiSlugToAiCategory[form.category]
+                          title: currentForm.title.isNotEmpty
+                              ? currentForm.title
                               : null,
-                          location: form.location.isNotEmpty
-                              ? form.location
+                          category: currentForm.category != null
+                              ? apiSlugToAiCategory[currentForm.category]
+                              : null,
+                          location: currentForm.location.isNotEmpty
+                              ? currentForm.location
                               : null,
                           dateAcquired:
-                              form.dateAcquired?.isNotEmpty == true
-                                  ? form.dateAcquired
+                              currentForm.dateAcquired?.isNotEmpty == true
+                                  ? currentForm.dateAcquired
                                   : null,
-                          imageDescription:
-                              form.story.isNotEmpty ? form.story : null,
+                          imageDescription: storyContext,
                           imageDataUrl: _imageDataUrl,
                         );
                       },
                       onImageAnalysisApplied: (result) {
-                        final n =
-                            ref.read(collectionFormProvider.notifier);
+                        final n = ref.read(collectionFormProvider.notifier);
                         n.updateTitle(result.suggestedTitle);
                         _titleController.text = result.suggestedTitle;
-                        final tag = tagLabelForAiCategory(
-                            result.suggestedCategory);
+                        final tag =
+                            tagLabelForAiCategory(result.suggestedCategory);
                         if (tag != null) {
-                          final slug = CollectoryFavoriteTags
-                              .categorySlugForTag(tag);
+                          final slug =
+                              CollectoryFavoriteTags.categorySlugForTag(tag);
                           if (slug != null) n.updateCategory(slug);
                         }
                         n.updateStory(result.description);
                         _storyController.text = result.description;
+                        _rememberStorySeed(result.description);
                         // §7.4 — AI tags 写入正式 Tag input
                         n.mergeTags(result.suggestedTags);
                       },
@@ -383,8 +414,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                       },
                       onCategoryTagSelected: (tag) {
                         final slug =
-                            CollectoryFavoriteTags.categorySlugForTag(
-                                tag);
+                            CollectoryFavoriteTags.categorySlugForTag(tag);
                         if (slug != null) {
                           ref
                               .read(collectionFormProvider.notifier)
@@ -398,22 +428,22 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                             .mergeTags(tags);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content:
-                                Text('Tags added: ${tags.join(', ')}'),
+                            content: Text('Tags added: ${tags.join(', ')}'),
                           ),
                         );
                       },
                       onStoryApplied: (story) {
+                        _lastAiGeneratedStory =
+                            story.trim().isEmpty ? null : story.trim();
                         ref
                             .read(collectionFormProvider.notifier)
                             .updateStory(story);
                         _storyController.text = story;
                       },
-                      onStoryReset: () {
-                        ref
-                            .read(collectionFormProvider.notifier)
-                            .updateStory('');
-                        _storyController.clear();
+                      onStoryStyleChange: () {
+                        _storyContextForAiPayload(
+                          ref.read(collectionFormProvider),
+                        );
                       },
                     ),
                     const SizedBox(height: 12),
@@ -424,9 +454,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                       child: TagInputField(
                         tags: form.tags,
                         onAddTag: (tag) {
-                          ref
-                              .read(collectionFormProvider.notifier)
-                              .addTag(tag);
+                          ref.read(collectionFormProvider.notifier).addTag(tag);
                         },
                         onRemoveTag: (tag) {
                           ref
@@ -447,8 +475,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                           form.category),
                       onTagTap: (tag) {
                         final slug =
-                            CollectoryFavoriteTags.categorySlugForTag(
-                                tag);
+                            CollectoryFavoriteTags.categorySlugForTag(tag);
                         if (slug != null) {
                           ref
                               .read(collectionFormProvider.notifier)
@@ -472,15 +499,13 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                       decoration: BoxDecoration(
                         color: CollectoryColors.bgSecondary,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: CollectoryColors.borderLight),
+                        border: Border.all(color: CollectoryColors.borderLight),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Private museum',
@@ -495,8 +520,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                                   form.isPublic
                                       ? 'Visible in public browse'
                                       : 'Only you can see this exhibit',
-                                  style: CollectoryHandoffHeader
-                                          .bodySecondary()
+                                  style: CollectoryHandoffHeader.bodySecondary()
                                       .copyWith(fontSize: 12),
                                 ),
                               ],
@@ -529,8 +553,7 @@ class _CreateCollectionPageState extends ConsumerState<CreateCollectionPage> {
                         child: Row(
                           children: [
                             const Icon(Icons.info_outline,
-                                size: 18,
-                                color: CollectoryColors.textPrimary),
+                                size: 18, color: CollectoryColors.textPrimary),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(

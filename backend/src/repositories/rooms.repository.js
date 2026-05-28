@@ -1,9 +1,5 @@
 const { getDb } = require('../db/connection');
 
-/** YYYY-MM from date_acquired or created_at — matches rooms.month */
-const COLLECTION_MONTH_SQL =
-  "strftime('%Y-%m', COALESCE(collections.date_acquired, collections.created_at))";
-
 async function findAll() {
   const db = await getDb();
   const result = db.exec(`
@@ -11,9 +7,9 @@ async function findAll() {
       rooms.*,
       COUNT(collections.id) AS collection_count
     FROM rooms
-    LEFT JOIN collections ON ${COLLECTION_MONTH_SQL} = rooms.month
+    LEFT JOIN collections ON collections.room_id = rooms.id
     GROUP BY rooms.id
-    ORDER BY rooms.month DESC
+    ORDER BY rooms.month ASC
   `);
   if (!result.length || !result[0].values.length) return [];
   const cols = result[0].columns;
@@ -48,12 +44,7 @@ async function findByMonth(month) {
 
 async function getCollectionsByRoomId(roomId) {
   const db = await getDb();
-  const room = await findById(roomId);
-  if (!room) return [];
-  const month = String(room.month).replace(/'/g, "''");
-  const result = db.exec(
-    `SELECT * FROM collections WHERE ${COLLECTION_MONTH_SQL} = '${month}' ORDER BY created_at DESC`
-  );
+  const result = db.exec('SELECT * FROM collections WHERE room_id = ' + Number(roomId) + ' ORDER BY created_at DESC');
   if (!result.length || !result[0].values.length) return [];
   const cols = result[0].columns;
   return result[0].values.map((vals) => {

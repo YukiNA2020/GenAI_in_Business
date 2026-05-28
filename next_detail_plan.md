@@ -1,6 +1,6 @@
 # Collection Journey App 后 MVP 下一步详细技术计划
 
-> 上次更新：2026-05-27  
+> 上次更新：2026-05-28  
 > 当前基线：`codex/integration-prep` 已达到 MVP 整合完成标准。  
 > 主要依据：`PROJECT_STATUS.md`、`Post_MVP_Issues.md`、`README.md`、`API_Contract.md`，并结合当前代码状态复核。  
 > 本文件用途：作为 Post-MVP bug 修复、演示前打磨、测试补强和后续生产化的具体执行路线。
@@ -21,13 +21,13 @@
 | 统一编号 | 问题 | 优先级 | 当前状态 |
 |---|---|---|---|
 | ISSUE-08 | 英文化 AI 合同迁移：数据库/schema 已英文，AI prompt/mock/前端映射/测试脚本需同步 | P0 | ✅ 已验证完成（2026-05-27） |
-| ISSUE-05 | AI 故事风格切换时内容追加/污染，而非干净替换 | P1 | ✅ 已修复（`onStoryReset` 方案 A，2026-05-28） |
-| ISSUE-06 | Profile Favorite tags 使用 Gallery 当前列表，筛选结果可能错误 | P1 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
-| ISSUE-01 | Room Reflection Redo 按钮无功能 | P1 | 未处理 |
-| ISSUE-03 | Room 月份不一致：API 返回 March/April/May，设计预期 May/June/July | P1 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
-| ISSUE-07 | AI Suggestions 标题旁的 `(Member E)` 标注应移除 | P2 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
-| ISSUE-04 | RoomSelectorRow room label 过长时缺少溢出保护 | P2 | ✅ 已人工验证完成2025-05-28 By 雨阳 |
-| ISSUE-02 | Add 页空输入时 AI 生成过于模板化 | P2 | 未处理 |
+| ISSUE-05 | AI 故事风格切换时内容追加/污染，而非干净替换 | P1 | ✅ 已完成（2026-05-28） |
+| ISSUE-06 | Profile Favorite tags 使用 Gallery 当前列表，筛选结果可能错误 | P1 | ✅ 已完成（2026-05-28） |
+| ISSUE-01 | Room Reflection Redo 按钮无功能 | P1 | ✅ 已完成（2026-05-28） |
+| ISSUE-03 | Room 月份不一致：API 返回 March/April/May，设计预期 May/June/July | P1 | ✅ 已完成（2026-05-28） |
+| ISSUE-07 | AI Suggestions 标题旁的 `(Member E)` 标注应移除 | P2 | ✅ 已完成（2026-05-27） |
+| ISSUE-04 | RoomSelectorRow room label 过长时缺少溢出保护 | P2 | ✅ 已验证完成（2026-05-28） |
+| ISSUE-02 | Add 页空输入时 AI 生成过于模板化 | P3 | 可选未处理 |
 | ISSUE-09 | 剩余中文注释 / 历史说明 / 测试日志清理 | P3 | 可选未处理 |
 
 ---
@@ -49,7 +49,7 @@
 目标：快速消除展示时容易被发现的小问题。
 
 1. 修复 ISSUE-07：移除 `(Member E)`。
-2. 修复 ISSUE-04：RoomSelectorRow label 加 `maxLines` / `ellipsis`。
+2. ISSUE-04 已完成：RoomSelectorRow label 已加 `maxLines` / `ellipsis`，并有窄屏 widget regression test。
 3. 修复 ISSUE-02：优化空输入 AI 行为和 mock 随机性。
 4. 处理 ISSUE-09 中剩余注释、历史说明和测试日志中文。
 
@@ -696,9 +696,13 @@ Text(
 
 ## 8. P2：RoomSelectorRow label 溢出保护
 
+### 当前状态
+
+✅ 已验证完成（2026-05-28）。本节保留为技术路线和验收依据，后续成员不需要再领取 ISSUE-04。
+
 ### 问题
 
-Room label 如 `March Room` / `April Room` 字符较长，当前 `RoomSelectorRow` 第二行 `Text(label)` 缺少 `maxLines` 和 `overflow`，窄屏可能溢出。
+Room label 如 `March Room` / `April Room` 字符较长，原先 `RoomSelectorRow` 第二行 `Text(label)` 缺少 `maxLines` 和 `overflow`，窄屏可能溢出。
 
 ### 技术路线
 
@@ -719,6 +723,18 @@ Text(
 
 - 390px 宽度下 RoomSelectorRow 没有文字溢出。
 - May/June/July 或更长 label 都不会撑坏布局。
+
+### 2026-05-28 回归结果
+
+已新增并通过 `frontend/test/room_selector_row_test.dart`：
+
+```bash
+flutter test --no-pub test/room_selector_row_test.dart
+flutter test --no-pub
+flutter analyze --no-pub --no-fatal-infos
+```
+
+测试覆盖 240px 窄宽度下的 March / April / May room label，确认没有 Flutter overflow 异常，且 `March Room` 的 `Text` 使用 `maxLines: 1` 和 `TextOverflow.ellipsis`。
 
 ---
 

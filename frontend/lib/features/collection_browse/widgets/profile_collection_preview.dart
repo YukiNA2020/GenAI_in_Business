@@ -13,6 +13,7 @@ import '../services/collection_query_service.dart';
 import '../utils/profile_exhibit_utils.dart';
 import 'collectory_handoff_header.dart';
 import 'collection_card.dart';
+import 'collection_grid.dart';
 import 'design/collectory_favorite_tags.dart';
 import 'design/collectory_pill_toggle.dart';
 import 'design/collectory_top_bar.dart';
@@ -34,6 +35,8 @@ class ProfileCollectionPreview extends ConsumerStatefulWidget {
 
 class _ProfileCollectionPreviewState
     extends ConsumerState<ProfileCollectionPreview> {
+  String _activeFavoriteTag = CollectoryFavoriteTags.labels.first;
+
   String _roomsCountLabel(WidgetRef ref, List<CollectionItem> allItems) {
     final roomsAsync = ref.watch(roomsProvider);
     final count = roomsAsync.maybeWhen(
@@ -47,17 +50,10 @@ class _ProfileCollectionPreviewState
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(userStatsProvider);
-    final allItemsAsync = ref.watch(allCollectionsProvider);
+    final profileCollectionsAsync = ref.watch(profileCollectionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final publicPreview = ref.watch(profilePublicPreviewProvider);
     final pad = CollectoryColors.screenPadding;
-    final allItems = allItemsAsync.valueOrNull ?? const <CollectionItem>[];
-
-    if (allItemsAsync.isLoading && allItemsAsync.valueOrNull == null) {
-      return const Center(
-        child: CircularProgressIndicator(color: CollectoryColors.textLabel),
-      );
-    }
 
     final categoryNames = categoriesAsync.when(
       data: (cats) => {for (final c in cats) c.id: c.name},
@@ -76,14 +72,20 @@ class _ProfileCollectionPreviewState
         error: (_, __) => _buildMuseumSections(
           ref: ref,
           stats: demoUserStatsFallback,
-          allItems: allItems,
+          allItems: profileCollectionsAsync.maybeWhen(
+            data: (items) => items,
+            orElse: () => <CollectionItem>[],
+          ),
           categoryNames: categoryNames,
           publicPreview: publicPreview,
         ),
         data: (stats) => _buildMuseumSections(
           ref: ref,
           stats: stats,
-          allItems: allItems,
+          allItems: profileCollectionsAsync.maybeWhen(
+            data: (items) => items,
+            orElse: () => <CollectionItem>[],
+          ),
           categoryNames: categoryNames,
           publicPreview: publicPreview,
         ),
@@ -98,7 +100,10 @@ class _ProfileCollectionPreviewState
         ref: ref,
         pad: pad,
         stats: demoUserStatsFallback,
-        allItems: allItems,
+        allItems: profileCollectionsAsync.maybeWhen(
+          data: (items) => items,
+          orElse: () => <CollectionItem>[],
+        ),
         categoryNames: categoryNames,
         publicPreview: publicPreview,
       ),
@@ -106,7 +111,10 @@ class _ProfileCollectionPreviewState
         ref: ref,
         pad: pad,
         stats: stats,
-        allItems: allItems,
+        allItems: profileCollectionsAsync.maybeWhen(
+          data: (items) => items,
+          orElse: () => <CollectionItem>[],
+        ),
         categoryNames: categoryNames,
         publicPreview: publicPreview,
       ),
@@ -124,10 +132,9 @@ class _ProfileCollectionPreviewState
     final exhibits = stats.totalCollections.toString();
     final rooms = _roomsCountLabel(ref, allItems);
     final publicCount = stats.publicCollections.toString();
-    final lastAdded = resolveLastAddedForProfile(
-      stats,
-      allItems,
-      publicOnly: publicPreview,
+    final lastAdded = resolveLastAdded(
+      allItems: allItems,
+      recentExhibits: stats.recentCollections,
     );
 
     return SingleChildScrollView(
@@ -247,6 +254,7 @@ class _ProfileCollectionPreviewState
       allItems,
       publicOnly: publicPreview,
     );
+
     return [
       _VisibilityCard(
         publicPreview: publicPreview,
@@ -309,8 +317,18 @@ class _ProfileCollectionPreviewState
       ),
       const SizedBox(height: 8),
       CollectoryFavoriteTagRow(
+        activeTag: _activeFavoriteTag,
         highlightActive: false,
-        onTagTap: (tag) => openGalleryWithFavoriteTag(ref, tag),
+        onTagTap: (tag) {
+          setState(() => _activeFavoriteTag = tag);
+          // Favorite tags should route to Gallery collection wall with filters.
+          openGalleryWithFavoriteTag(ref, tag);
+        },
+      ),
+      const SizedBox(height: 12),
+      Text(
+        'Tap a tag to open Collection wall in Gallery with that filter.',
+        style: CollectoryHandoffHeader.bodySecondary(),
       ),
       const SizedBox(height: 20),
       Text(
@@ -323,14 +341,23 @@ class _ProfileCollectionPreviewState
       ),
       const SizedBox(height: 8),
       SizedBox(
-        height: 82,
+        height: 72,
         child: Builder(
           builder: (context) {
+            final roomsAsync = ref.watch(roomsProvider);
             final fallbackRooms =
                 CollectoryRoomCatalog.fallbackSummaries(items: allItems);
-            return _RoomPreviewRow(
-              rooms: fallbackRooms,
-              onOpenRoom: (roomId) => openCollectionRoom(ref, roomId: roomId),
+            return roomsAsync.when(
+              data: (rooms) => _RoomPreviewRow(
+                rooms:
+                    rooms.isNotEmpty ? rooms.take(3).toList() : fallbackRooms,
+                onOpenRoom: (roomId) => openCollectionRoom(ref, roomId: roomId),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => _RoomPreviewRow(
+                rooms: fallbackRooms,
+                onOpenRoom: (roomId) => openCollectionRoom(ref, roomId: roomId),
+              ),
             );
           },
         ),
@@ -393,9 +420,11 @@ class _RoomPreviewRow extends StatelessWidget {
           if (i > 0) const SizedBox(width: 7),
           Expanded(
             child: _RoomPreviewCard(
-              index: i,
-              month: rooms[i].month,
+              room: rooms[i].month,
+              title: rooms[i].label ?? rooms[i].month,
+              collectionCount: rooms[i].collectionCount,
               color: const Color(0xFFF5F0E8),
+              preview: rooms[i].id < 0,
               onTap: () => onOpenRoom(rooms[i].id),
             ),
           ),
@@ -617,16 +646,20 @@ class _VisibilityCard extends StatelessWidget {
 
 class _RoomPreviewCard extends StatelessWidget {
   const _RoomPreviewCard({
-    required this.index,
-    required this.month,
+    required this.room,
+    required this.title,
+    this.collectionCount,
     required this.color,
     required this.onTap,
+    this.preview = false,
   });
 
-  final int index;
-  final String month;
+  final String room;
+  final String title;
+  final int? collectionCount;
   final Color color;
   final VoidCallback onTap;
+  final bool preview;
 
   @override
   Widget build(BuildContext context) {
@@ -649,18 +682,37 @@ class _RoomPreviewCard extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'ROOM ${(index + 1).toString().padLeft(2, '0')}',
-                      style: CollectoryHandoffHeader.metaLabel().copyWith(
-                        fontSize: 8.5,
-                        height: 1.1,
+                    if (preview)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: CollectoryColors.bgApp,
+                          border: Border.all(color: CollectoryColors.textLabel),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Preview',
+                          style: CollectoryHandoffHeader.metaLabel().copyWith(
+                            fontSize: 8,
+                            height: 1,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        room,
+                        style: CollectoryHandoffHeader.metaLabel().copyWith(
+                          fontSize: 9,
+                          height: 1.1,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 4),
                     Text(
-                      _monthYearLabel(month),
+                      title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -670,6 +722,16 @@ class _RoomPreviewCard extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
+                    if (collectionCount != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '$collectionCount exhibits',
+                        style: CollectoryHandoffHeader.bodySecondary()
+                            .copyWith(fontSize: 10, height: 1.1),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
                 Container(
@@ -685,23 +747,5 @@ class _RoomPreviewCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _monthYearLabel(String raw) {
-    final numeric = RegExp(r'^\d{4}-(\d{2})').firstMatch(raw);
-    if (numeric != null) {
-      final month = int.tryParse(numeric.group(1)!);
-      final year = raw.substring(0, 4);
-      const names = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ];
-      if (month != null && month >= 1 && month <= 12) {
-        return '${names[month - 1]} $year';
-      }
-    }
-    final parts = raw.split(' ');
-    if (parts.length >= 2) return '${parts.first} ${parts[1]}';
-    return raw;
   }
 }
