@@ -16,6 +16,7 @@
 | [08-share-settings.png](08-share-settings.png) | Share Settings | 分享设置，管理可见性与分享权限 |
 | [09-edit-collection.png](09-edit-collection.png) | Edit Collection | 编辑藏品，修改已有藏品信息 |
 | [10-public-browse.png](10-public-browse.png) | Public Browse | 公开浏览，查看公开分享的藏品 |
+| [11-sorting-wall.png](11-sorting-wall.png) | Collection Wall | 条件筛选所有藏品 |
 
 ---
 
