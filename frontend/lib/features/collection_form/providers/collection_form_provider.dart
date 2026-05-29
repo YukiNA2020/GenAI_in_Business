@@ -116,9 +116,10 @@ class CollectionFormNotifier extends StateNotifier<CollectionFormState> {
         }
       }
 
-      // invalidate 相关 providers
+      // invalidate 相关 providers（含全量列表，供 Home/Gallery room 计数）
       _ref.invalidate(userStatsProvider);
       _ref.invalidate(roomsProvider);
+      _ref.invalidate(allCollectionsProvider);
       if (s.roomId != null && s.roomId! > 0) {
         _ref.invalidate(roomDetailProvider(s.roomId!));
       }

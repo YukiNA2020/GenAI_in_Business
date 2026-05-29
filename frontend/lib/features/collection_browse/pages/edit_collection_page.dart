@@ -235,6 +235,7 @@ class _EditCollectionPageState extends ConsumerState<EditCollectionPage> {
               );
       ref.invalidate(userStatsProvider);
       ref.invalidate(roomsProvider);
+      ref.invalidate(allCollectionsProvider);
       if (previousRoomId != null && previousRoomId > 0) {
         ref.invalidate(roomDetailProvider(previousRoomId));
       }

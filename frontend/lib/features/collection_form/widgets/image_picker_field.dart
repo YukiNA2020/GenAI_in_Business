@@ -12,7 +12,7 @@ import '../../collection_browse/widgets/collectory_handoff_header.dart';
 import '../../collection_browse/widgets/design/exhibit_illustrations.dart';
 
 /// 图片选择器：选图后预览，支持清除。
-class ImagePickerField extends StatelessWidget {
+class ImagePickerField extends StatefulWidget {
   const ImagePickerField({
     super.key,
     required this.imageBytes,
@@ -29,6 +29,26 @@ class ImagePickerField extends StatelessWidget {
     required String mimeType,
   })? onImagePicked;
   final VoidCallback? onClearImage;
+
+  @override
+  State<ImagePickerField> createState() => _ImagePickerFieldState();
+}
+
+class _ImagePickerFieldState extends State<ImagePickerField> {
+  Uint8List? _cachedPreviewBytes;
+
+  @override
+  void didUpdateWidget(ImagePickerField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.imageBytes;
+    if (next == null || next.isEmpty) {
+      _cachedPreviewBytes = null;
+      return;
+    }
+    if (!identical(oldWidget.imageBytes, next)) {
+      _cachedPreviewBytes = Uint8List.fromList(next);
+    }
+  }
 
   String _mimeTypeFromFilename(String name) {
     final ext = name.split('.').last.toLowerCase();
@@ -58,12 +78,17 @@ class ImagePickerField extends StatelessWidget {
     }
     final name = file.name.isNotEmpty ? file.name : 'photo.jpg';
     final mime = _mimeTypeFromFilename(name);
-    onImagePicked?.call(bytes: bytes, filename: name, mimeType: mime);
+    widget.onImagePicked?.call(bytes: bytes, filename: name, mimeType: mime);
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = imageBytes != null && imageBytes!.isNotEmpty;
+    final bytes = widget.imageBytes;
+    final hasImage = bytes != null && bytes.isNotEmpty;
+    if (hasImage && _cachedPreviewBytes == null) {
+      _cachedPreviewBytes = Uint8List.fromList(bytes!);
+    }
+    final previewBytes = _cachedPreviewBytes;
     return Container(
       decoration: BoxDecoration(
         color: CollectoryColors.bgSecondary,
@@ -74,14 +99,17 @@ class ImagePickerField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (hasImage)
+          if (hasImage && previewBytes != null)
             Stack(
               children: [
                 Image.memory(
-                  Uint8List.fromList(imageBytes!),
+                  previewBytes,
+                  key: ValueKey(widget.imageFilename ?? previewBytes.lengthInBytes),
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  gaplessPlayback: true,
+                  filterQuality: FilterQuality.medium,
                   errorBuilder: (_, __, ___) => const SizedBox(height: 180),
                 ),
                 Positioned(
@@ -91,7 +119,7 @@ class ImagePickerField extends StatelessWidget {
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(20),
                     child: InkWell(
-                      onTap: onClearImage,
+                      onTap: widget.onClearImage,
                       borderRadius: BorderRadius.circular(20),
                       child: const Padding(
                         padding: EdgeInsets.all(6),

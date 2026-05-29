@@ -52,14 +52,29 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
   }
 
   Future<void> _load() async {
+    final cached = ref
+        .read(collectionListProvider)
+        .items
+        .where((item) => item.id == widget.collectionId)
+        .firstOrNull;
+
     setState(() {
-      _loading = true;
+      _loading = cached == null;
       _error = null;
       _notFound = false;
+      if (cached != null) {
+        _item = cached;
+      }
     });
+
     try {
       final service = ref.read(collectionQueryServiceProvider);
-      final cats = await service.fetchCategories();
+      List<CategoryOption> cats = const [];
+      try {
+        cats = await service.fetchCategories();
+      } catch (_) {
+        cats = const [];
+      }
       final item = await service.fetchById(widget.collectionId);
       if (!mounted) return;
       List<String> categoryFieldKeys = [];
@@ -79,13 +94,17 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
       });
     } on ApiException catch (e) {
       if (!mounted) return;
+      if (_item != null && e.code != 'NOT_FOUND') {
+        return;
+      }
       setState(() {
         _notFound = e.code == 'NOT_FOUND';
-        _error = e.message;
+        _error = _item == null ? e.message : null;
         _loading = false;
       });
     } catch (e) {
       if (!mounted) return;
+      if (_item != null) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -136,6 +155,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
       await ref.read(collectionQueryServiceProvider).deleteById(item.id);
       ref.read(collectionListProvider.notifier).refresh();
       ref.invalidate(userStatsProvider);
+      ref.invalidate(allCollectionsProvider);
       if (mounted) _handleBack();
     } catch (e) {
       if (mounted) {
@@ -294,16 +314,21 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
     final pad = CollectoryColors.screenPadding;
 
     if (_loading) {
-      return const Column(
-        children: [
-          SafeArea(bottom: false, child: SizedBox(height: 48)),
-          Expanded(child: DetailLoadingSkeleton()),
-        ],
+      return const ColoredBox(
+        color: CollectoryColors.bgApp,
+        child: Column(
+          children: [
+            SafeArea(bottom: false, child: SizedBox(height: 48)),
+            Expanded(child: DetailLoadingSkeleton()),
+          ],
+        ),
       );
     }
 
     if (_notFound) {
-      return Center(
+      return ColoredBox(
+        color: CollectoryColors.bgApp,
+        child: Center(
         child: Padding(
           padding: EdgeInsets.all(pad),
           child: EmptyCollectionState(
@@ -313,11 +338,14 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
             onAction: _handleBack,
           ),
         ),
+      ),
       );
     }
 
     if (_error != null) {
-      return Center(
+      return ColoredBox(
+        color: CollectoryColors.bgApp,
+        child: Center(
         child: Padding(
           padding: EdgeInsets.all(pad),
           child: Column(
@@ -329,6 +357,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
             ],
           ),
         ),
+      ),
       );
     }
 
@@ -352,7 +381,9 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
         customEntries.isNotEmpty ||
         (item.location != null && item.location!.isNotEmpty);
 
-    return Column(
+    return ColoredBox(
+      color: CollectoryColors.bgApp,
+      child: Column(
       children: [
         SafeArea(
           bottom: false,
@@ -556,6 +587,7 @@ class _CollectionDetailPageState extends ConsumerState<CollectionDetailPage> {
           ),
         ),
       ],
+    ),
     );
   }
 }

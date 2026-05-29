@@ -62,6 +62,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
       return;
     }
     ref.invalidate(userStatsProvider);
+    ref.invalidate(allCollectionsProvider);
     ref.invalidate(categoriesProvider);
     ref.invalidate(allTagsProvider);
     await ref.read(collectionListProvider.notifier).refresh();
@@ -94,14 +95,7 @@ class _Member3ShellState extends ConsumerState<_Member3Shell> {
           switchOutCurve: CollectoryMotion.ease,
           transitionBuilder: (child, animation) =>
               FadeTransition(opacity: animation, child: child),
-          layoutBuilder: (currentChild, previousChildren) => Stack(
-            fit: StackFit.expand,
-            alignment: Alignment.topCenter,
-            children: [
-              ...previousChildren,
-              if (currentChild != null) currentChild,
-            ],
-          ),
+          layoutBuilder: (currentChild, _) => currentChild ?? const SizedBox.shrink(),
           child: KeyedSubtree(
             key: ValueKey<String>(
               overlay == Member3Overlay.collectionRoom

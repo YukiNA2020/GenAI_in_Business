@@ -68,6 +68,7 @@ class _AddExhibitDesignPageState extends ConsumerState<AddExhibitDesignPage> {
           );
       ref.invalidate(userStatsProvider);
       ref.invalidate(roomsProvider);
+      ref.invalidate(allCollectionsProvider);
       if (apiRoomId != null) {
         ref.invalidate(roomDetailProvider(apiRoomId));
       }
